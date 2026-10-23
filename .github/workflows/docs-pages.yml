@@ -11,6 +11,8 @@ on:
       - "zensical.toml"
       - "CHANGELOG.md"
       - "CONTRIBUTING.md"
+      - "pyproject.toml"
+      - "uv.lock"
   workflow_dispatch:
 
 permissions:

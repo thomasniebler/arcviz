@@ -163,7 +163,7 @@ published separately (next section); the `gh-pages` branch of earlier releases i
 ## Documentation on GitHub Pages (`docs-pages.yml`)
 
 [ADR-0201](../architecture/adr/0201-documentation-on-github-pages.md). One job `Publish docs` on pushes to `main` that
-touch `docs/**`, `zensical.toml`, `CHANGELOG.md` or `CONTRIBUTING.md`, and on `workflow_dispatch`: `uv sync --locked
+touch `docs/**`, `zensical.toml`, `CHANGELOG.md`, `CONTRIBUTING.md`, `pyproject.toml` or `uv.lock` (the toolchain pins), and on `workflow_dispatch`: `uv sync --locked
 --only-group docs --no-install-project`, `zensical build --clean --strict` (published configuration, `site_url`
 `https://thomasniebler.github.io/arcviz/`), then `actions/configure-pages`, `upload-pages-artifact` (directory `site`)
 and `deploy-pages` in the environment `github-pages` (permissions `pages: write`, `id-token: write`). The repository
