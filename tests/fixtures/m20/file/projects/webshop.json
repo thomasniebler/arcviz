@@ -1,0 +1,22 @@
+{
+  "created_at": "2026-10-08T11:12:23+00:00",
+  "description": "Online-Shop",
+  "diagrams": [
+    {
+      "added_at": "2026-10-08T11:12:23.678229+00:00",
+      "diagram": "bestellprozess",
+      "section": null
+    }
+  ],
+  "elements": [],
+  "id": "webshop",
+  "revision": "190dafc7912c8626",
+  "roles": {
+    "admin": "owner",
+    "ed": "editor"
+  },
+  "sections": [],
+  "title": "Webshop",
+  "updated_at": "2026-10-08T11:12:23+00:00",
+  "workspace": "default"
+}

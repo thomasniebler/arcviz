@@ -1,0 +1,23 @@
+{
+  "diagram": {
+    "created_at": "2026-10-07T16:16:38+00:00",
+    "direction": "TB",
+    "edges": [],
+    "id": "versuch",
+    "interaction": null,
+    "nodes": {},
+    "title": "Versuch",
+    "type": "deployment",
+    "updated_at": "2026-10-07T16:16:38+00:00"
+  },
+  "meta": {
+    "created_at": "2026-10-07T16:16:38+00:00",
+    "edge_count": 0,
+    "fingerprint": "44b57ba0d42a72d7",
+    "label": "Initial state",
+    "node_count": 0,
+    "restored_from": null,
+    "source": "initial",
+    "version": 1
+  }
+}

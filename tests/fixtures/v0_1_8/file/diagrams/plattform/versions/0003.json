@@ -1,0 +1,201 @@
+{
+  "diagram": {
+    "created_at": "2026-10-07T16:16:38+00:00",
+    "direction": "TB",
+    "edges": [
+      {
+        "direction": null,
+        "id": "e1",
+        "kind": "connection",
+        "label": null,
+        "properties": {
+          "port": "443",
+          "protocol": "https"
+        },
+        "source": "users",
+        "target": "app-gateway"
+      },
+      {
+        "direction": null,
+        "id": "e2",
+        "kind": "connection",
+        "label": "ingress",
+        "properties": {},
+        "source": "app-gateway",
+        "target": "frontend"
+      },
+      {
+        "direction": null,
+        "id": "e3",
+        "kind": "connection",
+        "label": "REST",
+        "properties": {},
+        "source": "frontend",
+        "target": "orders-api"
+      },
+      {
+        "direction": null,
+        "id": "e4",
+        "kind": "connection",
+        "label": "sql",
+        "properties": {
+          "port": "5432",
+          "protocol": "postgres"
+        },
+        "source": "orders-api",
+        "target": "postgres"
+      },
+      {
+        "direction": null,
+        "id": "e5",
+        "kind": "deploys",
+        "label": "images",
+        "properties": {},
+        "source": "acr",
+        "target": "user-pool"
+      }
+    ],
+    "id": "plattform",
+    "interaction": null,
+    "nodes": {
+      "acr": {
+        "id": "acr",
+        "kind": "storage",
+        "name": "container-registry",
+        "parent": "prod",
+        "properties": {
+          "sku": "premium"
+        }
+      },
+      "aks-cluster": {
+        "id": "aks-cluster",
+        "kind": "cluster",
+        "name": "aks-cluster",
+        "parent": "aks-subnet",
+        "properties": {
+          "kubernetes": "1.30"
+        }
+      },
+      "aks-subnet": {
+        "id": "aks-subnet",
+        "kind": "subnet",
+        "name": "aks-subnet",
+        "parent": "aks-vnet",
+        "properties": {
+          "cidr": "10.10.0.0/22"
+        }
+      },
+      "aks-vnet": {
+        "id": "aks-vnet",
+        "kind": "vnet",
+        "name": "aks-vnet",
+        "parent": "prod",
+        "properties": {
+          "cidr": "10.10.0.0/16"
+        }
+      },
+      "app-gateway": {
+        "id": "app-gateway",
+        "kind": "gateway",
+        "name": "app-gateway",
+        "parent": "appgw-subnet",
+        "properties": {
+          "sku": "WAF_v2"
+        }
+      },
+      "appgw-subnet": {
+        "id": "appgw-subnet",
+        "kind": "subnet",
+        "name": "appgw-subnet",
+        "parent": "aks-vnet",
+        "properties": {
+          "cidr": "10.10.4.0/24"
+        }
+      },
+      "db-subnet": {
+        "id": "db-subnet",
+        "kind": "subnet",
+        "name": "db-subnet",
+        "parent": "aks-vnet",
+        "properties": {
+          "cidr": "10.10.8.0/24"
+        }
+      },
+      "frontend": {
+        "id": "frontend",
+        "kind": "service",
+        "name": "frontend",
+        "parent": "user-pool",
+        "properties": {
+          "replicas": "2"
+        }
+      },
+      "order-service": {
+        "id": "order-service",
+        "kind": "service",
+        "name": "Order Service",
+        "parent": null,
+        "properties": {}
+      },
+      "orders-api": {
+        "id": "orders-api",
+        "kind": "service",
+        "name": "orders-api",
+        "parent": "user-pool",
+        "properties": {
+          "replicas": "3"
+        }
+      },
+      "postgres": {
+        "id": "postgres",
+        "kind": "database",
+        "name": "postgres",
+        "parent": "db-subnet",
+        "properties": {
+          "engine": "postgres 16",
+          "sku": "GP_Standard_D2s_v3"
+        }
+      },
+      "prod": {
+        "id": "prod",
+        "kind": "deployment",
+        "name": "prod",
+        "parent": null,
+        "properties": {
+          "cloud": "azure",
+          "region": "westeurope"
+        }
+      },
+      "user-pool": {
+        "id": "user-pool",
+        "kind": "node",
+        "name": "user-pool",
+        "parent": "aks-cluster",
+        "properties": {
+          "count": "3",
+          "vm_size": "Standard_D4s_v5"
+        }
+      },
+      "users": {
+        "id": "users",
+        "kind": "external",
+        "name": "users",
+        "parent": null,
+        "properties": {}
+      }
+    },
+    "title": "Plattform",
+    "type": "deployment",
+    "updated_at": "2026-10-07T16:16:38+00:00"
+  },
+  "meta": {
+    "created_at": "2026-10-07T16:16:38+00:00",
+    "edge_count": 5,
+    "fingerprint": "dbfbddaa868d35f7",
+    "label": "Vor dem Umbau",
+    "node_count": 14,
+    "restored_from": null,
+    "source": "manual",
+    "version": 3
+  }
+}

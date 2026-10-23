@@ -1,0 +1,111 @@
+{
+  "node_kinds": {
+    "aws_vpc": {
+      "container": true,
+      "style": "fill:#fffaf2,stroke:#ff9900,stroke-dasharray:5 3,color:#232f3e"
+    },
+    "aws_account": {
+      "container": true,
+      "style": "fill:#fdfdfd,stroke:#232f3e,color:#232f3e"
+    },
+    "aws_ec2": {
+      "icon": "aws:ec2",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_lambda": {
+      "icon": "aws:lambda",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e",
+      "role": "function"
+    },
+    "aws_s3": {
+      "icon": "aws:s3",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e",
+      "role": "storage"
+    },
+    "aws_rds": {
+      "icon": "aws:rds",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e",
+      "role": "database"
+    },
+    "aws_aurora": {
+      "icon": "aws:aurora",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e",
+      "role": "database"
+    },
+    "aws_dynamodb": {
+      "icon": "aws:dynamodb",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e",
+      "role": "database",
+      "traits": {
+        "redundancy": "built_in"
+      }
+    },
+    "aws_sqs": {
+      "icon": "aws:sqs",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e",
+      "role": "queue"
+    },
+    "aws_sns": {
+      "icon": "aws:sns",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_api_gateway": {
+      "icon": "aws:api-gateway",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e",
+      "role": "gateway"
+    },
+    "aws_cloudfront": {
+      "icon": "aws:cloudfront",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_ecs": {
+      "icon": "aws:ecs",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_eks": {
+      "icon": "aws:eks",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_fargate": {
+      "icon": "aws:fargate",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_elb": {
+      "icon": "aws:elb",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e",
+      "role": "gateway"
+    },
+    "aws_route53": {
+      "icon": "aws:route53",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_cognito": {
+      "icon": "aws:cognito",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_eventbridge": {
+      "icon": "aws:eventbridge",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_kinesis": {
+      "icon": "aws:kinesis",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_elasticache": {
+      "icon": "aws:elasticache",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_step_functions": {
+      "icon": "aws:step-functions",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_secrets_manager": {
+      "icon": "aws:secrets-manager",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    },
+    "aws_cloudwatch": {
+      "icon": "aws:cloudwatch",
+      "style": "fill:#fff8ef,stroke:#ff9900,color:#232f3e"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "content": "Füge einen Order Service hinzu.",
+    "role": "user",
+    "seq": 1
+  },
+  {
+    "content": "Erledigt.",
+    "operations": [],
+    "role": "assistant",
+    "seq": 2
+  }
+]

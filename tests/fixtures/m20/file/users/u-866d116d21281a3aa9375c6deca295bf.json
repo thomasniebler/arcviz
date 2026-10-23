@@ -1,0 +1,11 @@
+{
+  "document": {
+    "email": "vic@example.org",
+    "email_trusted": true,
+    "first_seen": "2026-10-08",
+    "id": "vic",
+    "last_seen": "2026-10-08",
+    "name": "Vic Viewer"
+  },
+  "revision": "5c8a48a8b661cb3c"
+}

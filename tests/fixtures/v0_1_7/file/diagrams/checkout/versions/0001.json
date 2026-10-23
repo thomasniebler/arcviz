@@ -1,0 +1,218 @@
+{
+  "diagram": {
+    "created_at": "2026-10-07T08:02:45+00:00",
+    "direction": "TB",
+    "edges": [],
+    "id": "checkout",
+    "interaction": {
+      "executions": [
+        {
+          "finish": "m8",
+          "id": "ex1",
+          "lifeline": "shop",
+          "start": "m1"
+        },
+        {
+          "finish": "m4",
+          "id": "ex2",
+          "lifeline": "zahlung",
+          "start": "m3"
+        }
+      ],
+      "fragments": [
+        {
+          "element": "message",
+          "id": "m1",
+          "kind": "complete",
+          "name": "checkout(warenkorb)",
+          "receiver": "shop",
+          "sender": "kunde",
+          "sort": "synchCall"
+        },
+        {
+          "element": "message",
+          "id": "m2",
+          "kind": "complete",
+          "name": "validieren()",
+          "receiver": "shop",
+          "sender": "shop",
+          "sort": "synchCall"
+        },
+        {
+          "covered": [
+            "kunde",
+            "shop",
+            "zahlung",
+            "bestellung"
+          ],
+          "element": "combined_fragment",
+          "id": "cf1",
+          "messages": [],
+          "operands": [
+            {
+              "fragments": [
+                {
+                  "element": "message",
+                  "id": "m3",
+                  "kind": "complete",
+                  "name": "bezahlen(betrag)",
+                  "receiver": "zahlung",
+                  "sender": "shop",
+                  "sort": "synchCall"
+                },
+                {
+                  "element": "message",
+                  "id": "m4",
+                  "kind": "complete",
+                  "name": "bestätigt",
+                  "receiver": "shop",
+                  "sender": "zahlung",
+                  "sort": "reply"
+                },
+                {
+                  "element": "message",
+                  "id": "m5",
+                  "kind": "complete",
+                  "name": "anlegen",
+                  "receiver": "bestellung",
+                  "sender": "shop",
+                  "sort": "createMessage"
+                }
+              ],
+              "guard": "Zahlung ok",
+              "id": "op1"
+            },
+            {
+              "fragments": [
+                {
+                  "element": "message",
+                  "id": "m6",
+                  "kind": "complete",
+                  "name": "Fehler anzeigen",
+                  "receiver": "kunde",
+                  "sender": "shop",
+                  "sort": "asynchSignal"
+                }
+              ],
+              "guard": "else",
+              "id": "op2"
+            }
+          ],
+          "operator": "alt"
+        },
+        {
+          "covered": [
+            "shop",
+            "bestellung"
+          ],
+          "element": "combined_fragment",
+          "id": "cf2",
+          "messages": [],
+          "operands": [
+            {
+              "fragments": [
+                {
+                  "element": "message",
+                  "id": "m7",
+                  "kind": "complete",
+                  "name": "position(artikel)",
+                  "receiver": "bestellung",
+                  "sender": "shop",
+                  "sort": "asynchCall"
+                }
+              ],
+              "guard": "für jede Position",
+              "id": "op3"
+            }
+          ],
+          "operator": "loop"
+        },
+        {
+          "covered": [
+            "shop",
+            "bestellung"
+          ],
+          "element": "interaction_use",
+          "id": "ref1",
+          "refers_to": "Versand beauftragen"
+        },
+        {
+          "element": "message",
+          "id": "m8",
+          "kind": "complete",
+          "name": "Bestellbestätigung",
+          "receiver": "kunde",
+          "sender": "shop",
+          "sort": "reply"
+        },
+        {
+          "element": "message",
+          "id": "m9",
+          "kind": "found",
+          "name": "Sitzung abgelaufen",
+          "receiver": "shop",
+          "sender": null,
+          "sort": "asynchSignal"
+        },
+        {
+          "element": "message",
+          "id": "m10",
+          "kind": "lost",
+          "name": "Audit-Ereignis",
+          "receiver": null,
+          "sender": "shop",
+          "sort": "asynchSignal"
+        },
+        {
+          "element": "message",
+          "id": "m11",
+          "kind": "complete",
+          "name": "verwerfen",
+          "receiver": "bestellung",
+          "sender": "shop",
+          "sort": "deleteMessage"
+        }
+      ],
+      "lifelines": [
+        {
+          "actor": true,
+          "id": "kunde",
+          "name": "Kunde",
+          "type": null
+        },
+        {
+          "actor": false,
+          "id": "shop",
+          "name": "Shop",
+          "type": "WebApp"
+        },
+        {
+          "actor": false,
+          "id": "zahlung",
+          "name": "Zahlung",
+          "type": "PaymentService"
+        },
+        {
+          "actor": false,
+          "id": "bestellung",
+          "name": "Bestellung",
+          "type": "Order"
+        }
+      ]
+    },
+    "nodes": {},
+    "title": "Checkout",
+    "type": "sequence",
+    "updated_at": "2026-10-07T08:02:45+00:00"
+  },
+  "meta": {
+    "created_at": "2026-10-07T08:02:45+00:00",
+    "edge_count": 0,
+    "fingerprint": "80b43e2c7f9c995f",
+    "label": "Initial state",
+    "node_count": 0,
+    "restored_from": null,
+    "source": "initial",
+    "version": 1
+  }
+}

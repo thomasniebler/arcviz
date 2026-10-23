@@ -1,0 +1,73 @@
+{
+  "created_at": "2026-10-11T11:09:06+00:00",
+  "description": "Online-Shop mit Bestellung und Zahlung",
+  "diagrams": [
+    {
+      "added_at": "2026-10-11T11:09:06.852331+00:00",
+      "diagram": "plattform",
+      "section": null
+    },
+    {
+      "added_at": "2026-10-11T11:09:06.875542+00:00",
+      "diagram": "bestellprozess",
+      "section": "bestellung"
+    },
+    {
+      "added_at": "2026-10-11T11:09:06.896136+00:00",
+      "diagram": "checkout",
+      "section": "zahlung"
+    }
+  ],
+  "elements": [
+    {
+      "description": "Der Webshop",
+      "id": "shop",
+      "kind": "system",
+      "name": "Shop",
+      "parent": null
+    },
+    {
+      "description": "Nimmt Bestellungen an",
+      "id": "order-service",
+      "kind": "component",
+      "name": "Order Service",
+      "parent": "shop"
+    },
+    {
+      "description": "",
+      "id": "orders-db",
+      "kind": "data",
+      "name": "Orders DB",
+      "parent": null
+    },
+    {
+      "description": "",
+      "id": "cluster",
+      "kind": "node",
+      "name": "Cluster",
+      "parent": null
+    }
+  ],
+  "id": "webshop",
+  "incarnation": "a533159c5e8c6c06247c057d",
+  "revision": "3f8d297c8f159fa1",
+  "roles": {
+    "ed": "editor"
+  },
+  "sections": [
+    {
+      "id": "bestellung",
+      "parent": null,
+      "title": "Bestellung"
+    },
+    {
+      "element": "order-service",
+      "id": "zahlung",
+      "parent": "bestellung",
+      "title": "Order Service"
+    }
+  ],
+  "title": "Webshop",
+  "updated_at": "2026-10-11T11:09:07+00:00",
+  "workspace": "user_fdee430d40bd57deeac186cd9790033d"
+}

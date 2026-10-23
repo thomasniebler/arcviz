@@ -1,0 +1,3347 @@
+[
+ {
+  "id": "latest",
+  "type": "latest",
+  "diagram_id": "altsystem",
+  "title": "Altsystem",
+  "updated_at": "2026-10-07T16:16:38+00:00",
+  "revision": "c5059dbc6f15dfaf",
+  "diagram": {
+   "id": "altsystem",
+   "title": "Altsystem",
+   "type": "deployment",
+   "nodes": {
+    "prod-deployment": {
+     "id": "prod-deployment",
+     "name": "prod-deployment",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "api-gateway": {
+     "id": "api-gateway",
+     "name": "api-gateway",
+     "kind": "gateway",
+     "parent": "prod-deployment",
+     "properties": {}
+    },
+    "service-a": {
+     "id": "service-a",
+     "name": "service-a",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "container"
+     }
+    },
+    "service-b": {
+     "id": "service-b",
+     "name": "service-b",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "container"
+     }
+    },
+    "service-c": {
+     "id": "service-c",
+     "name": "service-c",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "function"
+     }
+    },
+    "orders-db": {
+     "id": "orders-db",
+     "name": "orders-db",
+     "kind": "database",
+     "parent": "prod-deployment",
+     "properties": {
+      "engine": "postgres"
+     }
+    },
+    "events": {
+     "id": "events",
+     "name": "events",
+     "kind": "queue",
+     "parent": "prod-deployment",
+     "properties": {}
+    },
+    "idp": {
+     "id": "idp",
+     "name": "Identity Provider",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "api-gateway",
+     "target": "service-a",
+     "label": "https",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e2",
+     "source": "api-gateway",
+     "target": "service-b",
+     "label": "https",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "service-a",
+     "target": "orders-db",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "service-b",
+     "target": "events",
+     "label": "publish",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e5",
+     "source": "service-c",
+     "target": "events",
+     "label": "subscribe",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e6",
+     "source": "api-gateway",
+     "target": "idp",
+     "label": "oidc",
+     "kind": "dependency",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"22c174f79e4f41fe8ca91ecb34817193\""
+ },
+ {
+  "id": "version:0001",
+  "type": "version",
+  "diagram_id": "altsystem",
+  "version": 1,
+  "meta": {
+   "version": 1,
+   "label": "Initial state",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "initial",
+   "restored_from": null,
+   "node_count": 8,
+   "edge_count": 6,
+   "fingerprint": "9c97cb73524346c7"
+  },
+  "snapshot": {
+   "id": "altsystem",
+   "title": "Altsystem",
+   "type": "deployment",
+   "nodes": {
+    "prod-deployment": {
+     "id": "prod-deployment",
+     "name": "prod-deployment",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "api-gateway": {
+     "id": "api-gateway",
+     "name": "api-gateway",
+     "kind": "gateway",
+     "parent": "prod-deployment",
+     "properties": {}
+    },
+    "service-a": {
+     "id": "service-a",
+     "name": "service-a",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "container"
+     }
+    },
+    "service-b": {
+     "id": "service-b",
+     "name": "service-b",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "container"
+     }
+    },
+    "service-c": {
+     "id": "service-c",
+     "name": "service-c",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "function"
+     }
+    },
+    "orders-db": {
+     "id": "orders-db",
+     "name": "orders-db",
+     "kind": "database",
+     "parent": "prod-deployment",
+     "properties": {
+      "engine": "postgres"
+     }
+    },
+    "events": {
+     "id": "events",
+     "name": "events",
+     "kind": "queue",
+     "parent": "prod-deployment",
+     "properties": {}
+    },
+    "idp": {
+     "id": "idp",
+     "name": "Identity Provider",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "api-gateway",
+     "target": "service-a",
+     "label": "https",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e2",
+     "source": "api-gateway",
+     "target": "service-b",
+     "label": "https",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "service-a",
+     "target": "orders-db",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "service-b",
+     "target": "events",
+     "label": "publish",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e5",
+     "source": "service-c",
+     "target": "events",
+     "label": "subscribe",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e6",
+     "source": "api-gateway",
+     "target": "idp",
+     "label": "oidc",
+     "kind": "dependency",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"26e5f9554cc94bedb6e207d75974f9b7\""
+ },
+ {
+  "id": "latest",
+  "type": "latest",
+  "diagram_id": "bestellprozess",
+  "title": "Bestellprozess",
+  "updated_at": "2026-10-07T16:16:38+00:00",
+  "revision": "c8bf345dcb396dcc",
+  "diagram": {
+   "id": "bestellprozess",
+   "title": "Bestellprozess",
+   "type": "activity",
+   "nodes": {
+    "kunde": {
+     "id": "kunde",
+     "name": "Kunde",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "shop": {
+     "id": "shop",
+     "name": "Shop",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "lager": {
+     "id": "lager",
+     "name": "Lager",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "start": {
+     "id": "start",
+     "name": "Start",
+     "kind": "initial_node",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "bestellen": {
+     "id": "bestellen",
+     "name": "Bestellung aufgeben",
+     "kind": "opaque_action",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "pruefen": {
+     "id": "pruefen",
+     "name": "Bestellung prüfen",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "verfuegbar": {
+     "id": "verfuegbar",
+     "name": "Artikel verfügbar?",
+     "kind": "decision_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "fork": {
+     "id": "fork",
+     "name": "Fork",
+     "kind": "fork_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "zahlung": {
+     "id": "zahlung",
+     "name": "Zahlung abwickeln",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "kommissionieren": {
+     "id": "kommissionieren",
+     "name": "Ware kommissionieren",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "join": {
+     "id": "join",
+     "name": "Join",
+     "kind": "join_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "versenden": {
+     "id": "versenden",
+     "name": "Ware versenden",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "ende": {
+     "id": "ende",
+     "name": "Ende",
+     "kind": "activity_final_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "informieren": {
+     "id": "informieren",
+     "name": "Kunde informieren",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "abbruch": {
+     "id": "abbruch",
+     "name": "Abbruch",
+     "kind": "flow_final_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "bestellungen": {
+     "id": "bestellungen",
+     "name": "Bestellungen",
+     "kind": "data_store_node",
+     "parent": "shop",
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "start",
+     "target": "bestellen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e2",
+     "source": "bestellen",
+     "target": "pruefen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "pruefen",
+     "target": "verfuegbar",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "fork",
+     "target": "zahlung",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e5",
+     "source": "fork",
+     "target": "kommissionieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e6",
+     "source": "zahlung",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e7",
+     "source": "kommissionieren",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e8",
+     "source": "join",
+     "target": "versenden",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e9",
+     "source": "versenden",
+     "target": "ende",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e10",
+     "source": "informieren",
+     "target": "abbruch",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e11",
+     "source": "verfuegbar",
+     "target": "fork",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "ja"
+     }
+    },
+    {
+     "id": "e12",
+     "source": "verfuegbar",
+     "target": "informieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "nein"
+     }
+    },
+    {
+     "id": "e13",
+     "source": "pruefen",
+     "target": "bestellungen",
+     "label": "Bestellung",
+     "kind": "object_flow",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"6b97c3b233664f3e861abf64cc50bcda\""
+ },
+ {
+  "id": "version:0001",
+  "type": "version",
+  "diagram_id": "bestellprozess",
+  "version": 1,
+  "meta": {
+   "version": 1,
+   "label": "Initial state",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "initial",
+   "restored_from": null,
+   "node_count": 16,
+   "edge_count": 13,
+   "fingerprint": "07e78e9fa6f7704e"
+  },
+  "snapshot": {
+   "id": "bestellprozess",
+   "title": "Bestellprozess",
+   "type": "activity",
+   "nodes": {
+    "kunde": {
+     "id": "kunde",
+     "name": "Kunde",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "shop": {
+     "id": "shop",
+     "name": "Shop",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "lager": {
+     "id": "lager",
+     "name": "Lager",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "start": {
+     "id": "start",
+     "name": "Start",
+     "kind": "initial_node",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "bestellen": {
+     "id": "bestellen",
+     "name": "Bestellung aufgeben",
+     "kind": "opaque_action",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "pruefen": {
+     "id": "pruefen",
+     "name": "Bestellung prüfen",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "verfuegbar": {
+     "id": "verfuegbar",
+     "name": "Artikel verfügbar?",
+     "kind": "decision_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "fork": {
+     "id": "fork",
+     "name": "Fork",
+     "kind": "fork_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "zahlung": {
+     "id": "zahlung",
+     "name": "Zahlung abwickeln",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "kommissionieren": {
+     "id": "kommissionieren",
+     "name": "Ware kommissionieren",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "join": {
+     "id": "join",
+     "name": "Join",
+     "kind": "join_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "versenden": {
+     "id": "versenden",
+     "name": "Ware versenden",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "ende": {
+     "id": "ende",
+     "name": "Ende",
+     "kind": "activity_final_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "informieren": {
+     "id": "informieren",
+     "name": "Kunde informieren",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "abbruch": {
+     "id": "abbruch",
+     "name": "Abbruch",
+     "kind": "flow_final_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "bestellungen": {
+     "id": "bestellungen",
+     "name": "Bestellungen",
+     "kind": "data_store_node",
+     "parent": "shop",
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "start",
+     "target": "bestellen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e2",
+     "source": "bestellen",
+     "target": "pruefen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "pruefen",
+     "target": "verfuegbar",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "fork",
+     "target": "zahlung",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e5",
+     "source": "fork",
+     "target": "kommissionieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e6",
+     "source": "zahlung",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e7",
+     "source": "kommissionieren",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e8",
+     "source": "join",
+     "target": "versenden",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e9",
+     "source": "versenden",
+     "target": "ende",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e10",
+     "source": "informieren",
+     "target": "abbruch",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e11",
+     "source": "verfuegbar",
+     "target": "fork",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "ja"
+     }
+    },
+    {
+     "id": "e12",
+     "source": "verfuegbar",
+     "target": "informieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "nein"
+     }
+    },
+    {
+     "id": "e13",
+     "source": "pruefen",
+     "target": "bestellungen",
+     "label": "Bestellung",
+     "kind": "object_flow",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"80955c5fe2d64cea8455bd52090e44f5\""
+ },
+ {
+  "id": "latest",
+  "type": "latest",
+  "diagram_id": "checkout",
+  "title": "Checkout",
+  "updated_at": "2026-10-07T16:16:38+00:00",
+  "revision": "35707e56b86da6f6",
+  "diagram": {
+   "id": "checkout",
+   "title": "Checkout",
+   "type": "sequence",
+   "nodes": {},
+   "edges": [],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": {
+    "lifelines": [
+     {
+      "id": "kunde",
+      "name": "Kunde",
+      "type": null,
+      "actor": true
+     },
+     {
+      "id": "shop",
+      "name": "Shop",
+      "type": "WebApp",
+      "actor": false
+     },
+     {
+      "id": "zahlung",
+      "name": "Zahlung",
+      "type": "PaymentService",
+      "actor": false
+     },
+     {
+      "id": "bestellung",
+      "name": "Bestellung",
+      "type": "Order",
+      "actor": false
+     },
+     {
+      "id": "orders",
+      "name": "Order Service",
+      "type": null,
+      "actor": false,
+      "ref": "order-service"
+     }
+    ],
+    "fragments": [
+     {
+      "element": "message",
+      "id": "m1",
+      "name": "checkout(warenkorb)",
+      "sort": "synchCall",
+      "kind": "complete",
+      "sender": "kunde",
+      "receiver": "shop"
+     },
+     {
+      "element": "message",
+      "id": "m2",
+      "name": "validieren()",
+      "sort": "synchCall",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "shop"
+     },
+     {
+      "element": "combined_fragment",
+      "id": "cf1",
+      "operator": "alt",
+      "covered": [
+       "kunde",
+       "shop",
+       "zahlung",
+       "bestellung"
+      ],
+      "operands": [
+       {
+        "id": "op1",
+        "guard": "Zahlung ok",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m3",
+          "name": "bezahlen(betrag)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "zahlung"
+         },
+         {
+          "element": "message",
+          "id": "m4",
+          "name": "bestätigt",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "zahlung",
+          "receiver": "shop"
+         },
+         {
+          "element": "message",
+          "id": "m5",
+          "name": "anlegen",
+          "sort": "createMessage",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "bestellung"
+         }
+        ]
+       },
+       {
+        "id": "op2",
+        "guard": "else",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m6",
+          "name": "Fehler anzeigen",
+          "sort": "asynchSignal",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "kunde"
+         }
+        ]
+       }
+      ],
+      "messages": []
+     },
+     {
+      "element": "combined_fragment",
+      "id": "cf2",
+      "operator": "loop",
+      "covered": [
+       "shop",
+       "bestellung"
+      ],
+      "operands": [
+       {
+        "id": "op3",
+        "guard": "für jede Position",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m7",
+          "name": "position(artikel)",
+          "sort": "asynchCall",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "bestellung"
+         }
+        ]
+       }
+      ],
+      "messages": []
+     },
+     {
+      "element": "interaction_use",
+      "id": "ref1",
+      "refers_to": "Versand beauftragen",
+      "covered": [
+       "shop",
+       "bestellung"
+      ]
+     },
+     {
+      "element": "message",
+      "id": "m8",
+      "name": "Bestellbestätigung",
+      "sort": "reply",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "kunde"
+     },
+     {
+      "element": "message",
+      "id": "m9",
+      "name": "Sitzung abgelaufen",
+      "sort": "asynchSignal",
+      "kind": "found",
+      "sender": null,
+      "receiver": "shop"
+     },
+     {
+      "element": "message",
+      "id": "m10",
+      "name": "Audit-Ereignis",
+      "sort": "asynchSignal",
+      "kind": "lost",
+      "sender": "shop",
+      "receiver": null
+     },
+     {
+      "element": "message",
+      "id": "m11",
+      "name": "verwerfen",
+      "sort": "deleteMessage",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "bestellung"
+     }
+    ],
+    "executions": [
+     {
+      "id": "ex1",
+      "lifeline": "shop",
+      "start": "m1",
+      "finish": "m8"
+     },
+     {
+      "id": "ex2",
+      "lifeline": "zahlung",
+      "start": "m3",
+      "finish": "m4"
+     }
+    ]
+   }
+  },
+  "_etag": "\"4922bfe214c049fbbbce35040f1a3351\""
+ },
+ {
+  "id": "version:0001",
+  "type": "version",
+  "diagram_id": "checkout",
+  "version": 1,
+  "meta": {
+   "version": 1,
+   "label": "Initial state",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "initial",
+   "restored_from": null,
+   "node_count": 0,
+   "edge_count": 0,
+   "fingerprint": "80b43e2c7f9c995f"
+  },
+  "snapshot": {
+   "id": "checkout",
+   "title": "Checkout",
+   "type": "sequence",
+   "nodes": {},
+   "edges": [],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": {
+    "lifelines": [
+     {
+      "id": "kunde",
+      "name": "Kunde",
+      "type": null,
+      "actor": true
+     },
+     {
+      "id": "shop",
+      "name": "Shop",
+      "type": "WebApp",
+      "actor": false
+     },
+     {
+      "id": "zahlung",
+      "name": "Zahlung",
+      "type": "PaymentService",
+      "actor": false
+     },
+     {
+      "id": "bestellung",
+      "name": "Bestellung",
+      "type": "Order",
+      "actor": false
+     }
+    ],
+    "fragments": [
+     {
+      "element": "message",
+      "id": "m1",
+      "name": "checkout(warenkorb)",
+      "sort": "synchCall",
+      "kind": "complete",
+      "sender": "kunde",
+      "receiver": "shop"
+     },
+     {
+      "element": "message",
+      "id": "m2",
+      "name": "validieren()",
+      "sort": "synchCall",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "shop"
+     },
+     {
+      "element": "combined_fragment",
+      "id": "cf1",
+      "operator": "alt",
+      "covered": [
+       "kunde",
+       "shop",
+       "zahlung",
+       "bestellung"
+      ],
+      "operands": [
+       {
+        "id": "op1",
+        "guard": "Zahlung ok",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m3",
+          "name": "bezahlen(betrag)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "zahlung"
+         },
+         {
+          "element": "message",
+          "id": "m4",
+          "name": "bestätigt",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "zahlung",
+          "receiver": "shop"
+         },
+         {
+          "element": "message",
+          "id": "m5",
+          "name": "anlegen",
+          "sort": "createMessage",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "bestellung"
+         }
+        ]
+       },
+       {
+        "id": "op2",
+        "guard": "else",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m6",
+          "name": "Fehler anzeigen",
+          "sort": "asynchSignal",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "kunde"
+         }
+        ]
+       }
+      ],
+      "messages": []
+     },
+     {
+      "element": "combined_fragment",
+      "id": "cf2",
+      "operator": "loop",
+      "covered": [
+       "shop",
+       "bestellung"
+      ],
+      "operands": [
+       {
+        "id": "op3",
+        "guard": "für jede Position",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m7",
+          "name": "position(artikel)",
+          "sort": "asynchCall",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "bestellung"
+         }
+        ]
+       }
+      ],
+      "messages": []
+     },
+     {
+      "element": "interaction_use",
+      "id": "ref1",
+      "refers_to": "Versand beauftragen",
+      "covered": [
+       "shop",
+       "bestellung"
+      ]
+     },
+     {
+      "element": "message",
+      "id": "m8",
+      "name": "Bestellbestätigung",
+      "sort": "reply",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "kunde"
+     },
+     {
+      "element": "message",
+      "id": "m9",
+      "name": "Sitzung abgelaufen",
+      "sort": "asynchSignal",
+      "kind": "found",
+      "sender": null,
+      "receiver": "shop"
+     },
+     {
+      "element": "message",
+      "id": "m10",
+      "name": "Audit-Ereignis",
+      "sort": "asynchSignal",
+      "kind": "lost",
+      "sender": "shop",
+      "receiver": null
+     },
+     {
+      "element": "message",
+      "id": "m11",
+      "name": "verwerfen",
+      "sort": "deleteMessage",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "bestellung"
+     }
+    ],
+    "executions": [
+     {
+      "id": "ex1",
+      "lifeline": "shop",
+      "start": "m1",
+      "finish": "m8"
+     },
+     {
+      "id": "ex2",
+      "lifeline": "zahlung",
+      "start": "m3",
+      "finish": "m4"
+     }
+    ]
+   }
+  },
+  "_etag": "\"9a2fcb383ad84c49985e0ad89f7b249d\""
+ },
+ {
+  "id": "version:0002",
+  "type": "version",
+  "diagram_id": "checkout",
+  "version": 2,
+  "meta": {
+   "version": 2,
+   "label": "Lifeline",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "auto",
+   "restored_from": null,
+   "node_count": 0,
+   "edge_count": 0,
+   "fingerprint": "84a5146a1c2a5283"
+  },
+  "snapshot": {
+   "id": "checkout",
+   "title": "Checkout",
+   "type": "sequence",
+   "nodes": {},
+   "edges": [],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": {
+    "lifelines": [
+     {
+      "id": "kunde",
+      "name": "Kunde",
+      "type": null,
+      "actor": true
+     },
+     {
+      "id": "shop",
+      "name": "Shop",
+      "type": "WebApp",
+      "actor": false
+     },
+     {
+      "id": "zahlung",
+      "name": "Zahlung",
+      "type": "PaymentService",
+      "actor": false
+     },
+     {
+      "id": "bestellung",
+      "name": "Bestellung",
+      "type": "Order",
+      "actor": false
+     },
+     {
+      "id": "orders",
+      "name": "Order Service",
+      "type": null,
+      "actor": false
+     }
+    ],
+    "fragments": [
+     {
+      "element": "message",
+      "id": "m1",
+      "name": "checkout(warenkorb)",
+      "sort": "synchCall",
+      "kind": "complete",
+      "sender": "kunde",
+      "receiver": "shop"
+     },
+     {
+      "element": "message",
+      "id": "m2",
+      "name": "validieren()",
+      "sort": "synchCall",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "shop"
+     },
+     {
+      "element": "combined_fragment",
+      "id": "cf1",
+      "operator": "alt",
+      "covered": [
+       "kunde",
+       "shop",
+       "zahlung",
+       "bestellung"
+      ],
+      "operands": [
+       {
+        "id": "op1",
+        "guard": "Zahlung ok",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m3",
+          "name": "bezahlen(betrag)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "zahlung"
+         },
+         {
+          "element": "message",
+          "id": "m4",
+          "name": "bestätigt",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "zahlung",
+          "receiver": "shop"
+         },
+         {
+          "element": "message",
+          "id": "m5",
+          "name": "anlegen",
+          "sort": "createMessage",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "bestellung"
+         }
+        ]
+       },
+       {
+        "id": "op2",
+        "guard": "else",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m6",
+          "name": "Fehler anzeigen",
+          "sort": "asynchSignal",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "kunde"
+         }
+        ]
+       }
+      ],
+      "messages": []
+     },
+     {
+      "element": "combined_fragment",
+      "id": "cf2",
+      "operator": "loop",
+      "covered": [
+       "shop",
+       "bestellung"
+      ],
+      "operands": [
+       {
+        "id": "op3",
+        "guard": "für jede Position",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m7",
+          "name": "position(artikel)",
+          "sort": "asynchCall",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "bestellung"
+         }
+        ]
+       }
+      ],
+      "messages": []
+     },
+     {
+      "element": "interaction_use",
+      "id": "ref1",
+      "refers_to": "Versand beauftragen",
+      "covered": [
+       "shop",
+       "bestellung"
+      ]
+     },
+     {
+      "element": "message",
+      "id": "m8",
+      "name": "Bestellbestätigung",
+      "sort": "reply",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "kunde"
+     },
+     {
+      "element": "message",
+      "id": "m9",
+      "name": "Sitzung abgelaufen",
+      "sort": "asynchSignal",
+      "kind": "found",
+      "sender": null,
+      "receiver": "shop"
+     },
+     {
+      "element": "message",
+      "id": "m10",
+      "name": "Audit-Ereignis",
+      "sort": "asynchSignal",
+      "kind": "lost",
+      "sender": "shop",
+      "receiver": null
+     },
+     {
+      "element": "message",
+      "id": "m11",
+      "name": "verwerfen",
+      "sort": "deleteMessage",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "bestellung"
+     }
+    ],
+    "executions": [
+     {
+      "id": "ex1",
+      "lifeline": "shop",
+      "start": "m1",
+      "finish": "m8"
+     },
+     {
+      "id": "ex2",
+      "lifeline": "zahlung",
+      "start": "m3",
+      "finish": "m4"
+     }
+    ]
+   }
+  },
+  "_etag": "\"f6da0b2543944a03bd5e39d091a9f8e3\""
+ },
+ {
+  "id": "version:0003",
+  "type": "version",
+  "diagram_id": "checkout",
+  "version": 3,
+  "meta": {
+   "version": 3,
+   "label": "Mit Element „Order Service“ verknüpft",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "auto",
+   "restored_from": null,
+   "node_count": 0,
+   "edge_count": 0,
+   "fingerprint": "1d2bb9a9a6a1eb1c"
+  },
+  "snapshot": {
+   "id": "checkout",
+   "title": "Checkout",
+   "type": "sequence",
+   "nodes": {},
+   "edges": [],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": {
+    "lifelines": [
+     {
+      "id": "kunde",
+      "name": "Kunde",
+      "type": null,
+      "actor": true
+     },
+     {
+      "id": "shop",
+      "name": "Shop",
+      "type": "WebApp",
+      "actor": false
+     },
+     {
+      "id": "zahlung",
+      "name": "Zahlung",
+      "type": "PaymentService",
+      "actor": false
+     },
+     {
+      "id": "bestellung",
+      "name": "Bestellung",
+      "type": "Order",
+      "actor": false
+     },
+     {
+      "id": "orders",
+      "name": "Order Service",
+      "type": null,
+      "actor": false,
+      "ref": "order-service"
+     }
+    ],
+    "fragments": [
+     {
+      "element": "message",
+      "id": "m1",
+      "name": "checkout(warenkorb)",
+      "sort": "synchCall",
+      "kind": "complete",
+      "sender": "kunde",
+      "receiver": "shop"
+     },
+     {
+      "element": "message",
+      "id": "m2",
+      "name": "validieren()",
+      "sort": "synchCall",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "shop"
+     },
+     {
+      "element": "combined_fragment",
+      "id": "cf1",
+      "operator": "alt",
+      "covered": [
+       "kunde",
+       "shop",
+       "zahlung",
+       "bestellung"
+      ],
+      "operands": [
+       {
+        "id": "op1",
+        "guard": "Zahlung ok",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m3",
+          "name": "bezahlen(betrag)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "zahlung"
+         },
+         {
+          "element": "message",
+          "id": "m4",
+          "name": "bestätigt",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "zahlung",
+          "receiver": "shop"
+         },
+         {
+          "element": "message",
+          "id": "m5",
+          "name": "anlegen",
+          "sort": "createMessage",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "bestellung"
+         }
+        ]
+       },
+       {
+        "id": "op2",
+        "guard": "else",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m6",
+          "name": "Fehler anzeigen",
+          "sort": "asynchSignal",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "kunde"
+         }
+        ]
+       }
+      ],
+      "messages": []
+     },
+     {
+      "element": "combined_fragment",
+      "id": "cf2",
+      "operator": "loop",
+      "covered": [
+       "shop",
+       "bestellung"
+      ],
+      "operands": [
+       {
+        "id": "op3",
+        "guard": "für jede Position",
+        "fragments": [
+         {
+          "element": "message",
+          "id": "m7",
+          "name": "position(artikel)",
+          "sort": "asynchCall",
+          "kind": "complete",
+          "sender": "shop",
+          "receiver": "bestellung"
+         }
+        ]
+       }
+      ],
+      "messages": []
+     },
+     {
+      "element": "interaction_use",
+      "id": "ref1",
+      "refers_to": "Versand beauftragen",
+      "covered": [
+       "shop",
+       "bestellung"
+      ]
+     },
+     {
+      "element": "message",
+      "id": "m8",
+      "name": "Bestellbestätigung",
+      "sort": "reply",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "kunde"
+     },
+     {
+      "element": "message",
+      "id": "m9",
+      "name": "Sitzung abgelaufen",
+      "sort": "asynchSignal",
+      "kind": "found",
+      "sender": null,
+      "receiver": "shop"
+     },
+     {
+      "element": "message",
+      "id": "m10",
+      "name": "Audit-Ereignis",
+      "sort": "asynchSignal",
+      "kind": "lost",
+      "sender": "shop",
+      "receiver": null
+     },
+     {
+      "element": "message",
+      "id": "m11",
+      "name": "verwerfen",
+      "sort": "deleteMessage",
+      "kind": "complete",
+      "sender": "shop",
+      "receiver": "bestellung"
+     }
+    ],
+    "executions": [
+     {
+      "id": "ex1",
+      "lifeline": "shop",
+      "start": "m1",
+      "finish": "m8"
+     },
+     {
+      "id": "ex2",
+      "lifeline": "zahlung",
+      "start": "m3",
+      "finish": "m4"
+     }
+    ]
+   }
+  },
+  "_etag": "\"b0740844dc934d6f952b0fc250fb697e\""
+ },
+ {
+  "id": "chat:000001",
+  "type": "chat",
+  "diagram_id": "plattform",
+  "seq": 1,
+  "entry": {
+   "role": "user",
+   "content": "Füge einen Order Service hinzu."
+  },
+  "_etag": "\"71558718766c49e888a4af45f96bd545\""
+ },
+ {
+  "id": "chat:000002",
+  "type": "chat",
+  "diagram_id": "plattform",
+  "seq": 2,
+  "entry": {
+   "role": "assistant",
+   "content": "Erledigt.",
+   "operations": []
+  },
+  "_etag": "\"34535aa4c5e646dc9e52dcd0a429c17c\""
+ },
+ {
+  "id": "latest",
+  "type": "latest",
+  "diagram_id": "plattform",
+  "title": "Plattform",
+  "updated_at": "2026-10-07T16:16:38+00:00",
+  "revision": "cf7c8484247b0570",
+  "diagram": {
+   "id": "plattform",
+   "title": "Plattform",
+   "type": "deployment",
+   "nodes": {
+    "prod": {
+     "id": "prod",
+     "name": "prod",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "aks-vnet": {
+     "id": "aks-vnet",
+     "name": "aks-vnet",
+     "kind": "vnet",
+     "parent": "prod",
+     "properties": {
+      "cidr": "10.10.0.0/16"
+     }
+    },
+    "appgw-subnet": {
+     "id": "appgw-subnet",
+     "name": "appgw-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.4.0/24"
+     }
+    },
+    "app-gateway": {
+     "id": "app-gateway",
+     "name": "app-gateway",
+     "kind": "gateway",
+     "parent": "appgw-subnet",
+     "properties": {
+      "sku": "WAF_v2"
+     }
+    },
+    "aks-subnet": {
+     "id": "aks-subnet",
+     "name": "aks-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.0.0/22"
+     }
+    },
+    "aks-cluster": {
+     "id": "aks-cluster",
+     "name": "aks-cluster",
+     "kind": "cluster",
+     "parent": "aks-subnet",
+     "properties": {
+      "kubernetes": "1.30"
+     }
+    },
+    "user-pool": {
+     "id": "user-pool",
+     "name": "user-pool",
+     "kind": "node",
+     "parent": "aks-cluster",
+     "properties": {
+      "vm_size": "Standard_D4s_v5",
+      "count": "3"
+     }
+    },
+    "frontend": {
+     "id": "frontend",
+     "name": "frontend",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "2"
+     }
+    },
+    "orders-api": {
+     "id": "orders-api",
+     "name": "orders-api",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "3"
+     }
+    },
+    "db-subnet": {
+     "id": "db-subnet",
+     "name": "db-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.8.0/24"
+     }
+    },
+    "postgres": {
+     "id": "postgres",
+     "name": "postgres",
+     "kind": "database",
+     "parent": "db-subnet",
+     "properties": {
+      "engine": "postgres 16",
+      "sku": "GP_Standard_D2s_v3"
+     }
+    },
+    "acr": {
+     "id": "acr",
+     "name": "container-registry",
+     "kind": "storage",
+     "parent": "prod",
+     "properties": {
+      "sku": "premium"
+     }
+    },
+    "users": {
+     "id": "users",
+     "name": "users",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    },
+    "order-service": {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "service",
+     "parent": null,
+     "properties": {},
+     "ref": "order-service"
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "users",
+     "target": "app-gateway",
+     "label": null,
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "https",
+      "port": "443"
+     }
+    },
+    {
+     "id": "e2",
+     "source": "app-gateway",
+     "target": "frontend",
+     "label": "ingress",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "frontend",
+     "target": "orders-api",
+     "label": "REST",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "orders-api",
+     "target": "postgres",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "postgres",
+      "port": "5432"
+     }
+    },
+    {
+     "id": "e5",
+     "source": "acr",
+     "target": "user-pool",
+     "label": "images",
+     "kind": "deploys",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"e4317dc4c04a4bcbb1d356e181e7cc39\""
+ },
+ {
+  "id": "version:0001",
+  "type": "version",
+  "diagram_id": "plattform",
+  "version": 1,
+  "meta": {
+   "version": 1,
+   "label": "Initial state",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "initial",
+   "restored_from": null,
+   "node_count": 13,
+   "edge_count": 5,
+   "fingerprint": "de9b2ea9f0d9c204"
+  },
+  "snapshot": {
+   "id": "plattform",
+   "title": "Plattform",
+   "type": "deployment",
+   "nodes": {
+    "prod": {
+     "id": "prod",
+     "name": "prod",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "aks-vnet": {
+     "id": "aks-vnet",
+     "name": "aks-vnet",
+     "kind": "vnet",
+     "parent": "prod",
+     "properties": {
+      "cidr": "10.10.0.0/16"
+     }
+    },
+    "appgw-subnet": {
+     "id": "appgw-subnet",
+     "name": "appgw-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.4.0/24"
+     }
+    },
+    "app-gateway": {
+     "id": "app-gateway",
+     "name": "app-gateway",
+     "kind": "gateway",
+     "parent": "appgw-subnet",
+     "properties": {
+      "sku": "WAF_v2"
+     }
+    },
+    "aks-subnet": {
+     "id": "aks-subnet",
+     "name": "aks-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.0.0/22"
+     }
+    },
+    "aks-cluster": {
+     "id": "aks-cluster",
+     "name": "aks-cluster",
+     "kind": "cluster",
+     "parent": "aks-subnet",
+     "properties": {
+      "kubernetes": "1.30"
+     }
+    },
+    "user-pool": {
+     "id": "user-pool",
+     "name": "user-pool",
+     "kind": "node",
+     "parent": "aks-cluster",
+     "properties": {
+      "vm_size": "Standard_D4s_v5",
+      "count": "3"
+     }
+    },
+    "frontend": {
+     "id": "frontend",
+     "name": "frontend",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "2"
+     }
+    },
+    "orders-api": {
+     "id": "orders-api",
+     "name": "orders-api",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "3"
+     }
+    },
+    "db-subnet": {
+     "id": "db-subnet",
+     "name": "db-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.8.0/24"
+     }
+    },
+    "postgres": {
+     "id": "postgres",
+     "name": "postgres",
+     "kind": "database",
+     "parent": "db-subnet",
+     "properties": {
+      "engine": "postgres 16",
+      "sku": "GP_Standard_D2s_v3"
+     }
+    },
+    "acr": {
+     "id": "acr",
+     "name": "container-registry",
+     "kind": "storage",
+     "parent": "prod",
+     "properties": {
+      "sku": "premium"
+     }
+    },
+    "users": {
+     "id": "users",
+     "name": "users",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "users",
+     "target": "app-gateway",
+     "label": null,
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "https",
+      "port": "443"
+     }
+    },
+    {
+     "id": "e2",
+     "source": "app-gateway",
+     "target": "frontend",
+     "label": "ingress",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "frontend",
+     "target": "orders-api",
+     "label": "REST",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "orders-api",
+     "target": "postgres",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "postgres",
+      "port": "5432"
+     }
+    },
+    {
+     "id": "e5",
+     "source": "acr",
+     "target": "user-pool",
+     "label": "images",
+     "kind": "deploys",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"c43b2a4cdbb04839abdfaa93aca7631e\""
+ },
+ {
+  "id": "version:0002",
+  "type": "version",
+  "diagram_id": "plattform",
+  "version": 2,
+  "meta": {
+   "version": 2,
+   "label": "Order Service",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "auto",
+   "restored_from": null,
+   "node_count": 14,
+   "edge_count": 5,
+   "fingerprint": "dbfbddaa868d35f7"
+  },
+  "snapshot": {
+   "id": "plattform",
+   "title": "Plattform",
+   "type": "deployment",
+   "nodes": {
+    "prod": {
+     "id": "prod",
+     "name": "prod",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "aks-vnet": {
+     "id": "aks-vnet",
+     "name": "aks-vnet",
+     "kind": "vnet",
+     "parent": "prod",
+     "properties": {
+      "cidr": "10.10.0.0/16"
+     }
+    },
+    "appgw-subnet": {
+     "id": "appgw-subnet",
+     "name": "appgw-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.4.0/24"
+     }
+    },
+    "app-gateway": {
+     "id": "app-gateway",
+     "name": "app-gateway",
+     "kind": "gateway",
+     "parent": "appgw-subnet",
+     "properties": {
+      "sku": "WAF_v2"
+     }
+    },
+    "aks-subnet": {
+     "id": "aks-subnet",
+     "name": "aks-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.0.0/22"
+     }
+    },
+    "aks-cluster": {
+     "id": "aks-cluster",
+     "name": "aks-cluster",
+     "kind": "cluster",
+     "parent": "aks-subnet",
+     "properties": {
+      "kubernetes": "1.30"
+     }
+    },
+    "user-pool": {
+     "id": "user-pool",
+     "name": "user-pool",
+     "kind": "node",
+     "parent": "aks-cluster",
+     "properties": {
+      "vm_size": "Standard_D4s_v5",
+      "count": "3"
+     }
+    },
+    "frontend": {
+     "id": "frontend",
+     "name": "frontend",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "2"
+     }
+    },
+    "orders-api": {
+     "id": "orders-api",
+     "name": "orders-api",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "3"
+     }
+    },
+    "db-subnet": {
+     "id": "db-subnet",
+     "name": "db-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.8.0/24"
+     }
+    },
+    "postgres": {
+     "id": "postgres",
+     "name": "postgres",
+     "kind": "database",
+     "parent": "db-subnet",
+     "properties": {
+      "engine": "postgres 16",
+      "sku": "GP_Standard_D2s_v3"
+     }
+    },
+    "acr": {
+     "id": "acr",
+     "name": "container-registry",
+     "kind": "storage",
+     "parent": "prod",
+     "properties": {
+      "sku": "premium"
+     }
+    },
+    "users": {
+     "id": "users",
+     "name": "users",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    },
+    "order-service": {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "service",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "users",
+     "target": "app-gateway",
+     "label": null,
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "https",
+      "port": "443"
+     }
+    },
+    {
+     "id": "e2",
+     "source": "app-gateway",
+     "target": "frontend",
+     "label": "ingress",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "frontend",
+     "target": "orders-api",
+     "label": "REST",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "orders-api",
+     "target": "postgres",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "postgres",
+      "port": "5432"
+     }
+    },
+    {
+     "id": "e5",
+     "source": "acr",
+     "target": "user-pool",
+     "label": "images",
+     "kind": "deploys",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"81737ae6bfba4cc2a5357f35e4c882de\""
+ },
+ {
+  "id": "version:0003",
+  "type": "version",
+  "diagram_id": "plattform",
+  "version": 3,
+  "meta": {
+   "version": 3,
+   "label": "Vor dem Umbau",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "manual",
+   "restored_from": null,
+   "node_count": 14,
+   "edge_count": 5,
+   "fingerprint": "dbfbddaa868d35f7"
+  },
+  "snapshot": {
+   "id": "plattform",
+   "title": "Plattform",
+   "type": "deployment",
+   "nodes": {
+    "prod": {
+     "id": "prod",
+     "name": "prod",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "aks-vnet": {
+     "id": "aks-vnet",
+     "name": "aks-vnet",
+     "kind": "vnet",
+     "parent": "prod",
+     "properties": {
+      "cidr": "10.10.0.0/16"
+     }
+    },
+    "appgw-subnet": {
+     "id": "appgw-subnet",
+     "name": "appgw-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.4.0/24"
+     }
+    },
+    "app-gateway": {
+     "id": "app-gateway",
+     "name": "app-gateway",
+     "kind": "gateway",
+     "parent": "appgw-subnet",
+     "properties": {
+      "sku": "WAF_v2"
+     }
+    },
+    "aks-subnet": {
+     "id": "aks-subnet",
+     "name": "aks-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.0.0/22"
+     }
+    },
+    "aks-cluster": {
+     "id": "aks-cluster",
+     "name": "aks-cluster",
+     "kind": "cluster",
+     "parent": "aks-subnet",
+     "properties": {
+      "kubernetes": "1.30"
+     }
+    },
+    "user-pool": {
+     "id": "user-pool",
+     "name": "user-pool",
+     "kind": "node",
+     "parent": "aks-cluster",
+     "properties": {
+      "vm_size": "Standard_D4s_v5",
+      "count": "3"
+     }
+    },
+    "frontend": {
+     "id": "frontend",
+     "name": "frontend",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "2"
+     }
+    },
+    "orders-api": {
+     "id": "orders-api",
+     "name": "orders-api",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "3"
+     }
+    },
+    "db-subnet": {
+     "id": "db-subnet",
+     "name": "db-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.8.0/24"
+     }
+    },
+    "postgres": {
+     "id": "postgres",
+     "name": "postgres",
+     "kind": "database",
+     "parent": "db-subnet",
+     "properties": {
+      "engine": "postgres 16",
+      "sku": "GP_Standard_D2s_v3"
+     }
+    },
+    "acr": {
+     "id": "acr",
+     "name": "container-registry",
+     "kind": "storage",
+     "parent": "prod",
+     "properties": {
+      "sku": "premium"
+     }
+    },
+    "users": {
+     "id": "users",
+     "name": "users",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    },
+    "order-service": {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "service",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "users",
+     "target": "app-gateway",
+     "label": null,
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "https",
+      "port": "443"
+     }
+    },
+    {
+     "id": "e2",
+     "source": "app-gateway",
+     "target": "frontend",
+     "label": "ingress",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "frontend",
+     "target": "orders-api",
+     "label": "REST",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "orders-api",
+     "target": "postgres",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "postgres",
+      "port": "5432"
+     }
+    },
+    {
+     "id": "e5",
+     "source": "acr",
+     "target": "user-pool",
+     "label": "images",
+     "kind": "deploys",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"cbf721c053654554b8d1b5312886e599\""
+ },
+ {
+  "id": "version:0004",
+  "type": "version",
+  "diagram_id": "plattform",
+  "version": 4,
+  "meta": {
+   "version": 4,
+   "label": "Cache",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "auto",
+   "restored_from": null,
+   "node_count": 15,
+   "edge_count": 5,
+   "fingerprint": "2db42ce8a70fcf21"
+  },
+  "snapshot": {
+   "id": "plattform",
+   "title": "Plattform",
+   "type": "deployment",
+   "nodes": {
+    "prod": {
+     "id": "prod",
+     "name": "prod",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "aks-vnet": {
+     "id": "aks-vnet",
+     "name": "aks-vnet",
+     "kind": "vnet",
+     "parent": "prod",
+     "properties": {
+      "cidr": "10.10.0.0/16"
+     }
+    },
+    "appgw-subnet": {
+     "id": "appgw-subnet",
+     "name": "appgw-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.4.0/24"
+     }
+    },
+    "app-gateway": {
+     "id": "app-gateway",
+     "name": "app-gateway",
+     "kind": "gateway",
+     "parent": "appgw-subnet",
+     "properties": {
+      "sku": "WAF_v2"
+     }
+    },
+    "aks-subnet": {
+     "id": "aks-subnet",
+     "name": "aks-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.0.0/22"
+     }
+    },
+    "aks-cluster": {
+     "id": "aks-cluster",
+     "name": "aks-cluster",
+     "kind": "cluster",
+     "parent": "aks-subnet",
+     "properties": {
+      "kubernetes": "1.30"
+     }
+    },
+    "user-pool": {
+     "id": "user-pool",
+     "name": "user-pool",
+     "kind": "node",
+     "parent": "aks-cluster",
+     "properties": {
+      "vm_size": "Standard_D4s_v5",
+      "count": "3"
+     }
+    },
+    "frontend": {
+     "id": "frontend",
+     "name": "frontend",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "2"
+     }
+    },
+    "orders-api": {
+     "id": "orders-api",
+     "name": "orders-api",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "3"
+     }
+    },
+    "db-subnet": {
+     "id": "db-subnet",
+     "name": "db-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.8.0/24"
+     }
+    },
+    "postgres": {
+     "id": "postgres",
+     "name": "postgres",
+     "kind": "database",
+     "parent": "db-subnet",
+     "properties": {
+      "engine": "postgres 16",
+      "sku": "GP_Standard_D2s_v3"
+     }
+    },
+    "acr": {
+     "id": "acr",
+     "name": "container-registry",
+     "kind": "storage",
+     "parent": "prod",
+     "properties": {
+      "sku": "premium"
+     }
+    },
+    "users": {
+     "id": "users",
+     "name": "users",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    },
+    "order-service": {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "service",
+     "parent": null,
+     "properties": {}
+    },
+    "cache": {
+     "id": "cache",
+     "name": "Cache",
+     "kind": "database",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "users",
+     "target": "app-gateway",
+     "label": null,
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "https",
+      "port": "443"
+     }
+    },
+    {
+     "id": "e2",
+     "source": "app-gateway",
+     "target": "frontend",
+     "label": "ingress",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "frontend",
+     "target": "orders-api",
+     "label": "REST",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "orders-api",
+     "target": "postgres",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "postgres",
+      "port": "5432"
+     }
+    },
+    {
+     "id": "e5",
+     "source": "acr",
+     "target": "user-pool",
+     "label": "images",
+     "kind": "deploys",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"fd30ea36c9e34ee9ac42c0520f66e0b4\""
+ },
+ {
+  "id": "version:0005",
+  "type": "version",
+  "diagram_id": "plattform",
+  "version": 5,
+  "meta": {
+   "version": 5,
+   "label": "Undo: restored version 3 (Vor dem Umbau)",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "undo",
+   "restored_from": 3,
+   "node_count": 14,
+   "edge_count": 5,
+   "fingerprint": "dbfbddaa868d35f7"
+  },
+  "snapshot": {
+   "id": "plattform",
+   "title": "Plattform",
+   "type": "deployment",
+   "nodes": {
+    "prod": {
+     "id": "prod",
+     "name": "prod",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "aks-vnet": {
+     "id": "aks-vnet",
+     "name": "aks-vnet",
+     "kind": "vnet",
+     "parent": "prod",
+     "properties": {
+      "cidr": "10.10.0.0/16"
+     }
+    },
+    "appgw-subnet": {
+     "id": "appgw-subnet",
+     "name": "appgw-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.4.0/24"
+     }
+    },
+    "app-gateway": {
+     "id": "app-gateway",
+     "name": "app-gateway",
+     "kind": "gateway",
+     "parent": "appgw-subnet",
+     "properties": {
+      "sku": "WAF_v2"
+     }
+    },
+    "aks-subnet": {
+     "id": "aks-subnet",
+     "name": "aks-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.0.0/22"
+     }
+    },
+    "aks-cluster": {
+     "id": "aks-cluster",
+     "name": "aks-cluster",
+     "kind": "cluster",
+     "parent": "aks-subnet",
+     "properties": {
+      "kubernetes": "1.30"
+     }
+    },
+    "user-pool": {
+     "id": "user-pool",
+     "name": "user-pool",
+     "kind": "node",
+     "parent": "aks-cluster",
+     "properties": {
+      "vm_size": "Standard_D4s_v5",
+      "count": "3"
+     }
+    },
+    "frontend": {
+     "id": "frontend",
+     "name": "frontend",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "2"
+     }
+    },
+    "orders-api": {
+     "id": "orders-api",
+     "name": "orders-api",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "3"
+     }
+    },
+    "db-subnet": {
+     "id": "db-subnet",
+     "name": "db-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.8.0/24"
+     }
+    },
+    "postgres": {
+     "id": "postgres",
+     "name": "postgres",
+     "kind": "database",
+     "parent": "db-subnet",
+     "properties": {
+      "engine": "postgres 16",
+      "sku": "GP_Standard_D2s_v3"
+     }
+    },
+    "acr": {
+     "id": "acr",
+     "name": "container-registry",
+     "kind": "storage",
+     "parent": "prod",
+     "properties": {
+      "sku": "premium"
+     }
+    },
+    "users": {
+     "id": "users",
+     "name": "users",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    },
+    "order-service": {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "service",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "users",
+     "target": "app-gateway",
+     "label": null,
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "https",
+      "port": "443"
+     }
+    },
+    {
+     "id": "e2",
+     "source": "app-gateway",
+     "target": "frontend",
+     "label": "ingress",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "frontend",
+     "target": "orders-api",
+     "label": "REST",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "orders-api",
+     "target": "postgres",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "postgres",
+      "port": "5432"
+     }
+    },
+    {
+     "id": "e5",
+     "source": "acr",
+     "target": "user-pool",
+     "label": "images",
+     "kind": "deploys",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"5d9ff301a25d4c84a7c4aaa8866ce350\""
+ },
+ {
+  "id": "version:0006",
+  "type": "version",
+  "diagram_id": "plattform",
+  "version": 6,
+  "meta": {
+   "version": 6,
+   "label": "Mit Element „Order Service“ verknüpft",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "auto",
+   "restored_from": null,
+   "node_count": 14,
+   "edge_count": 5,
+   "fingerprint": "25861d233af6cd34"
+  },
+  "snapshot": {
+   "id": "plattform",
+   "title": "Plattform",
+   "type": "deployment",
+   "nodes": {
+    "prod": {
+     "id": "prod",
+     "name": "prod",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "aks-vnet": {
+     "id": "aks-vnet",
+     "name": "aks-vnet",
+     "kind": "vnet",
+     "parent": "prod",
+     "properties": {
+      "cidr": "10.10.0.0/16"
+     }
+    },
+    "appgw-subnet": {
+     "id": "appgw-subnet",
+     "name": "appgw-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.4.0/24"
+     }
+    },
+    "app-gateway": {
+     "id": "app-gateway",
+     "name": "app-gateway",
+     "kind": "gateway",
+     "parent": "appgw-subnet",
+     "properties": {
+      "sku": "WAF_v2"
+     }
+    },
+    "aks-subnet": {
+     "id": "aks-subnet",
+     "name": "aks-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.0.0/22"
+     }
+    },
+    "aks-cluster": {
+     "id": "aks-cluster",
+     "name": "aks-cluster",
+     "kind": "cluster",
+     "parent": "aks-subnet",
+     "properties": {
+      "kubernetes": "1.30"
+     }
+    },
+    "user-pool": {
+     "id": "user-pool",
+     "name": "user-pool",
+     "kind": "node",
+     "parent": "aks-cluster",
+     "properties": {
+      "vm_size": "Standard_D4s_v5",
+      "count": "3"
+     }
+    },
+    "frontend": {
+     "id": "frontend",
+     "name": "frontend",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "2"
+     }
+    },
+    "orders-api": {
+     "id": "orders-api",
+     "name": "orders-api",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "3"
+     }
+    },
+    "db-subnet": {
+     "id": "db-subnet",
+     "name": "db-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.8.0/24"
+     }
+    },
+    "postgres": {
+     "id": "postgres",
+     "name": "postgres",
+     "kind": "database",
+     "parent": "db-subnet",
+     "properties": {
+      "engine": "postgres 16",
+      "sku": "GP_Standard_D2s_v3"
+     }
+    },
+    "acr": {
+     "id": "acr",
+     "name": "container-registry",
+     "kind": "storage",
+     "parent": "prod",
+     "properties": {
+      "sku": "premium"
+     }
+    },
+    "users": {
+     "id": "users",
+     "name": "users",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    },
+    "order-service": {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "service",
+     "parent": null,
+     "properties": {},
+     "ref": "order-service"
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "users",
+     "target": "app-gateway",
+     "label": null,
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "https",
+      "port": "443"
+     }
+    },
+    {
+     "id": "e2",
+     "source": "app-gateway",
+     "target": "frontend",
+     "label": "ingress",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "frontend",
+     "target": "orders-api",
+     "label": "REST",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "orders-api",
+     "target": "postgres",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "postgres",
+      "port": "5432"
+     }
+    },
+    {
+     "id": "e5",
+     "source": "acr",
+     "target": "user-pool",
+     "label": "images",
+     "kind": "deploys",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"c67f2b438e7f437c9bdc341062dbd34e\""
+ },
+ {
+  "id": "project",
+  "type": "project",
+  "diagram_id": "project:default",
+  "revision": "693aa26699cdc9c1",
+  "project": {
+   "id": "default",
+   "title": "Standardprojekt",
+   "description": "",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "altsystem",
+     "section": null,
+     "added_at": "2026-10-07T16:16:38.777500+00:00"
+    }
+   ],
+   "elements": [],
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00"
+  },
+  "_etag": "\"42b490f258974a55a6fc974f186c4b16\""
+ },
+ {
+  "id": "project",
+  "type": "project",
+  "diagram_id": "project:labor",
+  "revision": "8e262fd68173fdaf",
+  "project": {
+   "id": "labor",
+   "title": "Labor",
+   "description": "",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "versuch",
+     "section": null,
+     "added_at": "2026-10-07T16:16:38.773527+00:00"
+    }
+   ],
+   "elements": [],
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00"
+  },
+  "_etag": "\"def0bd6719b24443b083ca960ebce85f\""
+ },
+ {
+  "id": "chat:000001",
+  "type": "chat",
+  "diagram_id": "project:webshop",
+  "seq": 1,
+  "entry": {
+   "role": "user",
+   "content": "Welche Diagramme gibt es?"
+  },
+  "_etag": "\"c17f85d56ecb4d6aa09195fcea4931e5\""
+ },
+ {
+  "id": "chat:000002",
+  "type": "chat",
+  "diagram_id": "project:webshop",
+  "seq": 2,
+  "entry": {
+   "role": "assistant",
+   "content": "Plattform, Bestellprozess und Checkout.",
+   "operations": []
+  },
+  "_etag": "\"e2bf9a29b4f7496bbbd4c051e6e3fb41\""
+ },
+ {
+  "id": "project",
+  "type": "project",
+  "diagram_id": "project:webshop",
+  "revision": "ea4a2eb5545007a8",
+  "project": {
+   "id": "webshop",
+   "title": "Webshop",
+   "description": "Online-Shop mit Bestellung und Zahlung",
+   "sections": [
+    {
+     "id": "bestellung",
+     "title": "Bestellung",
+     "parent": null
+    },
+    {
+     "id": "zahlung",
+     "title": "Order Service",
+     "parent": "bestellung",
+     "element": "order-service"
+    }
+   ],
+   "diagrams": [
+    {
+     "diagram": "plattform",
+     "section": null,
+     "added_at": "2026-10-07T16:16:38.766019+00:00"
+    },
+    {
+     "diagram": "bestellprozess",
+     "section": "bestellung",
+     "added_at": "2026-10-07T16:16:38.768194+00:00"
+    },
+    {
+     "diagram": "checkout",
+     "section": "zahlung",
+     "added_at": "2026-10-07T16:16:38.772407+00:00"
+    }
+   ],
+   "elements": [
+    {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "component",
+     "description": "Nimmt Bestellungen an",
+     "parent": null
+    }
+   ],
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00"
+  },
+  "_etag": "\"f94b0d4e13004ce79904244355b7a90c\""
+ },
+ {
+  "id": "latest",
+  "type": "latest",
+  "diagram_id": "versuch",
+  "title": "Versuch",
+  "updated_at": "2026-10-07T16:16:38+00:00",
+  "revision": "20f2f4ed01802ad1",
+  "diagram": {
+   "id": "versuch",
+   "title": "Versuch",
+   "type": "deployment",
+   "nodes": {},
+   "edges": [],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"4588aaf1eb034f21bcb679acd3209ec8\""
+ },
+ {
+  "id": "version:0001",
+  "type": "version",
+  "diagram_id": "versuch",
+  "version": 1,
+  "meta": {
+   "version": 1,
+   "label": "Initial state",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "source": "initial",
+   "restored_from": null,
+   "node_count": 0,
+   "edge_count": 0,
+   "fingerprint": "44b57ba0d42a72d7"
+  },
+  "snapshot": {
+   "id": "versuch",
+   "title": "Versuch",
+   "type": "deployment",
+   "nodes": {},
+   "edges": [],
+   "direction": "TB",
+   "created_at": "2026-10-07T16:16:38+00:00",
+   "updated_at": "2026-10-07T16:16:38+00:00",
+   "interaction": null
+  },
+  "_etag": "\"00b2171772b14f3ba761a8358c802ef0\""
+ }
+]

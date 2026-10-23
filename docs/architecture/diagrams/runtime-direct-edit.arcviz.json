@@ -1,0 +1,185 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 2,
+  "exported_at": "2026-10-11T00:00:00+00:00",
+  "diagram": {
+    "id": "runtime-direct-edit",
+    "title": "Runtime: direct edit (inspector or REST)",
+    "type": "sequence",
+    "nodes": {},
+    "edges": [],
+    "direction": "TB",
+    "created_at": "2026-10-11T00:00:00+00:00",
+    "updated_at": "2026-10-11T00:00:00+00:00",
+    "interaction": {
+      "lifelines": [
+        {
+          "id": "web-ui",
+          "name": "Web UI (inspector.js)",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "server",
+          "name": "server.py",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "services",
+          "name": "DiagramService",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "operations",
+          "name": "operations.apply",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "store",
+          "name": "DiagramRepository",
+          "type": null,
+          "actor": false
+        }
+      ],
+      "fragments": [
+        {
+          "element": "message",
+          "id": "m1",
+          "name": "POST /api/diagrams/{id}/ops {op, args, label} (If-Match)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "web-ui",
+          "receiver": "server"
+        },
+        {
+          "element": "message",
+          "id": "m2",
+          "name": "apply(id, op, args, expected revision)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "services"
+        },
+        {
+          "element": "message",
+          "id": "m3",
+          "name": "read_latest",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "services",
+          "receiver": "store"
+        },
+        {
+          "element": "message",
+          "id": "m4",
+          "name": "apply(diagram, op, args)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "services",
+          "receiver": "operations"
+        },
+        {
+          "element": "combined_fragment",
+          "id": "cf-result",
+          "operator": "alt",
+          "covered": [
+            "web-ui",
+            "server",
+            "services",
+            "operations",
+            "store"
+          ],
+          "operands": [
+            {
+              "id": "op1",
+              "guard": "invalid",
+              "fragments": [
+                {
+                  "element": "message",
+                  "id": "m5",
+                  "name": "OperationError (rolled back)",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "operations",
+                  "receiver": "services"
+                },
+                {
+                  "element": "message",
+                  "id": "m6",
+                  "name": "OperationError",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "services",
+                  "receiver": "server"
+                },
+                {
+                  "element": "message",
+                  "id": "m7",
+                  "name": "400 with the message",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "server",
+                  "receiver": "web-ui"
+                }
+              ]
+            },
+            {
+              "id": "op2",
+              "guard": "applied",
+              "fragments": [
+                {
+                  "element": "message",
+                  "id": "m8",
+                  "name": "result",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "operations",
+                  "receiver": "services"
+                },
+                {
+                  "element": "message",
+                  "id": "m9",
+                  "name": "commit_latest + version (source auto, label = op and args), conditional",
+                  "sort": "synchCall",
+                  "kind": "complete",
+                  "sender": "services",
+                  "receiver": "store"
+                },
+                {
+                  "element": "message",
+                  "id": "m10",
+                  "name": "updated diagram",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "services",
+                  "receiver": "server"
+                },
+                {
+                  "element": "message",
+                  "id": "m11",
+                  "name": "detail {diagram, rendering, versions, undo/redo targets}",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "server",
+                  "receiver": "web-ui"
+                }
+              ]
+            }
+          ],
+          "messages": []
+        }
+      ],
+      "executions": [
+        {
+          "id": "ex-service",
+          "lifeline": "services",
+          "start": "m2",
+          "finish": null
+        }
+      ]
+    }
+  }
+}

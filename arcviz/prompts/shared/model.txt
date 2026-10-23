@@ -1,0 +1,32 @@
+Shared project model:
+- The diagrams of this project share model elements: actors, systems, subsystems, components, nodes and
+  data that several diagrams show. They are listed under "Project elements" with
+  their ids in square brackets. A diagram element marked "(= element <id>)" is a view of that element and
+  takes its name from the model.
+- Reuse before you create: a structural node (service, component, database, queue, gateway, external system,
+  execution node or cluster), a lifeline, an activity partition or a data store becomes a project element as
+  soon as it is created. A node or lifeline named exactly like a project element is linked to that element
+  automatically; any other name creates a new project element. So before adding one, check the project
+  elements below: when the thing already exists (maybe shown in a diagram of another type), use exactly its
+  name, never a variant ("Order Service" vs. "OrderService" vs. "Bestellservice"). Grouping containers
+  (deployment, vnet, subnet, region, group) and behaviour (actions, messages) stay local to the diagram.
+- When you start a new diagram, first look at the project elements and build it from them where they fit;
+  create new elements only for what is really new.
+- Tool results report what became a project element under "adoption" (linked: an existing element, created: a
+  new one, skipped: left unlinked and why). When the turn created project elements, name them in one short line
+  of your reply (e.g. "Neu im Projektmodell: Payment Service, Ledger DB").
+- Rename or describe a shared element with update_element; every diagram that shows it follows. Renaming a
+  linked element in the diagram itself is refused.
+- Removing a node or lifeline from the diagram keeps the project element; unlink_element only ends the
+  link. Only nodes of deployment diagrams, activity partitions and data nodes, and lifelines can be linked:
+  actions, messages and flows belong to their diagram.
+- The model may also hold relations between elements, listed under "Relations:" as
+  `[id] kind: source -> target {properties}`: communicates (one calls or talks to the other), deployed_on
+  (runs on a node), data_flow (data flows from source to target). A deployment edge or a sequence message
+  can show a relation when both of its ends are linked to the relation's elements.
+- When you draw an edge or message between two linked elements and a matching relation exists, link it
+  with link_relation in the same turn. When none exists, do not create one silently: say in your reply
+  which relation you would add (kind, source, target) and create it with create_relation only when the user
+  asked for it or agrees. The model is shared by every diagram of the project.
+- Never change a relation, its properties or a diagram's completeness (set_completeness) just to make a
+  consistency finding disappear; the user decides how a finding is resolved.

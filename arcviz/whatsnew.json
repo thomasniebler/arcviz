@@ -1,0 +1,12 @@
+{
+  "releases": [
+    {
+      "version": "0.4.1",
+      "items": [
+        {"emoji": "🔗", "text": "Beziehungen im Projektmodell: Verbindungen zwischen Elementen einmal beschreiben, in den Diagrammen verknüpfen und Abweichungen im Projekt-Review finden.", "text_en": "Relations in the project model: describe connections between elements once, link them in the diagrams and find deviations in the project review."},
+        {"emoji": "🚚", "text": "Diagramme verschieben oder importieren und ihre verknüpften Projektelemente nehmen sie mit.", "text_en": "Move or import diagrams and their linked project elements come along."},
+        {"emoji": "🛡️", "text": "Robuster im Betrieb: Speicher, Spiegel und Live-Ansicht halten Ausfälle und gleichzeitige Änderungen besser aus.", "text_en": "More robust in operation: storage, mirror and live view cope better with outages and concurrent changes."}
+      ]
+    }
+  ]
+}

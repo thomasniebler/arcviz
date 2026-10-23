@@ -1,0 +1,17 @@
+[
+  {
+    "author": "ada",
+    "author_name": "Ada",
+    "content": "Füge einen Order Service hinzu.",
+    "role": "user",
+    "seq": 1
+  },
+  {
+    "author": "ada",
+    "author_name": "Ada",
+    "content": "Erledigt.",
+    "operations": [],
+    "role": "assistant",
+    "seq": 2
+  }
+]

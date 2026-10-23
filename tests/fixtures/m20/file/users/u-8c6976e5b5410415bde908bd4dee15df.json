@@ -1,0 +1,11 @@
+{
+  "document": {
+    "email": "admin@example.org",
+    "email_trusted": true,
+    "first_seen": "2026-10-08",
+    "id": "admin",
+    "last_seen": "2026-10-08",
+    "name": "Administrator"
+  },
+  "revision": "ab3a7c39ebc55c8c"
+}

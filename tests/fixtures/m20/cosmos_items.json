@@ -1,0 +1,1803 @@
+[
+ {
+  "id": "latest",
+  "type": "latest",
+  "diagram_id": "altsystem",
+  "title": "Altsystem",
+  "updated_at": "2026-10-08T11:12:23+00:00",
+  "revision": "9c22d03b5e3ccb12",
+  "diagram": {
+   "id": "altsystem",
+   "title": "Altsystem",
+   "type": "deployment",
+   "nodes": {
+    "prod-deployment": {
+     "id": "prod-deployment",
+     "name": "prod-deployment",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "api-gateway": {
+     "id": "api-gateway",
+     "name": "api-gateway",
+     "kind": "gateway",
+     "parent": "prod-deployment",
+     "properties": {}
+    },
+    "service-a": {
+     "id": "service-a",
+     "name": "service-a",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "container"
+     }
+    },
+    "service-b": {
+     "id": "service-b",
+     "name": "service-b",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "container"
+     }
+    },
+    "service-c": {
+     "id": "service-c",
+     "name": "service-c",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "function"
+     }
+    },
+    "orders-db": {
+     "id": "orders-db",
+     "name": "orders-db",
+     "kind": "database",
+     "parent": "prod-deployment",
+     "properties": {
+      "engine": "postgres"
+     }
+    },
+    "events": {
+     "id": "events",
+     "name": "events",
+     "kind": "queue",
+     "parent": "prod-deployment",
+     "properties": {}
+    },
+    "idp": {
+     "id": "idp",
+     "name": "Identity Provider",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "api-gateway",
+     "target": "service-a",
+     "label": "https",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e2",
+     "source": "api-gateway",
+     "target": "service-b",
+     "label": "https",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "service-a",
+     "target": "orders-db",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "service-b",
+     "target": "events",
+     "label": "publish",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e5",
+     "source": "service-c",
+     "target": "events",
+     "label": "subscribe",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e6",
+     "source": "api-gateway",
+     "target": "idp",
+     "label": "oidc",
+     "kind": "dependency",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "interaction": null
+  },
+  "_etag": "\"f14caa47810b4984a23cb09203eea4c5\""
+ },
+ {
+  "id": "version:0001",
+  "type": "version",
+  "diagram_id": "altsystem",
+  "version": 1,
+  "meta": {
+   "version": 1,
+   "label": "Initial state",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "source": "initial",
+   "restored_from": null,
+   "node_count": 8,
+   "edge_count": 6,
+   "fingerprint": "9c97cb73524346c7",
+   "author": "admin",
+   "author_name": "Administrator"
+  },
+  "snapshot": {
+   "id": "altsystem",
+   "title": "Altsystem",
+   "type": "deployment",
+   "nodes": {
+    "prod-deployment": {
+     "id": "prod-deployment",
+     "name": "prod-deployment",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "api-gateway": {
+     "id": "api-gateway",
+     "name": "api-gateway",
+     "kind": "gateway",
+     "parent": "prod-deployment",
+     "properties": {}
+    },
+    "service-a": {
+     "id": "service-a",
+     "name": "service-a",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "container"
+     }
+    },
+    "service-b": {
+     "id": "service-b",
+     "name": "service-b",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "container"
+     }
+    },
+    "service-c": {
+     "id": "service-c",
+     "name": "service-c",
+     "kind": "service",
+     "parent": "prod-deployment",
+     "properties": {
+      "runtime": "function"
+     }
+    },
+    "orders-db": {
+     "id": "orders-db",
+     "name": "orders-db",
+     "kind": "database",
+     "parent": "prod-deployment",
+     "properties": {
+      "engine": "postgres"
+     }
+    },
+    "events": {
+     "id": "events",
+     "name": "events",
+     "kind": "queue",
+     "parent": "prod-deployment",
+     "properties": {}
+    },
+    "idp": {
+     "id": "idp",
+     "name": "Identity Provider",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "api-gateway",
+     "target": "service-a",
+     "label": "https",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e2",
+     "source": "api-gateway",
+     "target": "service-b",
+     "label": "https",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "service-a",
+     "target": "orders-db",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "service-b",
+     "target": "events",
+     "label": "publish",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e5",
+     "source": "service-c",
+     "target": "events",
+     "label": "subscribe",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e6",
+     "source": "api-gateway",
+     "target": "idp",
+     "label": "oidc",
+     "kind": "dependency",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "interaction": null
+  },
+  "_etag": "\"6db50b68a7c643ae965eb8defc35a1fb\""
+ },
+ {
+  "id": "latest",
+  "type": "latest",
+  "diagram_id": "bestellprozess",
+  "title": "Bestellprozess 2",
+  "updated_at": "2026-10-08T11:12:23+00:00",
+  "revision": "368d8f764823cc0a",
+  "diagram": {
+   "id": "bestellprozess",
+   "title": "Bestellprozess 2",
+   "type": "activity",
+   "nodes": {
+    "kunde": {
+     "id": "kunde",
+     "name": "Kunde",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "shop": {
+     "id": "shop",
+     "name": "Shop",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "lager": {
+     "id": "lager",
+     "name": "Lager",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "start": {
+     "id": "start",
+     "name": "Start",
+     "kind": "initial_node",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "bestellen": {
+     "id": "bestellen",
+     "name": "Bestellung aufgeben",
+     "kind": "opaque_action",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "pruefen": {
+     "id": "pruefen",
+     "name": "Bestellung prüfen",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "verfuegbar": {
+     "id": "verfuegbar",
+     "name": "Artikel verfügbar?",
+     "kind": "decision_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "fork": {
+     "id": "fork",
+     "name": "Fork",
+     "kind": "fork_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "zahlung": {
+     "id": "zahlung",
+     "name": "Zahlung abwickeln",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "kommissionieren": {
+     "id": "kommissionieren",
+     "name": "Ware kommissionieren",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "join": {
+     "id": "join",
+     "name": "Join",
+     "kind": "join_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "versenden": {
+     "id": "versenden",
+     "name": "Ware versenden",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "ende": {
+     "id": "ende",
+     "name": "Ende",
+     "kind": "activity_final_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "informieren": {
+     "id": "informieren",
+     "name": "Kunde informieren",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "abbruch": {
+     "id": "abbruch",
+     "name": "Abbruch",
+     "kind": "flow_final_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "bestellungen": {
+     "id": "bestellungen",
+     "name": "Bestellungen",
+     "kind": "data_store_node",
+     "parent": "shop",
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "start",
+     "target": "bestellen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e2",
+     "source": "bestellen",
+     "target": "pruefen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "pruefen",
+     "target": "verfuegbar",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "fork",
+     "target": "zahlung",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e5",
+     "source": "fork",
+     "target": "kommissionieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e6",
+     "source": "zahlung",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e7",
+     "source": "kommissionieren",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e8",
+     "source": "join",
+     "target": "versenden",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e9",
+     "source": "versenden",
+     "target": "ende",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e10",
+     "source": "informieren",
+     "target": "abbruch",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e11",
+     "source": "verfuegbar",
+     "target": "fork",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "ja"
+     }
+    },
+    {
+     "id": "e12",
+     "source": "verfuegbar",
+     "target": "informieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "nein"
+     }
+    },
+    {
+     "id": "e13",
+     "source": "pruefen",
+     "target": "bestellungen",
+     "label": "Bestellung",
+     "kind": "object_flow",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "interaction": null
+  },
+  "_etag": "\"995e3ca60401467abca2704b809be307\""
+ },
+ {
+  "id": "version:0001",
+  "type": "version",
+  "diagram_id": "bestellprozess",
+  "version": 1,
+  "meta": {
+   "version": 1,
+   "label": "Initial state",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "source": "initial",
+   "restored_from": null,
+   "node_count": 16,
+   "edge_count": 13,
+   "fingerprint": "07e78e9fa6f7704e",
+   "author": "admin",
+   "author_name": "Administrator"
+  },
+  "snapshot": {
+   "id": "bestellprozess",
+   "title": "Bestellprozess",
+   "type": "activity",
+   "nodes": {
+    "kunde": {
+     "id": "kunde",
+     "name": "Kunde",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "shop": {
+     "id": "shop",
+     "name": "Shop",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "lager": {
+     "id": "lager",
+     "name": "Lager",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "start": {
+     "id": "start",
+     "name": "Start",
+     "kind": "initial_node",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "bestellen": {
+     "id": "bestellen",
+     "name": "Bestellung aufgeben",
+     "kind": "opaque_action",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "pruefen": {
+     "id": "pruefen",
+     "name": "Bestellung prüfen",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "verfuegbar": {
+     "id": "verfuegbar",
+     "name": "Artikel verfügbar?",
+     "kind": "decision_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "fork": {
+     "id": "fork",
+     "name": "Fork",
+     "kind": "fork_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "zahlung": {
+     "id": "zahlung",
+     "name": "Zahlung abwickeln",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "kommissionieren": {
+     "id": "kommissionieren",
+     "name": "Ware kommissionieren",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "join": {
+     "id": "join",
+     "name": "Join",
+     "kind": "join_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "versenden": {
+     "id": "versenden",
+     "name": "Ware versenden",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "ende": {
+     "id": "ende",
+     "name": "Ende",
+     "kind": "activity_final_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "informieren": {
+     "id": "informieren",
+     "name": "Kunde informieren",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "abbruch": {
+     "id": "abbruch",
+     "name": "Abbruch",
+     "kind": "flow_final_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "bestellungen": {
+     "id": "bestellungen",
+     "name": "Bestellungen",
+     "kind": "data_store_node",
+     "parent": "shop",
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "start",
+     "target": "bestellen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e2",
+     "source": "bestellen",
+     "target": "pruefen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "pruefen",
+     "target": "verfuegbar",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "fork",
+     "target": "zahlung",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e5",
+     "source": "fork",
+     "target": "kommissionieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e6",
+     "source": "zahlung",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e7",
+     "source": "kommissionieren",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e8",
+     "source": "join",
+     "target": "versenden",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e9",
+     "source": "versenden",
+     "target": "ende",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e10",
+     "source": "informieren",
+     "target": "abbruch",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e11",
+     "source": "verfuegbar",
+     "target": "fork",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "ja"
+     }
+    },
+    {
+     "id": "e12",
+     "source": "verfuegbar",
+     "target": "informieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "nein"
+     }
+    },
+    {
+     "id": "e13",
+     "source": "pruefen",
+     "target": "bestellungen",
+     "label": "Bestellung",
+     "kind": "object_flow",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "interaction": null
+  },
+  "_etag": "\"466b356660cc4e8b89a811987801e480\""
+ },
+ {
+  "id": "version:0002",
+  "type": "version",
+  "diagram_id": "bestellprozess",
+  "version": 2,
+  "meta": {
+   "version": 2,
+   "label": "Umbenannt",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "source": "auto",
+   "restored_from": null,
+   "node_count": 16,
+   "edge_count": 13,
+   "fingerprint": "fd9325ca8c25cc41",
+   "author": "admin",
+   "author_name": "Administrator"
+  },
+  "snapshot": {
+   "id": "bestellprozess",
+   "title": "Bestellprozess 2",
+   "type": "activity",
+   "nodes": {
+    "kunde": {
+     "id": "kunde",
+     "name": "Kunde",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "shop": {
+     "id": "shop",
+     "name": "Shop",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "lager": {
+     "id": "lager",
+     "name": "Lager",
+     "kind": "activity_partition",
+     "parent": null,
+     "properties": {}
+    },
+    "start": {
+     "id": "start",
+     "name": "Start",
+     "kind": "initial_node",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "bestellen": {
+     "id": "bestellen",
+     "name": "Bestellung aufgeben",
+     "kind": "opaque_action",
+     "parent": "kunde",
+     "properties": {}
+    },
+    "pruefen": {
+     "id": "pruefen",
+     "name": "Bestellung prüfen",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "verfuegbar": {
+     "id": "verfuegbar",
+     "name": "Artikel verfügbar?",
+     "kind": "decision_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "fork": {
+     "id": "fork",
+     "name": "Fork",
+     "kind": "fork_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "zahlung": {
+     "id": "zahlung",
+     "name": "Zahlung abwickeln",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "kommissionieren": {
+     "id": "kommissionieren",
+     "name": "Ware kommissionieren",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "join": {
+     "id": "join",
+     "name": "Join",
+     "kind": "join_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "versenden": {
+     "id": "versenden",
+     "name": "Ware versenden",
+     "kind": "opaque_action",
+     "parent": "lager",
+     "properties": {}
+    },
+    "ende": {
+     "id": "ende",
+     "name": "Ende",
+     "kind": "activity_final_node",
+     "parent": "lager",
+     "properties": {}
+    },
+    "informieren": {
+     "id": "informieren",
+     "name": "Kunde informieren",
+     "kind": "opaque_action",
+     "parent": "shop",
+     "properties": {}
+    },
+    "abbruch": {
+     "id": "abbruch",
+     "name": "Abbruch",
+     "kind": "flow_final_node",
+     "parent": "shop",
+     "properties": {}
+    },
+    "bestellungen": {
+     "id": "bestellungen",
+     "name": "Bestellungen",
+     "kind": "data_store_node",
+     "parent": "shop",
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "start",
+     "target": "bestellen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e2",
+     "source": "bestellen",
+     "target": "pruefen",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "pruefen",
+     "target": "verfuegbar",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "fork",
+     "target": "zahlung",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e5",
+     "source": "fork",
+     "target": "kommissionieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e6",
+     "source": "zahlung",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e7",
+     "source": "kommissionieren",
+     "target": "join",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e8",
+     "source": "join",
+     "target": "versenden",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e9",
+     "source": "versenden",
+     "target": "ende",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e10",
+     "source": "informieren",
+     "target": "abbruch",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e11",
+     "source": "verfuegbar",
+     "target": "fork",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "ja"
+     }
+    },
+    {
+     "id": "e12",
+     "source": "verfuegbar",
+     "target": "informieren",
+     "label": null,
+     "kind": "control_flow",
+     "direction": null,
+     "properties": {
+      "guard": "nein"
+     }
+    },
+    {
+     "id": "e13",
+     "source": "pruefen",
+     "target": "bestellungen",
+     "label": "Bestellung",
+     "kind": "object_flow",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "interaction": null
+  },
+  "_etag": "\"cf89d51a9dc4464ca50c91706ef48358\""
+ },
+ {
+  "id": "chat:000001",
+  "type": "chat",
+  "diagram_id": "netz",
+  "seq": 1,
+  "entry": {
+   "role": "user",
+   "content": "Hallo",
+   "author": "ed",
+   "author_name": "Ed Editor"
+  },
+  "_etag": "\"24de62f25d9a4694aa0e06cda5b47f6a\""
+ },
+ {
+  "id": "latest",
+  "type": "latest",
+  "diagram_id": "netz",
+  "title": "Netz",
+  "updated_at": "2026-10-08T11:12:23+00:00",
+  "revision": "9f22f79a8700ab8b",
+  "diagram": {
+   "id": "netz",
+   "title": "Netz",
+   "type": "deployment",
+   "nodes": {
+    "prod": {
+     "id": "prod",
+     "name": "prod",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "aks-vnet": {
+     "id": "aks-vnet",
+     "name": "aks-vnet",
+     "kind": "vnet",
+     "parent": "prod",
+     "properties": {
+      "cidr": "10.10.0.0/16"
+     }
+    },
+    "appgw-subnet": {
+     "id": "appgw-subnet",
+     "name": "appgw-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.4.0/24"
+     }
+    },
+    "app-gateway": {
+     "id": "app-gateway",
+     "name": "app-gateway",
+     "kind": "gateway",
+     "parent": "appgw-subnet",
+     "properties": {
+      "sku": "WAF_v2"
+     }
+    },
+    "aks-subnet": {
+     "id": "aks-subnet",
+     "name": "aks-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.0.0/22"
+     }
+    },
+    "aks-cluster": {
+     "id": "aks-cluster",
+     "name": "aks-cluster",
+     "kind": "cluster",
+     "parent": "aks-subnet",
+     "properties": {
+      "kubernetes": "1.30"
+     }
+    },
+    "user-pool": {
+     "id": "user-pool",
+     "name": "user-pool",
+     "kind": "node",
+     "parent": "aks-cluster",
+     "properties": {
+      "vm_size": "Standard_D4s_v5",
+      "count": "3"
+     }
+    },
+    "frontend": {
+     "id": "frontend",
+     "name": "frontend",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "2"
+     }
+    },
+    "orders-api": {
+     "id": "orders-api",
+     "name": "orders-api",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "3"
+     }
+    },
+    "db-subnet": {
+     "id": "db-subnet",
+     "name": "db-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.8.0/24"
+     }
+    },
+    "postgres": {
+     "id": "postgres",
+     "name": "postgres",
+     "kind": "database",
+     "parent": "db-subnet",
+     "properties": {
+      "engine": "postgres 16",
+      "sku": "GP_Standard_D2s_v3"
+     }
+    },
+    "acr": {
+     "id": "acr",
+     "name": "container-registry",
+     "kind": "storage",
+     "parent": "prod",
+     "properties": {
+      "sku": "premium"
+     }
+    },
+    "users": {
+     "id": "users",
+     "name": "users",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "users",
+     "target": "app-gateway",
+     "label": null,
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "https",
+      "port": "443"
+     }
+    },
+    {
+     "id": "e2",
+     "source": "app-gateway",
+     "target": "frontend",
+     "label": "ingress",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "frontend",
+     "target": "orders-api",
+     "label": "REST",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "orders-api",
+     "target": "postgres",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "postgres",
+      "port": "5432"
+     }
+    },
+    {
+     "id": "e5",
+     "source": "acr",
+     "target": "user-pool",
+     "label": "images",
+     "kind": "deploys",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "interaction": null
+  },
+  "_etag": "\"adf8da9f0d5f4726ac283cd2a61ed900\""
+ },
+ {
+  "id": "version:0001",
+  "type": "version",
+  "diagram_id": "netz",
+  "version": 1,
+  "meta": {
+   "version": 1,
+   "label": "Initial state",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "source": "initial",
+   "restored_from": null,
+   "node_count": 13,
+   "edge_count": 5,
+   "fingerprint": "35d93d9fa1c808e4",
+   "author": "ed",
+   "author_name": "Ed Editor"
+  },
+  "snapshot": {
+   "id": "netz",
+   "title": "Netz",
+   "type": "deployment",
+   "nodes": {
+    "prod": {
+     "id": "prod",
+     "name": "prod",
+     "kind": "deployment",
+     "parent": null,
+     "properties": {
+      "cloud": "azure",
+      "region": "westeurope"
+     }
+    },
+    "aks-vnet": {
+     "id": "aks-vnet",
+     "name": "aks-vnet",
+     "kind": "vnet",
+     "parent": "prod",
+     "properties": {
+      "cidr": "10.10.0.0/16"
+     }
+    },
+    "appgw-subnet": {
+     "id": "appgw-subnet",
+     "name": "appgw-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.4.0/24"
+     }
+    },
+    "app-gateway": {
+     "id": "app-gateway",
+     "name": "app-gateway",
+     "kind": "gateway",
+     "parent": "appgw-subnet",
+     "properties": {
+      "sku": "WAF_v2"
+     }
+    },
+    "aks-subnet": {
+     "id": "aks-subnet",
+     "name": "aks-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.0.0/22"
+     }
+    },
+    "aks-cluster": {
+     "id": "aks-cluster",
+     "name": "aks-cluster",
+     "kind": "cluster",
+     "parent": "aks-subnet",
+     "properties": {
+      "kubernetes": "1.30"
+     }
+    },
+    "user-pool": {
+     "id": "user-pool",
+     "name": "user-pool",
+     "kind": "node",
+     "parent": "aks-cluster",
+     "properties": {
+      "vm_size": "Standard_D4s_v5",
+      "count": "3"
+     }
+    },
+    "frontend": {
+     "id": "frontend",
+     "name": "frontend",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "2"
+     }
+    },
+    "orders-api": {
+     "id": "orders-api",
+     "name": "orders-api",
+     "kind": "service",
+     "parent": "user-pool",
+     "properties": {
+      "replicas": "3"
+     }
+    },
+    "db-subnet": {
+     "id": "db-subnet",
+     "name": "db-subnet",
+     "kind": "subnet",
+     "parent": "aks-vnet",
+     "properties": {
+      "cidr": "10.10.8.0/24"
+     }
+    },
+    "postgres": {
+     "id": "postgres",
+     "name": "postgres",
+     "kind": "database",
+     "parent": "db-subnet",
+     "properties": {
+      "engine": "postgres 16",
+      "sku": "GP_Standard_D2s_v3"
+     }
+    },
+    "acr": {
+     "id": "acr",
+     "name": "container-registry",
+     "kind": "storage",
+     "parent": "prod",
+     "properties": {
+      "sku": "premium"
+     }
+    },
+    "users": {
+     "id": "users",
+     "name": "users",
+     "kind": "external",
+     "parent": null,
+     "properties": {}
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "users",
+     "target": "app-gateway",
+     "label": null,
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "https",
+      "port": "443"
+     }
+    },
+    {
+     "id": "e2",
+     "source": "app-gateway",
+     "target": "frontend",
+     "label": "ingress",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e3",
+     "source": "frontend",
+     "target": "orders-api",
+     "label": "REST",
+     "kind": "connection",
+     "direction": null,
+     "properties": {}
+    },
+    {
+     "id": "e4",
+     "source": "orders-api",
+     "target": "postgres",
+     "label": "sql",
+     "kind": "connection",
+     "direction": null,
+     "properties": {
+      "protocol": "postgres",
+      "port": "5432"
+     }
+    },
+    {
+     "id": "e5",
+     "source": "acr",
+     "target": "user-pool",
+     "label": "images",
+     "kind": "deploys",
+     "direction": null,
+     "properties": {}
+    }
+   ],
+   "direction": "TB",
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "interaction": null
+  },
+  "_etag": "\"2ecf630474d14daa97b430fe98fb6378\""
+ },
+ {
+  "id": "project",
+  "type": "project",
+  "diagram_id": "project:default",
+  "revision": "07c95756c3a880d7",
+  "project": {
+   "id": "default",
+   "title": "Standardprojekt",
+   "description": "",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "altsystem",
+     "section": null,
+     "added_at": "2026-10-08T11:12:23.746145+00:00"
+    }
+   ],
+   "elements": [],
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "workspace": "default"
+  },
+  "_etag": "\"5df864f5f6534792ac4802f1c9f85728\""
+ },
+ {
+  "id": "project",
+  "type": "project",
+  "diagram_id": "project:labor",
+  "revision": "8045f7ee6f3c1f7a",
+  "project": {
+   "id": "labor",
+   "title": "Labor",
+   "description": "",
+   "sections": [],
+   "diagrams": [],
+   "elements": [],
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "workspace": "team",
+   "roles": {
+    "olga": "owner",
+    "gone": "editor"
+   }
+  },
+  "_etag": "\"0549c6e7dd11424e84ab6ed8ee521431\""
+ },
+ {
+  "id": "project",
+  "type": "project",
+  "diagram_id": "project:plattform",
+  "revision": "6efdba92de66e1c5",
+  "project": {
+   "id": "plattform",
+   "title": "Plattform",
+   "description": "",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "netz",
+     "section": null,
+     "added_at": "2026-10-08T11:12:23.758730+00:00"
+    }
+   ],
+   "elements": [],
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "workspace": "team",
+   "roles": {
+    "ed": "owner",
+    "vic": "editor"
+   }
+  },
+  "_etag": "\"a5bc4a3d9e1440cdb6adf5f3610cc29e\""
+ },
+ {
+  "id": "project",
+  "type": "project",
+  "diagram_id": "project:uebergabe",
+  "revision": "183432c2b82a80cd",
+  "project": {
+   "id": "uebergabe",
+   "title": "Übergabe",
+   "description": "",
+   "sections": [],
+   "diagrams": [],
+   "elements": [],
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "workspace": "handover",
+   "roles": {
+    "ed": "owner"
+   }
+  },
+  "_etag": "\"b0f47d311d3947bbb20e8a955c9d0a3e\""
+ },
+ {
+  "id": "project",
+  "type": "project",
+  "diagram_id": "project:webshop",
+  "revision": "20065e139f6f950e",
+  "project": {
+   "id": "webshop",
+   "title": "Webshop",
+   "description": "Online-Shop",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "bestellprozess",
+     "section": null,
+     "added_at": "2026-10-08T11:12:23.748187+00:00"
+    }
+   ],
+   "elements": [],
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00",
+   "workspace": "default",
+   "roles": {
+    "admin": "owner",
+    "ed": "editor"
+   }
+  },
+  "_etag": "\"a5ca1b18009342ecbf95a0e9603bb5e7\""
+ },
+ {
+  "id": "user",
+  "type": "user",
+  "diagram_id": "user:u-283bb9deef02e6843abfb538efa1eca7",
+  "revision": "c59f7f5c6bf89b7b",
+  "document": {
+   "id": "gone",
+   "name": "Gone",
+   "email": "gone@example.org",
+   "email_trusted": true,
+   "first_seen": "2026-10-08",
+   "last_seen": "2026-10-08"
+  },
+  "_etag": "\"279b3be1a3ec4afb8b46470a2074ac67\""
+ },
+ {
+  "id": "user",
+  "type": "user",
+  "diagram_id": "user:u-3fa987493ca3ccfcb95243b881a02b7d",
+  "revision": "2a8131e0e1cc2d55",
+  "document": {
+   "id": "olga",
+   "name": "Olga Owner",
+   "email": "olga@example.org",
+   "email_trusted": true,
+   "first_seen": "2026-10-08",
+   "last_seen": "2026-10-08"
+  },
+  "_etag": "\"8e8bc6ed09c44261954f4c10dcd5df1b\""
+ },
+ {
+  "id": "user",
+  "type": "user",
+  "diagram_id": "user:u-762069bc07a6e1b5df123a5ae7bd91c1",
+  "revision": "5e46ac26bf6323e0",
+  "document": {
+   "id": "out",
+   "name": "Outsider",
+   "email": "out@example.org",
+   "email_trusted": true,
+   "first_seen": "2026-10-08",
+   "last_seen": "2026-10-08"
+  },
+  "_etag": "\"2aac12593abc4878942c2ed2b408d490\""
+ },
+ {
+  "id": "user",
+  "type": "user",
+  "diagram_id": "user:u-866d116d21281a3aa9375c6deca295bf",
+  "revision": "544261c604e1b5e5",
+  "document": {
+   "id": "vic",
+   "name": "Vic Viewer",
+   "email": "vic@example.org",
+   "email_trusted": true,
+   "first_seen": "2026-10-08",
+   "last_seen": "2026-10-08"
+  },
+  "_etag": "\"e90d7e86acbb4116ba6b0cdf2115bc9c\""
+ },
+ {
+  "id": "user",
+  "type": "user",
+  "diagram_id": "user:u-8c6976e5b5410415bde908bd4dee15df",
+  "revision": "1cdde6869d7ca1da",
+  "document": {
+   "id": "admin",
+   "name": "Administrator",
+   "email": "admin@example.org",
+   "email_trusted": true,
+   "first_seen": "2026-10-08",
+   "last_seen": "2026-10-08"
+  },
+  "_etag": "\"97bf568c31b84152ac199b19901f07d1\""
+ },
+ {
+  "id": "user",
+  "type": "user",
+  "diagram_id": "user:u-9c1623f0d38e28e9594f2ef31a7ec909",
+  "revision": "4d5939bd7cda71aa",
+  "document": {
+   "id": "ed",
+   "name": "Ed Editor",
+   "email": "ed@example.org",
+   "email_trusted": true,
+   "first_seen": "2026-10-08",
+   "last_seen": "2026-10-08"
+  },
+  "_etag": "\"f071123baad448269d74b50cb636a0bb\""
+ },
+ {
+  "id": "user",
+  "type": "user",
+  "diagram_id": "user:u-ae8f5080a348fbfeb2c7769579797280",
+  "revision": "18a44a37f9af8826",
+  "document": {
+   "id": "zed",
+   "name": "Zed",
+   "email": "zed@example.org",
+   "email_trusted": true,
+   "first_seen": "2026-10-08",
+   "last_seen": "2026-10-08"
+  },
+  "_etag": "\"1922a88813eb4433a25cbddf920efe92\""
+ },
+ {
+  "id": "workspace",
+  "type": "workspace",
+  "diagram_id": "workspace:default",
+  "revision": "598aa33ef4c63380",
+  "document": {
+   "id": "default",
+   "title": "Standard-Arbeitsbereich",
+   "owner": "admin",
+   "members": [
+    {
+     "user": "ed",
+     "added_at": "2026-10-08T11:12:23+00:00"
+    },
+    {
+     "user": "vic",
+     "added_at": "2026-10-08T11:12:23+00:00"
+    }
+   ],
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00"
+  },
+  "_etag": "\"3f8446f2270248e38135aca3f6807005\""
+ },
+ {
+  "id": "workspace",
+  "type": "workspace",
+  "diagram_id": "workspace:handover",
+  "revision": "80b286d3fe2f01c8",
+  "document": {
+   "id": "handover",
+   "title": "Handover",
+   "owner": "olga",
+   "members": [
+    {
+     "user": "ed",
+     "added_at": "2026-10-08T11:12:23+00:00"
+    }
+   ],
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00"
+  },
+  "_etag": "\"583ebb0073ea4e7991b4249406a251e0\""
+ },
+ {
+  "id": "workspace",
+  "type": "workspace",
+  "diagram_id": "workspace:leer",
+  "revision": "1d228719c255bb11",
+  "document": {
+   "id": "leer",
+   "title": "Leer",
+   "owner": "zed",
+   "members": [],
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00"
+  },
+  "_etag": "\"798bcf69c0ce459691b12cd8e96aaf54\""
+ },
+ {
+  "id": "workspace",
+  "type": "workspace",
+  "diagram_id": "workspace:team",
+  "revision": "38a429a3c411bc29",
+  "document": {
+   "id": "team",
+   "title": "Team",
+   "owner": "olga",
+   "members": [
+    {
+     "user": "ed",
+     "added_at": "2026-10-08T11:12:23+00:00"
+    },
+    {
+     "user": "vic",
+     "added_at": "2026-10-08T11:12:23+00:00"
+    },
+    {
+     "user": "zed",
+     "added_at": "2026-10-08T11:12:23+00:00"
+    }
+   ],
+   "created_at": "2026-10-08T11:12:23+00:00",
+   "updated_at": "2026-10-08T11:12:23+00:00"
+  },
+  "_etag": "\"82ed9303712747c0bd532a5e2fe945d0\""
+ }
+]

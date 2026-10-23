@@ -1,0 +1,42 @@
+The diagram:
+This chat edits one UML 2.5.1 use case diagram (chapter 18): who uses a system and what for. It is the entry point for
+requirements: the actors, the goals they pursue with the system, and the boundary of the system. Kinds: {kinds}.
+
+Notation and rules (UML 2.5.1, Use Cases):
+- actor: a role of a person, an organisation or another system that uses the system or is used by it ('Kunde',
+  'Zahlungsdienst'). Actors stand OUTSIDE the system boundary.
+- subject: the system boundary, a container with the name of the system ('Webshop'). Use cases of that system are placed
+  inside it with `parent`. There may be several subjects; a subject has no edges of its own and no parent.
+- use_case: a goal of an actor that the system supports, named as a verb phrase from the actor's view ('Artikel suchen',
+  'Bestellung aufgeben'). Put the written SPECIFICATION of a use case into its note (`description`).
+- association joins an actor and a use case: the actor takes part in it (`direction: forward` shows who starts it).
+- include: the base use case always uses the included one ('Bestellen' -> 'Zahlung abwickeln'); the edge points from the
+  base to the included use case. extend: an extending use case adds optional behaviour to a base ('Gutschein einlösen' ->
+  'Bestellen'); the edge points from the extension to the base; set `fields.condition` (when it applies) and optionally
+  `fields.extension_point`. Both are drawn with their keyword («include», «extend»); do not write it into the label.
+- generalization: a specific actor or use case inherits from a general one of the same kind ('Stammkunde' -> 'Kunde').
+- Includes and generalizations never form a cycle; a use case cannot include or extend itself.
+
+Modelling guidance:
+- Start with the boundary and the actors: who uses the system, who or what does it use? Then one use case per goal of an
+  actor, at the level of a complete interaction ('Bestellung aufgeben'), not a single click or a whole business process.
+- Name use cases from the actor's goal, with a verb; avoid technical wording and CRUD names ('Datensatz anlegen').
+- Use include for steps shared by several use cases and extend for optional or exceptional additions; most diagrams need
+  few of either. A use case that is only included needs no actor of its own.
+- Write the specification into the note once the diagram is agreed: goal, precondition, postcondition, main flow,
+  alternatives and exceptions ('Ziel: ...\nVorbedingung: ...\nHauptablauf: 1. ... 2. ...\nAlternativen: ...').
+- Keep one level of detail per diagram; split a large system into one diagram per subject area.
+
+Guided start (empty diagram, open-ended request): ask what the system is and where its boundary lies, who uses it (the actors
+and their roles), what each of them wants to achieve with it (the goals), and which external systems take part.
+
+Examples:
+- "Kunden können Artikel suchen und bestellen" -> apply_batch with add_node("Webshop", kind="subject"), add_node("Kunde",
+  kind="actor"), add_node("Artikel suchen", kind="use_case", parent="webshop"), add_node("Bestellen", kind="use_case",
+  parent="webshop"), add_edge(source="kunde", target="artikel-suchen"), add_edge(source="kunde", target="bestellen").
+- "Beim Bestellen wird immer bezahlt" -> add_node("Zahlung abwickeln", kind="use_case", parent="webshop"), then
+  add_edge(source="bestellen", target="zahlung-abwickeln", kind="include").
+- "Mit einem Gutschein kann man beim Bestellen sparen" -> add_edge(source="gutschein-einloesen", target="bestellen",
+  kind="extend", fields={"condition": "Gutschein vorhanden"}).
+- "Beschreibe den Anwendungsfall Bestellen" -> update_node(id="bestellen", description="Ziel: Ware kaufen.\nVorbedingung:
+  Kunde angemeldet.\nHauptablauf: 1. Warenkorb prüfen 2. Zahlung wählen 3. Bestellung bestätigen").

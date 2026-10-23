@@ -1,0 +1,196 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 1,
+  "exported_at": "2026-10-06T00:00:00+00:00",
+  "diagram": {
+    "id": "c4-containers",
+    "title": "Arcviz: containers (C4 level 2)",
+    "nodes": {
+      "architect": {
+        "id": "architect",
+        "name": "Architect or developer",
+        "kind": "person",
+        "parent": null,
+        "properties": {}
+      },
+      "arcviz": {
+        "id": "arcviz",
+        "name": "Arcviz agent",
+        "kind": "system_boundary",
+        "parent": null,
+        "properties": {}
+      },
+      "web-ui": {
+        "id": "web-ui",
+        "name": "Web UI (HTML, native ES modules, vendored Mermaid 11)",
+        "kind": "container",
+        "parent": "arcviz",
+        "properties": {
+          "description": "Chat, canvas, inspector, versions, review panel; no business logic",
+          "code": "arcviz/static/",
+          "spec": "docs/spec/frontend.md"
+        }
+      },
+      "app-server": {
+        "id": "app-server",
+        "name": "Application server (Python 3.11+, FastAPI, uvicorn)",
+        "kind": "container",
+        "parent": "arcviz",
+        "properties": {
+          "description": "JSON and SSE API, agent loop, operations, rendering to Mermaid source, rule checks",
+          "code": "arcviz/server.py",
+          "spec": "docs/spec/http-server.md"
+        }
+      },
+      "docs-site": {
+        "id": "docs-site",
+        "name": "Documentation site (static HTML, Zensical build)",
+        "kind": "container",
+        "parent": "arcviz",
+        "properties": {
+          "description": "User guide, reference, spec and this documentation, served under /docs",
+          "code": "scripts/build_docs_bundle.py",
+          "spec": "docs/architecture/specs/docs-in-app.md"
+        }
+      },
+      "diagram-store": {
+        "id": "diagram-store",
+        "name": "Diagram store (JSON files or SQLite in ARCVIZ_DATA_DIR)",
+        "kind": "container_db",
+        "parent": "arcviz",
+        "properties": {
+          "description": "latest state, immutable versions, chat transcript per diagram; single writer",
+          "code": "arcviz/store/",
+          "spec": "docs/spec/persistence.md"
+        }
+      },
+      "git-mirror": {
+        "id": "git-mirror",
+        "name": "Git mirror (local repository, optional)",
+        "kind": "container_db",
+        "parent": "arcviz",
+        "properties": {
+          "description": "One commit per version with the instruction as subject; never read back",
+          "code": "arcviz/gitmirror.py",
+          "spec": "docs/spec/persistence.md#git-mirror"
+        }
+      },
+      "llm-api": {
+        "id": "llm-api",
+        "name": "LLM API (Anthropic or OpenAI-compatible)",
+        "kind": "external_system",
+        "parent": null,
+        "properties": {}
+      },
+      "cosmos": {
+        "id": "cosmos",
+        "name": "Azure Cosmos DB (optional store)",
+        "kind": "external_system",
+        "parent": null,
+        "properties": {}
+      },
+      "git-remote": {
+        "id": "git-remote",
+        "name": "Git remote (optional)",
+        "kind": "external_system",
+        "parent": null,
+        "properties": {}
+      }
+    },
+    "edges": [
+      {
+        "id": "e1",
+        "source": "architect",
+        "target": "web-ui",
+        "label": "uses (browser)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e2",
+        "source": "architect",
+        "target": "docs-site",
+        "label": "reads (browser)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e3",
+        "source": "web-ui",
+        "target": "app-server",
+        "label": "fetch JSON, chat as SSE (/api)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e4",
+        "source": "app-server",
+        "target": "web-ui",
+        "label": "serves static files (/static)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e5",
+        "source": "app-server",
+        "target": "docs-site",
+        "label": "serves (/docs)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e6",
+        "source": "app-server",
+        "target": "diagram-store",
+        "label": "load, save, version (file I/O or SQL)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e7",
+        "source": "app-server",
+        "target": "cosmos",
+        "label": "or: load, save, version (HTTPS)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e8",
+        "source": "app-server",
+        "target": "git-mirror",
+        "label": "commit per version (git CLI)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e9",
+        "source": "git-mirror",
+        "target": "git-remote",
+        "label": "push (optional)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e10",
+        "source": "app-server",
+        "target": "llm-api",
+        "label": "tool calls, streaming (HTTPS)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      }
+    ],
+    "direction": "TB",
+    "created_at": "2026-10-06T00:00:00+00:00",
+    "updated_at": "2026-10-06T00:00:00+00:00"
+  }
+}

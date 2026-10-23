@@ -1,0 +1,16 @@
+{
+  "document": {
+    "added": {
+      "own:home_9c1623f0d38e28e9594f2ef31a7ec909": "2026-10-11T11:09:06+00:00",
+      "shared:webshop": "2026-10-11T11:09:06+00:00"
+    },
+    "own": [
+      "home_9c1623f0d38e28e9594f2ef31a7ec909"
+    ],
+    "shared": [
+      "webshop"
+    ],
+    "user": "ed"
+  },
+  "revision": "31e293d2c3f6da54"
+}

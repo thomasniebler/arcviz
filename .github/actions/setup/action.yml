@@ -1,0 +1,24 @@
+name: Set up Python environment
+description: Installs uv, the requested Python version and the project with dev dependencies from uv.lock (cached).
+
+inputs:
+  python-version:
+    description: Python version to install
+    required: false
+    default: "3.14"
+
+runs:
+  using: composite
+  steps:
+    - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      with:
+        version: "0.12.24" # the uv of the Dockerfile and of the lock (tests/test_reproducible_builds.py)
+        enable-cache: true
+        cache-dependency-glob: uv.lock
+        python-version: ${{ inputs.python-version }}
+    - name: Install project
+      shell: bash
+      # --locked fails when uv.lock does not match pyproject.toml (run `make lock`), ADR-0109
+      run: |
+        uv sync --locked --extra dev --python "${{ inputs.python-version }}"
+        echo "$PWD/.venv/bin" >> "$GITHUB_PATH"

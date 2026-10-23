@@ -1,0 +1,148 @@
+{
+  "diagram": {
+    "created_at": "2026-10-08T11:12:23+00:00",
+    "direction": "TB",
+    "edges": [
+      {
+        "direction": null,
+        "id": "e1",
+        "kind": "connection",
+        "label": "https",
+        "properties": {},
+        "source": "api-gateway",
+        "target": "service-a"
+      },
+      {
+        "direction": null,
+        "id": "e2",
+        "kind": "connection",
+        "label": "https",
+        "properties": {},
+        "source": "api-gateway",
+        "target": "service-b"
+      },
+      {
+        "direction": null,
+        "id": "e3",
+        "kind": "connection",
+        "label": "sql",
+        "properties": {},
+        "source": "service-a",
+        "target": "orders-db"
+      },
+      {
+        "direction": null,
+        "id": "e4",
+        "kind": "connection",
+        "label": "publish",
+        "properties": {},
+        "source": "service-b",
+        "target": "events"
+      },
+      {
+        "direction": null,
+        "id": "e5",
+        "kind": "connection",
+        "label": "subscribe",
+        "properties": {},
+        "source": "service-c",
+        "target": "events"
+      },
+      {
+        "direction": null,
+        "id": "e6",
+        "kind": "dependency",
+        "label": "oidc",
+        "properties": {},
+        "source": "api-gateway",
+        "target": "idp"
+      }
+    ],
+    "id": "altsystem",
+    "interaction": null,
+    "nodes": {
+      "api-gateway": {
+        "id": "api-gateway",
+        "kind": "gateway",
+        "name": "api-gateway",
+        "parent": "prod-deployment",
+        "properties": {}
+      },
+      "events": {
+        "id": "events",
+        "kind": "queue",
+        "name": "events",
+        "parent": "prod-deployment",
+        "properties": {}
+      },
+      "idp": {
+        "id": "idp",
+        "kind": "external",
+        "name": "Identity Provider",
+        "parent": null,
+        "properties": {}
+      },
+      "orders-db": {
+        "id": "orders-db",
+        "kind": "database",
+        "name": "orders-db",
+        "parent": "prod-deployment",
+        "properties": {
+          "engine": "postgres"
+        }
+      },
+      "prod-deployment": {
+        "id": "prod-deployment",
+        "kind": "deployment",
+        "name": "prod-deployment",
+        "parent": null,
+        "properties": {
+          "cloud": "azure",
+          "region": "westeurope"
+        }
+      },
+      "service-a": {
+        "id": "service-a",
+        "kind": "service",
+        "name": "service-a",
+        "parent": "prod-deployment",
+        "properties": {
+          "runtime": "container"
+        }
+      },
+      "service-b": {
+        "id": "service-b",
+        "kind": "service",
+        "name": "service-b",
+        "parent": "prod-deployment",
+        "properties": {
+          "runtime": "container"
+        }
+      },
+      "service-c": {
+        "id": "service-c",
+        "kind": "service",
+        "name": "service-c",
+        "parent": "prod-deployment",
+        "properties": {
+          "runtime": "function"
+        }
+      }
+    },
+    "title": "Altsystem",
+    "type": "deployment",
+    "updated_at": "2026-10-08T11:12:23+00:00"
+  },
+  "meta": {
+    "author": "admin",
+    "author_name": "Administrator",
+    "created_at": "2026-10-08T11:12:23+00:00",
+    "edge_count": 6,
+    "fingerprint": "9c97cb73524346c7",
+    "label": "Initial state",
+    "node_count": 8,
+    "restored_from": null,
+    "source": "initial",
+    "version": 1
+  }
+}

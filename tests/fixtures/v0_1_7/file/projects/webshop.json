@@ -1,0 +1,37 @@
+{
+  "created_at": "2026-10-07T08:02:45+00:00",
+  "description": "Online-Shop mit Bestellung und Zahlung",
+  "diagrams": [
+    {
+      "added_at": "2026-10-07T08:02:45.427750+00:00",
+      "diagram": "plattform",
+      "section": null
+    },
+    {
+      "added_at": "2026-10-07T08:02:45.430836+00:00",
+      "diagram": "bestellprozess",
+      "section": "bestellung"
+    },
+    {
+      "added_at": "2026-10-07T08:02:45.437982+00:00",
+      "diagram": "checkout",
+      "section": "zahlung"
+    }
+  ],
+  "id": "webshop",
+  "revision": "690491dbda2fed94",
+  "sections": [
+    {
+      "id": "bestellung",
+      "parent": null,
+      "title": "Bestellung"
+    },
+    {
+      "id": "zahlung",
+      "parent": "bestellung",
+      "title": "Zahlung"
+    }
+  ],
+  "title": "Webshop",
+  "updated_at": "2026-10-07T08:02:45+00:00"
+}

@@ -1,0 +1,11 @@
+{
+  "document": {
+    "email": "ada@example.org",
+    "email_trusted": false,
+    "first_seen": "2026-10-11",
+    "id": "ada",
+    "last_seen": "2026-10-11",
+    "name": "Ada"
+  },
+  "revision": "7b85531520bcebb1"
+}

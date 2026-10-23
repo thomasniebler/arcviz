@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arcviz agent</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect x=%272%27 y=%272%27 width=%2728%27 height=%2728%27 rx=%276%27 fill=%27%232b5fc7%27/%3E%3Crect x=%279%27 y=%279%27 width=%2714%27 height=%276%27 rx=%271%27 fill=%27white%27/%3E%3Crect x=%279%27 y=%2718%27 width=%276%27 height=%276%27 rx=%271%27 fill=%27white%27/%3E%3Crect x=%2717%27 y=%2718%27 width=%276%27 height=%276%27 rx=%271%27 fill=%27white%27/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/components.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Arcviz</div>
+    <button id="btn-navigator" type="button" aria-controls="navigator" aria-expanded="true" title="Projekt-Navigator ein-/ausblenden" data-i18n-title data-i18n>Projekte</button>
+    <button id="palette-open" type="button" class="topbar-search" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K" title="Befehle, Bereiche und Diagramme suchen" data-i18n-title>
+      <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      <span class="topbar-search-text" data-i18n>Suchen oder Befehl …</span>
+      <kbd id="palette-kbd" class="kbd">Strg K</kbd>
+    </button>
+    <span class="spacer"></span>
+    <span id="diagram-tools-2" class="tools">
+      <span class="btn-group" role="group" aria-label="Verlauf" data-i18n-aria-label>
+        <button id="btn-undo" title="Letzte Änderung rückgängig machen (Strg+Z)" data-edit data-i18n-title data-i18n>Undo</button>
+        <button id="btn-redo" title="Rückgängig gemachte Änderung wiederholen (Strg+Umschalt+Z)" disabled data-edit data-i18n-title data-i18n>Redo</button>
+      </span>
+    </span>
+    <details id="menu-more" class="menu">
+      <summary title="Diagramm- und Versionsaktionen (alle auch über Strg+K)" aria-label="Weitere Aktionen" data-i18n-title data-i18n-aria-label>⋯</summary>
+      <div class="menu-items">
+        <span class="menu-title" data-i18n>Diagramm</span>
+        <button id="btn-new" title="Neues Diagramm im geöffneten Projekt anlegen" data-edit data-i18n-title data-i18n>Neu…</button>
+        <button id="btn-import" title="Diagramm aus einer exportierten JSON-Datei als neues Diagramm im geöffneten Projekt anlegen" data-edit data-i18n-title data-i18n>Importieren…</button>
+        <input id="import-file" type="file" accept=".json,application/json" hidden>
+        <span id="diagram-tools" class="tools">
+          <hr>
+          <button id="btn-clear-chat" title="Chat-Verlauf dieses Diagramms löschen (Versionen bleiben erhalten)" data-edit data-i18n-title data-i18n>Chat leeren</button>
+          <button id="btn-delete" title="Aktuelles Diagramm löschen" class="danger owner-only" data-edit data-i18n-title data-i18n>Löschen</button>
+        </span>
+        <hr>
+        <span class="menu-title" data-i18n>Version</span>
+        <span class="tools">
+          <button id="btn-snapshot" title="Aktuellen Stand als benannte Version sichern" data-edit data-i18n-title data-i18n>Version sichern</button>
+          <label id="version-field" class="field version-field">
+            <span data-i18n>Versionen</span>
+            <select id="version-select"></select>
+          </label>
+          <button id="btn-restore" title="Gewählte Version wiederherstellen" data-edit data-i18n-title data-i18n>Wiederherstellen</button>
+          <button id="btn-compare" title="Zwei Versionen vergleichen: Neues, Entferntes und Geändertes farbig markieren" data-i18n-title data-i18n>Vergleichen…</button>
+        </span>
+      </div>
+    </details>
+    <details id="help-menu" class="menu">
+      <summary title="Dokumentation der laufenden Version (öffnet in einem neuen Tab)" data-i18n-title data-i18n>Hilfe</summary>
+      <div class="menu-items">
+        <button id="btn-tour" type="button" title="Kurzer Rundgang durch die Oberfläche" data-i18n-title data-i18n>Rundgang starten</button>
+        <a href="/docs/guide/first-steps/" target="_blank" rel="noopener" data-i18n>Erste Schritte</a>
+        <button id="btn-whats-new" type="button" title="Die Neuerungen dieser Version anzeigen" hidden data-i18n-title data-i18n>Neu in dieser Version</button>
+        <a href="/docs/guide/" target="_blank" rel="noopener" data-i18n>Benutzerhandbuch</a>
+        <a href="/docs/architecture/arc42/" target="_blank" rel="noopener" data-i18n>Architekturdokumentation (arc42)</a>
+        <a href="/docs/" target="_blank" rel="noopener" data-i18n>Gesamte Dokumentation</a>
+      </div>
+    </details>
+    <details id="user-menu" class="menu">
+      <summary id="me" class="me" title="" data-i18n>Konto</summary>
+      <div class="menu-items">
+        <button id="btn-settings" type="button" title="Design, Agenten-Zugang und weitere persönliche Einstellungen" data-i18n-title data-i18n>Persönliche Einstellungen…</button>
+        <form id="logout-form" method="post" action="/logout" hidden>
+          <button type="submit" title="Sitzung beenden (Anmeldung mit Zugangstoken)" data-i18n-title data-i18n>Abmelden</button>
+        </form>
+      </div>
+    </details>
+  </header>
+
+  <div id="whats-new" class="whats-new hidden" role="status">
+    <details id="whats-new-details">
+      <summary id="whats-new-title"></summary>
+      <ul id="whats-new-list"></ul>
+    </details>
+    <a id="whats-new-link" target="_blank" rel="noopener" data-i18n>Alle Änderungen</a>
+    <span class="spacer"></span>
+    <button id="whats-new-close" type="button" aria-label="Hinweis ausblenden" title="Ausblenden (bis zur nächsten Version)" data-i18n-title data-i18n-aria-label>✕</button>
+  </div>
+
+  <div class="workspace">
+  <nav id="rail" class="rail" aria-label="Bereiche" data-i18n-aria-label>
+    <button type="button" class="rail-item" data-area="diagram" data-route="" title="Diagramme" aria-label="Diagramme" data-i18n-title data-i18n-aria-label>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="8" y="14" width="8" height="7" rx="1.5"/></svg>
+    </button>
+    <button type="button" class="rail-item" data-area="requirements" data-route="#/requirements" title="Anforderungen" aria-label="Anforderungen" data-i18n-title data-i18n-aria-label>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
+    </button>
+    <button type="button" class="rail-item" data-area="architecture" data-route="#/architecture/drivers" title="Architektur: Treiber, Szenarien, Entscheidungen, Stakeholder" aria-label="Architektur" data-i18n-title data-i18n-aria-label>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V10l7-6 7 6v11M9 21v-6h6v6"/></svg>
+    </button>
+    <span class="spacer"></span>
+    <button type="button" class="rail-item" id="rail-settings" title="Persönliche Einstellungen" aria-label="Persönliche Einstellungen" data-i18n-title data-i18n-aria-label>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+    </button>
+  </nav>
+  <aside id="navigator" class="navigator" aria-label="Projekt-Navigator" data-i18n-aria-label>
+    <div class="nav-head">
+      <label class="field nav-project">
+        <span data-i18n>Projekt</span>
+        <select id="project-select" title="Projekt wechseln" data-i18n-title></select>
+      </label>
+      <button id="btn-project-new" type="button" title="Neues Projekt anlegen" aria-label="Neues Projekt" data-i18n-title data-i18n-aria-label>+</button>
+      <details id="project-menu" class="menu nav-menu">
+        <summary title="Projekt bearbeiten" aria-label="Projekt bearbeiten" data-i18n-title data-i18n-aria-label>⋯</summary>
+        <div class="menu-items">
+          <button id="btn-project-share" type="button" title="Für wen das Projekt freigegeben ist (nur der Besitzer gibt frei)" data-i18n-title data-i18n>Freigeben…</button>
+          <button id="btn-project-rename" type="button" class="edit-only" data-i18n>Umbenennen…</button>
+          <button id="btn-project-describe" type="button" class="edit-only" data-i18n>Beschreibung…</button>
+          <hr>
+          <button id="btn-project-export" type="button" title="Ganzes Projekt mit allen Diagrammen als Datei herunterladen" data-i18n-title data-i18n>Exportieren</button>
+          <button id="btn-project-import" type="button" title="Exportiertes Projekt als neues Projekt anlegen" data-i18n-title data-i18n>Projekt importieren…</button>
+          <hr>
+          <button id="btn-project-delete" type="button" class="danger owner-only" title="Nur leere Projekte können gelöscht werden" data-i18n-title data-i18n>Projekt löschen</button>
+        </div>
+      </details>
+      <input id="import-project-file" type="file" accept=".json,application/json" hidden>
+    </div>
+    <p id="project-description" class="muted nav-description"></p>
+    <div class="nav-sections">
+      <div class="nav-section" role="group" aria-label="Architektur" data-i18n-aria-label>
+        <h4 class="nav-section-title" data-i18n>Architektur</h4>
+        <button id="btn-requirements" type="button" class="nav-entry" data-route="#/requirements" title="Anforderungen erarbeiten: einkippen, aufbereiten, Szenarien und Treiber ableiten (eigene Ansicht mit eigenem Chat)" data-i18n-title data-i18n>Anforderungen</button>
+        <button id="nav-arch-drivers" type="button" class="nav-entry" data-route="#/architecture/drivers" title="Treiber: was die Architektur leisten muss, mit Priorität" data-i18n-title data-i18n>Treiber</button>
+        <button id="nav-arch-scenarios" type="button" class="nav-entry" data-route="#/architecture/scenarios" title="Qualitätsszenarien und ihre Analyse" data-i18n-title data-i18n>Szenarien</button>
+        <button id="nav-arch-decisions" type="button" class="nav-entry" data-route="#/architecture/decisions" title="Architekturentscheidungen (ADRs)" data-i18n-title data-i18n>Entscheidungen</button>
+        <button id="nav-arch-stakeholders" type="button" class="nav-entry" data-route="#/architecture/stakeholders" title="Stakeholder und ihre Anliegen" data-i18n-title data-i18n>Stakeholder</button>
+        <button id="btn-model" type="button" class="nav-entry" title="Gemeinsames Projektmodell: Elemente, die mehrere Diagramme zeigen" data-i18n-title data-i18n>Modell</button>
+      </div>
+      <div class="nav-section" role="group" aria-label="Prüfen und Assistent" data-i18n-aria-label>
+        <h4 class="nav-section-title" data-i18n>Prüfen & Assistent</h4>
+        <button id="btn-project-review" type="button" class="nav-entry" aria-pressed="false" title="Ganzes Projekt prüfen: Regeln für Abschnitte und Diagramme, Befunde aller Diagramme, KI-Review des Projekts" data-i18n-title data-i18n>Projekt-Review</button>
+        <button id="btn-project-chat" type="button" class="nav-entry" aria-pressed="false" title="Chat über alle Diagramme des Projekts: Diagramme anlegen, öffnen und nacheinander bearbeiten" data-i18n-title data-i18n>Projekt-Chat</button>
+        <button id="btn-proposals" type="button" class="nav-entry" title="Änderungsvorschläge von Agenten (z. B. Coding-Agenten über MCP): prüfen, übernehmen oder verwerfen" data-i18n-title data-i18n>Vorschläge</button>
+      </div>
+    </div>
+    <div class="nav-tree-head">
+      <span class="muted" data-i18n>Abschnitte und Diagramme</span>
+      <button id="btn-section-new" type="button" title="Neuen Abschnitt auf oberster Ebene anlegen" class="edit-only" data-i18n-title data-i18n>+ Abschnitt</button>
+    </div>
+    <ul id="nav-tree" class="nav-tree" role="tree" aria-label="Abschnitte und Diagramme" data-i18n-aria-label></ul>
+  </aside>
+  <div class="workarea">
+  <main class="layout">
+    <section class="chat">
+      <div id="chat-scope" class="chat-scope hidden" role="status">
+        <span id="chat-scope-label" data-i18n>Projekt-Chat</span>
+        <span class="spacer"></span>
+        <button id="btn-chat-scope-back" type="button" title="Zurück zum Chat des geöffneten Diagramms" data-i18n-title data-i18n>Zum Diagramm-Chat</button>
+      </div>
+      <div id="messages" class="messages"></div>
+      <form id="chat-form" class="composer">
+        <div id="chat-presence" class="chat-presence hidden" role="status"></div>
+        <textarea id="chat-input" rows="3" placeholder="z. B. Füge dem prod-deployment ein VNet hinzu und binde service-a, service-b und service-c dort ein." data-i18n-placeholder></textarea>
+        <div id="speech-preview" class="speech-preview hidden" aria-live="polite"></div>
+        <div class="composer-row">
+          <div class="speech-controls">
+            <button id="btn-mic" type="button" class="mic" data-edit data-edit-restore title="Spracheingabe: gedrückt halten (Push-to-talk) oder im Dauerhören-Modus klicken" aria-pressed="false" aria-label="Spracheingabe" data-i18n-title data-i18n-aria-label>
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 15a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5a4 4 0 0 0 4 4Zm6-4a6 6 0 0 1-5 5.92V20h3v2H8v-2h3v-3.08A6 6 0 0 1 6 11h2a4 4 0 0 0 8 0h2Z"/></svg>
+            </button>
+            <label class="inline small-label" title="Dauerhören: Klick startet und stoppt. Aus: Taste gedrückt halten (Push-to-talk)." data-i18n-title><input id="speech-continuous" type="checkbox"> <span data-i18n>Dauerhören</span></label>
+            <select id="speech-lang" title="Sprache der Spracherkennung" data-i18n-title>
+              <option value="de-DE">de-DE</option>
+              <option value="en-US">en-US</option>
+              <option value="en-GB">en-GB</option>
+            </select>
+            <label class="inline small-label" title="Änderungen erst als Vorschlag zeigen und nach Bestätigung speichern" data-i18n-title><input id="propose-mode" type="checkbox"> <span data-i18n>Vorschau</span></label>
+            <label id="speak-label" class="inline small-label hidden" title="Antwort des Modells nach jeder Änderung vorlesen (Sprachausgabe des Browsers)" data-i18n-title><input id="speak-replies" type="checkbox"> <span data-i18n>Vorlesen</span></label>
+            <details id="voice-help" class="menu up">
+              <summary title="Sprachbefehle anzeigen" data-i18n-title>?</summary>
+              <div class="menu-items voice-help-items">
+                <strong data-i18n>Sprachbefehle (ohne LLM)</strong>
+                <table id="voice-help-table"><tbody></tbody></table>
+                <span class="muted" data-i18n>Alles andere landet als Text im Eingabefeld.</span>
+              </div>
+            </details>
+            <span id="speech-state" class="muted"></span>
+          </div>
+          <span id="status" class="muted"></span>
+          <button id="btn-send" type="submit" data-i18n>Senden</button>
+        </div>
+      </form>
+    </section>
+
+    <div id="splitter" class="splitter" role="separator" aria-orientation="vertical" aria-label="Breite des Chat-Bereichs ändern (Pfeiltasten)" tabindex="0" data-i18n-aria-label></div>
+
+    <section class="canvas">
+      <div class="canvas-toolbar">
+        <strong id="diagram-title"></strong>
+        <span id="diagram-stats" class="muted"></span>
+        <span id="presence" class="presence" aria-label="Ebenfalls hier" data-i18n-aria-label></span>
+        <span class="spacer"></span>
+        <span class="tool-group">
+          <label class="field">
+            <span data-i18n>Richtung</span>
+            <select id="direction-select" title="Layout-Richtung des Diagramms (wird als Version gespeichert)" data-edit data-i18n-title></select>
+          </label>
+          <details id="completeness-menu" class="menu completeness-menu hidden">
+            <summary id="completeness-summary" title="Welche Beziehungsarten des Projektmodells dieses Diagramm vollständig zeigt (offene Welt: ohne Angabe sagt ein Diagramm nichts über Fehlendes)" data-i18n-title data-i18n>Vollständigkeit: offen</summary>
+            <div id="completeness-kinds" class="menu-items" data-edit-zone></div>
+          </details>
+        </span>
+        <button id="btn-review" type="button" aria-pressed="false" title="Architektur prüfen: Stärken, Risiken und Verbesserungen, Befunde im Diagramm markieren" data-i18n-title data-i18n>Review</button>
+      </div>
+      <div class="canvas-toolbar views">
+        <nav id="breadcrumb" class="breadcrumb" aria-label="Fokus" data-i18n-aria-label></nav>
+        <span class="tool-group">
+          <label class="field">
+            <span data-i18n>Ansicht</span>
+            <select id="focus-select" title="Auf einen Container fokussieren" data-i18n-title></select>
+          </label>
+          <button id="btn-focus-up" title="Eine Ebene höher (Alt+↑)" data-i18n-title data-i18n>↑ Ebene höher</button>
+          <button id="btn-edit-focus" title="Fokussierten Container bearbeiten" disabled data-i18n-title data-i18n>Bearbeiten</button>
+        </span>
+        <span id="preview-banner" class="banner hidden"></span>
+        <span class="spacer"></span>
+        <span class="tool-group" role="group" aria-label="Zoom" data-i18n-aria-label>
+          <button id="btn-zoom-out" title="Verkleinern (Mausrad)" data-i18n-title>−</button>
+          <button id="btn-zoom-reset" title="Zoom auf 100 % zurücksetzen" data-i18n-title>100 %</button>
+          <button id="btn-zoom-in" title="Vergrößern (Mausrad)" data-i18n-title>+</button>
+          <button id="btn-fit" title="Diagramm einpassen (Doppelklick auf die Fläche)" data-i18n-title data-i18n>Einpassen</button>
+        </span>
+        <span class="tool-group">
+          <button id="btn-source" title="Mermaid-Quelltext ein-/ausblenden" data-i18n-title data-i18n>Quelltext</button>
+          <details id="export-menu" class="menu">
+            <summary title="Aktuelle Ansicht exportieren" data-i18n-title data-i18n>Export</summary>
+            <div class="menu-items">
+              <button id="exp-svg" type="button" data-i18n>SVG herunterladen</button>
+              <button id="exp-png" type="button" data-i18n>PNG herunterladen (2×)</button>
+              <button id="exp-mmd" type="button" data-i18n>Mermaid-Quelltext kopieren</button>
+              <button id="exp-json" type="button" title="Ganzes Diagramm als Modell (wieder importierbar)" data-i18n-title data-i18n>JSON herunterladen</button>
+              <button id="exp-puml" type="button" title="Ganzes Diagramm als PlantUML-Verteilungsdiagramm" data-i18n-title data-i18n>PlantUML herunterladen</button>
+              <label class="inline"><input id="exp-highlight" type="checkbox"> <span data-i18n>Hervorhebung behalten</span></label>
+            </div>
+          </details>
+        </span>
+      </div>
+      <div id="compare-banner" class="canvas-toolbar compare-bar hidden" role="status">
+        <span id="compare-text"></span>
+        <span class="legend"><i class="added"></i><span data-i18n>neu</span> <i class="removed"></i><span data-i18n>entfernt</span> <i class="changed"></i><span data-i18n>geändert</span></span>
+        <span class="spacer"></span>
+        <button id="btn-compare-end" type="button" title="Vergleich schließen und aktuellen Stand zeigen" data-i18n-title data-i18n>Beenden</button>
+      </div>
+      <div class="stage">
+      <div id="diagram" class="diagram"><div id="viewport" class="viewport"></div></div>
+      <aside id="review" class="review hidden" aria-label="Architektur-Review" data-i18n-aria-label>
+        <div class="inspector-head">
+          <strong id="review-title" data-i18n>Architektur-Review</strong>
+          <span class="spacer"></span>
+          <button id="review-close" type="button" title="Schließen" data-i18n-title>×</button>
+        </div>
+        <div class="review-actions">
+          <button id="review-run-checks" type="button" title="Regelbasierte Prüfungen erneut ausführen (ohne KI)" data-i18n-title data-i18n>Regeln prüfen</button>
+          <button id="review-run-llm" type="button" title="Diagramm vom Sprachmodell begutachten lassen (Stärken, Risiken, Verbesserungen)" data-i18n-title data-i18n>KI-Review</button>
+        </div>
+        <p id="review-summary" class="review-summary hidden"></p>
+        <p id="review-stale" class="review-stale hidden" data-i18n>Diagramm geändert – KI-Review erneut ausführen</p>
+        <div id="review-status" class="muted review-status" role="status"></div>
+        <div id="review-list" class="review-list"></div>
+      </aside>
+      <aside id="inspector" class="inspector hidden" aria-label="Element bearbeiten" data-i18n-aria-label>
+        <div class="inspector-head">
+          <strong id="insp-title"></strong>
+          <code id="insp-id" class="muted"></code>
+          <span class="spacer"></span>
+          <button id="insp-close" type="button" title="Schließen (Esc)" data-i18n-title>×</button>
+        </div>
+        <div id="insp-conflict" class="inspector-body inspector-conflict hidden" role="alert"></div>
+        <form id="insp-form" class="inspector-body node-only" data-edit-zone>
+          <label><span data-i18n>Name</span> <input id="insp-name" required></label>
+          <label><span data-i18n>Art</span> <select id="insp-kind"></select></label>
+          <label><span data-i18n>Container</span> <select id="insp-parent"></select></label>
+          <label><span data-i18n>Notiz</span> <textarea id="insp-description" rows="3" maxlength="2000" placeholder="Zweck, Entscheidungen, offene Punkte …" data-i18n-placeholder></textarea></label>
+          <fieldset>
+            <legend data-i18n>Eigenschaften</legend>
+            <table id="insp-props"><tbody></tbody></table>
+            <button id="insp-prop-add" type="button" class="small" data-i18n>+ Eigenschaft</button>
+          </fieldset>
+          <div id="insp-error" class="inspector-error hidden" role="alert"></div>
+          <menu>
+            <button id="insp-save" type="submit" data-i18n>Speichern</button>
+          </menu>
+        </form>
+        <section class="inspector-body node-only">
+          <h4 data-i18n>Kanten</h4>
+          <table id="insp-edges"><tbody></tbody></table>
+          <p id="insp-no-edges" class="muted hidden" data-i18n>Keine Kanten.</p>
+        </section>
+        <section class="inspector-body danger-zone node-only">
+          <label id="insp-cascade-label" class="inline hidden"><input id="insp-cascade" type="checkbox"> <span data-i18n>Inhalt mitlöschen</span></label>
+          <button id="insp-delete" type="button" class="danger" data-i18n>Element löschen</button>
+        </section>
+        <form id="insp-element-form" class="inspector-body element-only" data-edit-zone>
+          <div id="insp-element-fields"></div>
+          <div id="insp-element-error" class="inspector-error hidden" role="alert"></div>
+          <menu>
+            <button id="insp-element-save" type="submit" data-i18n>Speichern</button>
+          </menu>
+        </form>
+        <section id="insp-model" class="inspector-body insp-model hidden" aria-label="Projektelement" data-edit-zone data-i18n-aria-label></section>
+        <section id="insp-relation" class="inspector-body insp-model element-only hidden" aria-label="Projektbeziehung" data-edit-zone data-i18n-aria-label></section>
+        <section class="inspector-body danger-zone element-only">
+          <button id="insp-element-delete" type="button" class="danger" data-i18n>Element löschen</button>
+        </section>
+      </aside>
+      </div>
+      <pre id="source" class="source hidden"></pre>
+    </section>
+
+    <section id="architecture-view" class="architecture-view hidden" aria-labelledby="arch-heading">
+      <header class="page-header">
+        <h2 id="arch-heading" data-i18n>Architektur</h2>
+        <p class="muted" data-i18n>Treiber, Qualitätsszenarien, Entscheidungen und Stakeholder des Projekts. Der Assistent richtet sich danach.</p>
+      </header>
+      <div id="arch-tabs" class="arch-tabs" role="tablist" aria-label="Bereiche" data-i18n-aria-label>
+        <button type="button" role="tab" id="arch-tab-drivers" data-tab="drivers" data-route="#/architecture/drivers" aria-controls="arch-panel-drivers" aria-selected="true" data-i18n>Treiber</button>
+        <button type="button" role="tab" id="arch-tab-scenarios" data-tab="scenarios" data-route="#/architecture/scenarios" aria-controls="arch-panel-scenarios" aria-selected="false" data-i18n>Szenarien</button>
+        <button type="button" role="tab" id="arch-tab-decisions" data-tab="decisions" data-route="#/architecture/decisions" aria-controls="arch-panel-decisions" aria-selected="false" data-i18n>Entscheidungen</button>
+        <button type="button" role="tab" id="arch-tab-stakeholders" data-tab="stakeholders" data-route="#/architecture/stakeholders" aria-controls="arch-panel-stakeholders" aria-selected="false" data-i18n>Stakeholder</button>
+      </div>
+      <section id="arch-panel-drivers" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-drivers">
+        <div class="md-toolbar">
+          <input id="drivers-filter" type="search" class="md-filter" placeholder="Treiber filtern …" aria-label="Treiber filtern" autocomplete="off" data-i18n-placeholder data-i18n-aria-label>
+          <label class="inline small-label"><input id="drivers-show-retired" type="checkbox"> <span data-i18n>Außer Kraft anzeigen</span></label>
+          <button id="driver-add" type="button" class="btn primary" data-edit data-i18n>+ Treiber</button>
+        </div>
+        <p class="md-intro muted" data-i18n>Was die Architektur leisten muss, nach Priorität wie im ATAM-Utility-Tree: Wichtigkeit fürs Geschäft × technisches Risiko (H/M/L). Der Assistent wägt seine Vorschläge gegen die wichtigsten Treiber ab.</p>
+        <div class="md">
+          <div class="md-side">
+            <ul id="drivers-list" class="md-list"></ul>
+            <div id="drivers-empty" class="empty-state hidden">
+              <strong data-i18n>Noch keine Treiber</strong>
+              <p data-i18n>Lege z. B. ein Qualitätsziel „Verfügbarkeit 99,9 %“ oder eine Randbedingung „nur Azure“ an.</p>
+            </div>
+          </div>
+          <form id="driver-form" class="md-detail card" data-edit-zone>
+            <header class="md-detail-head"><h3 id="driver-form-heading" data-i18n>Neuer Treiber</h3></header>
+            <label class="field-col"><span data-i18n>Titel</span><input id="driver-title" maxlength="120" autocomplete="off" placeholder="z. B. Verfügbarkeit 99,9 %" data-i18n-placeholder></label>
+            <div class="field-row">
+              <label class="field-col"><span data-i18n>Art</span><select id="driver-kind"></select></label>
+              <label class="field-col"><span data-i18n>Wichtigkeit</span><select id="driver-importance"></select></label>
+              <label class="field-col"><span data-i18n>Risiko</span><select id="driver-risk"></select></label>
+            </div>
+            <label class="field-col"><span data-i18n>Beschreibung</span><textarea id="driver-description" rows="3" maxlength="1000" placeholder="Möglichst messbar (z. B. 99,9 % Verfügbarkeit pro Monat)" data-i18n-placeholder></textarea></label>
+            <label class="field-col"><span data-i18n>Betroffene Projektelemente</span><select id="driver-elements" multiple></select></label>
+            <label class="field-col"><span data-i18n>Anforderungen, die der Treiber abdeckt</span><select id="driver-requirements" class="req-pick" multiple></select></label>
+            <footer class="md-actions">
+              <button id="driver-save" type="submit" class="btn primary" data-edit data-i18n>Anlegen</button>
+              <button id="driver-cancel" type="button" class="btn" data-i18n>Zurücksetzen</button>
+              <span class="md-actions-end">
+                <button id="driver-up" type="button" class="btn ghost small" data-edit title="Innerhalb der Priorität nach oben" aria-label="Innerhalb der Priorität nach oben" data-i18n-title data-i18n-aria-label>↑</button>
+                <button id="driver-down" type="button" class="btn ghost small" data-edit title="Innerhalb der Priorität nach unten" aria-label="Innerhalb der Priorität nach unten" data-i18n-title data-i18n-aria-label>↓</button>
+                <button id="driver-retire" type="button" class="btn" data-edit title="Ein außer Kraft gesetzter Treiber fließt nicht mehr in Prompts, Prüfregeln und Abdeckung ein; erst dann lässt er sich löschen" data-i18n-title data-i18n>Außer Kraft setzen</button>
+                <button id="driver-delete" type="button" class="btn danger" data-edit data-i18n>Löschen</button>
+              </span>
+            </footer>
+          </form>
+        </div>
+        <p id="drivers-status" class="md-status muted" role="status"></p>
+      </section>
+      <section id="arch-panel-scenarios" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-scenarios" hidden>
+        <div class="md-toolbar">
+          <input id="scenarios-filter" type="search" class="md-filter" placeholder="Szenarien filtern …" aria-label="Szenarien filtern" autocomplete="off" data-i18n-placeholder data-i18n-aria-label>
+          <label class="inline small-label"><input id="scenarios-show-retired" type="checkbox"> <span data-i18n>Außer Kraft anzeigen</span></label>
+          <button id="scenario-add" type="button" class="btn primary" data-edit data-i18n>+ Szenario</button>
+        </div>
+        <p class="md-intro muted"><span data-i18n>Qualitätsszenarien beschreiben Treiber konkret, in den sechs Teilen von ATAM. Ein Szenario dient höchstens einem Treiber; Kernszenarien (★) sind die Kernziele ihres Treibers.</span> <strong data-i18n>Analysieren</strong> <span data-i18n>spielt ein Szenario durch und schlägt Optionen vor; eine gewählte Option wird zum Entscheidungsentwurf.</span></p>
+        <div class="md">
+          <div class="md-side">
+            <div id="scenarios-list" class="scenarios-list"></div>
+            <div id="scenarios-empty" class="empty-state hidden">
+              <strong data-i18n>Noch keine Szenarien</strong>
+              <p data-i18n>Beispiel: „Was, wenn Region A ausfällt?“ für den Treiber Verfügbarkeit.</p>
+            </div>
+          </div>
+          <div class="md-detail-col">
+            <div class="md-detail-wrap">
+            <button type="button" id="scenario-analyse" class="btn small md-detail-tool" title="Was-wäre-wenn-Analyse: Wirkung auf Treiber, betroffene Elemente, Optionen" hidden data-i18n-title data-i18n>Analysieren</button>
+            <form id="scenario-form" class="md-detail card scenario-form" data-edit-zone>
+              <header class="md-detail-head"><h3 id="scenario-form-heading" data-i18n>Neues Szenario</h3></header>
+              <input type="hidden" id="scenario-id">
+              <label class="field-col"><span data-i18n>Titel</span><input id="scenario-title" maxlength="160" autocomplete="off" placeholder="z. B. Region A fällt aus" data-i18n-placeholder></label>
+              <div class="field-row">
+                <label class="field-col"><span data-i18n>Art</span><select id="scenario-kind"></select></label>
+                <label class="field-col"><span data-i18n>Treiber</span><select id="scenario-driver"></select></label>
+                <label class="field-inline"><input type="checkbox" id="scenario-core"> <span data-i18n>Kernszenario</span></label>
+              </div>
+              <label class="field-col"><span data-i18n>Anforderungen, denen das Szenario dient</span><select id="scenario-requirements" class="req-pick" multiple></select></label>
+              <div id="scenario-parts" class="scenario-parts"></div>
+              <footer class="md-actions">
+                <button type="submit" id="scenario-save" class="btn primary" data-edit data-i18n>Anlegen</button>
+                <button type="button" id="scenario-cancel" class="btn" data-i18n>Zurücksetzen</button>
+                <span class="md-actions-end">
+                  <button type="button" id="scenario-retire" class="btn" data-edit hidden title="Ein außer Kraft gesetztes Szenario fließt nicht mehr in Prompts, Prüfregeln und Abdeckung ein; erst dann lässt es sich löschen" data-i18n-title data-i18n>Außer Kraft setzen</button>
+                  <button type="button" id="scenario-delete" class="btn danger" data-edit hidden data-i18n>Löschen</button>
+                </span>
+              </footer>
+            </form>
+            </div>
+            <div id="scenario-analysis" class="scenario-analysis card"></div>
+          </div>
+        </div>
+        <p id="scenarios-status" class="md-status muted" role="status"></p>
+      </section>
+      <section id="arch-panel-decisions" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-decisions" hidden>
+        <div class="md-toolbar">
+          <input id="decisions-filter" type="search" class="md-filter" placeholder="Entscheidungen filtern …" aria-label="Entscheidungen filtern" autocomplete="off" data-i18n-placeholder data-i18n-aria-label>
+          <button id="decision-add" type="button" class="btn primary" data-edit data-i18n>+ Entscheidung</button>
+        </div>
+        <p class="md-intro muted"><span data-i18n>Architekturentscheidungen (ADRs): aus einer Szenario-Analyse oder von Hand.</span> <strong data-i18n>Angenommene</strong> <span data-i18n>Entscheidungen binden den Assistenten und das KI-Review: Beide weisen darauf hin, wenn eine Änderung oder ein Diagramm einer Entscheidung widerspricht.</span></p>
+        <div class="md">
+          <div class="md-side">
+            <ul id="decisions-list" class="md-list"></ul>
+            <div id="decisions-empty" class="empty-state hidden">
+              <strong data-i18n>Noch keine Entscheidungen</strong>
+              <p data-i18n>Analysiere ein Szenario und halte eine Option als Entscheidung fest, oder lege eine von Hand an.</p>
+            </div>
+          </div>
+          <div class="md-detail-col">
+            <div id="decision-empty-detail" class="empty-state card">
+              <strong data-i18n>Keine Entscheidung gewählt</strong>
+              <p><span data-i18n>Wähle links eine Entscheidung oder lege mit</span> <em data-i18n>+ Entscheidung</em> <span data-i18n>eine neue an.</span></p>
+            </div>
+            <form id="decision-form" class="md-detail card decision-form hidden" data-edit-zone>
+              <header class="md-detail-head"><h3 id="decision-form-heading"></h3></header>
+              <div class="field-row">
+                <label class="field-col grow"><span data-i18n>Titel</span><input id="decision-title" aria-label="Titel der Entscheidung" maxlength="160" autocomplete="off" data-i18n-aria-label></label>
+                <label class="field-col"><span data-i18n>Status</span><select id="decision-status" aria-label="Status" data-i18n-aria-label></select></label>
+                <label class="field-col"><span data-i18n>Ersetzt durch</span><select id="decision-superseded" aria-label="Ersetzt durch" data-i18n-aria-label></select></label>
+              </div>
+              <label class="field-col"><span data-i18n>Anforderungen, die die Entscheidung abdeckt</span><select id="decision-requirements" class="req-pick" multiple aria-label="Anforderungen" data-i18n-aria-label></select></label>
+              <label class="field-col"><span data-i18n>Kontext</span><textarea id="decision-context" rows="5" maxlength="3000"></textarea></label>
+              <div id="decision-options" class="decision-options"></div>
+              <label class="field-col"><span data-i18n>Entscheidung und Begründung</span><textarea id="decision-text" rows="4" maxlength="3000"></textarea></label>
+              <label class="field-col"><span data-i18n>Konsequenzen</span><textarea id="decision-consequences" rows="4" maxlength="3000"></textarea></label>
+              <p id="decision-refs" class="muted"></p>
+              <footer class="md-actions">
+                <button type="submit" id="decision-save" class="btn primary" data-edit data-i18n>Speichern</button>
+                <button type="button" id="decision-close" class="btn" data-i18n>Schließen</button>
+                <span class="md-actions-end">
+                  <a id="decision-markdown" class="btn button-link" download data-i18n>Als Markdown</a>
+                  <button type="button" id="decision-delete" class="btn danger" data-edit data-i18n>Löschen</button>
+                </span>
+              </footer>
+            </form>
+          </div>
+        </div>
+        <p id="decisions-status" class="md-status muted" role="status"></p>
+      </section>
+      <section id="arch-panel-stakeholders" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-stakeholders" hidden>
+        <div class="md-toolbar">
+          <input id="stakeholders-filter" type="search" class="md-filter" placeholder="Stakeholder filtern …" aria-label="Stakeholder filtern" autocomplete="off" data-i18n-placeholder data-i18n-aria-label>
+          <button id="stakeholder-add" type="button" class="btn primary" data-edit data-i18n>+ Stakeholder</button>
+        </div>
+        <p class="md-intro muted" data-i18n>Wer ein Interesse an der Architektur hat: Rolle, Anliegen, Einfluss und die Treiber, die ihnen wichtig sind. Assistent und Analyse sagen, wessen Anliegen eine Option dient oder schadet.</p>
+        <div class="md">
+          <div class="md-side">
+            <ul id="stakeholders-list" class="md-list"></ul>
+            <div id="stakeholders-empty" class="empty-state hidden">
+              <strong data-i18n>Noch keine Stakeholder</strong>
+              <p data-i18n>Beispiel: „Betrieb“ (Rolle SRE, Anliegen: ruhige Nächte).</p>
+            </div>
+          </div>
+          <form id="stakeholder-form" class="md-detail card" data-edit-zone>
+            <header class="md-detail-head"><h3 id="stakeholder-form-heading" data-i18n>Neuer Stakeholder</h3></header>
+            <div class="field-row">
+              <label class="field-col grow"><span data-i18n>Name</span><input id="stakeholder-name" maxlength="120" autocomplete="off" placeholder="z. B. Betrieb" data-i18n-placeholder></label>
+              <label class="field-col grow"><span data-i18n>Rolle</span><input id="stakeholder-role" maxlength="120" autocomplete="off" placeholder="z. B. SRE" data-i18n-placeholder></label>
+              <label class="field-col"><span data-i18n>Einfluss</span><select id="stakeholder-influence"></select></label>
+            </div>
+            <label class="field-col"><span data-i18n>Anliegen und Erwartungen</span><textarea id="stakeholder-concerns" rows="3" maxlength="1000"></textarea></label>
+            <label class="field-col"><span data-i18n>Treiber, die ihnen wichtig sind</span><select id="stakeholder-drivers" multiple></select></label>
+            <footer class="md-actions">
+              <button id="stakeholder-save" type="submit" class="btn primary" data-edit data-i18n>Anlegen</button>
+              <button id="stakeholder-cancel" type="button" class="btn" data-i18n>Zurücksetzen</button>
+              <span class="md-actions-end"><button id="stakeholder-delete" type="button" class="btn danger" data-edit data-i18n>Löschen</button></span>
+            </footer>
+          </form>
+        </div>
+        <p id="stakeholders-status" class="md-status muted" role="status"></p>
+      </section>
+    </section>
+
+    <section id="requirements-view" class="requirements-view hidden" aria-label="Anforderungen" data-i18n-aria-label>
+      <div class="canvas-toolbar">
+        <strong data-i18n>Anforderungen</strong>
+        <span id="req-total" class="muted"></span>
+        <span class="spacer"></span>
+        <button id="req-import" type="button" data-edit title="Liste einfügen oder Datei wählen (Zeilen, Markdown, CSV)" data-i18n-title data-i18n>Importieren…</button>
+        <button id="req-matrix" type="button" title="Rückverfolgbarkeit: welche Anforderung durch Treiber, Szenarien und Entscheidungen gedeckt ist" data-i18n-title data-i18n>Matrix</button>
+        <button id="req-to-diagram" type="button" title="Zurück zum Diagramm" data-i18n-title data-i18n>Zum Diagramm</button>
+      </div>
+      <div id="req-pipeline" class="req-pipeline" role="group" aria-label="Schritte" data-i18n-aria-label></div>
+      <div class="req-filters">
+        <select id="req-filter-kind" aria-label="Art" data-i18n-aria-label></select>
+        <select id="req-filter-coverage" aria-label="Abdeckung" data-i18n-aria-label></select>
+        <input id="req-filter-theme" placeholder="Thema" aria-label="Thema" data-i18n-placeholder data-i18n-aria-label>
+        <input id="req-filter-q" placeholder="Suchen …" aria-label="Suchen" data-i18n-placeholder data-i18n-aria-label>
+        <label class="inline small-label"><input id="req-filter-suggested" type="checkbox"> <span data-i18n>mit Vorschlag</span></label>
+      </div>
+      <div class="req-actions" data-edit-zone>
+        <button id="req-refine" type="button" title="Ein Assistent schlägt die normalisierte Form vor (25 pro Durchgang); du übernimmst" data-i18n-title data-i18n>Rohe aufbereiten</button>
+        <button id="req-accept" type="button" title="Die Vorschläge der ausgewählten Zeilen übernehmen" data-i18n-title data-i18n>Übernehmen</button>
+        <button id="req-accept-safe" type="button" title="Alle Vorschläge ohne offenen Widerspruch oder Duplikat übernehmen" data-i18n-title data-i18n>Unauffällige übernehmen</button>
+        <button id="req-derive" type="button" title="Treiber und Szenarien als Vorschlag ableiten (unter Vorschläge); nur aus verfeinerten Anforderungen" data-i18n-title data-i18n>Ableiten</button>
+        <button id="req-reject" type="button" class="danger" title="Ausgewählte als verworfen markieren" data-i18n-title data-i18n>Verwerfen</button>
+        <button id="req-delete" type="button" class="danger" title="Ausgewählte endgültig löschen (nach Rückfrage)" data-i18n-title data-i18n>Löschen</button>
+        <button id="req-cancel" type="button" class="hidden" data-i18n>Abbrechen</button>
+        <span class="spacer"></span>
+        <button id="req-select-all" type="button" class="small" data-i18n>Alle auswählen</button>
+        <button id="req-select-none" type="button" class="small" data-i18n>Keine</button>
+        <span id="req-selection" class="muted"></span>
+      </div>
+      <p id="req-status" class="muted req-status" role="status"></p>
+      <div class="req-body">
+        <div class="req-table-wrap">
+          <table id="req-table" class="req-table">
+            <thead><tr><th></th><th>ID</th><th data-i18n>Aussage</th><th data-i18n>Art</th><th data-i18n>Prio</th><th data-i18n>Thema</th><th data-i18n>Abdeckung</th><th data-i18n>Schritt</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p id="req-empty" class="muted hidden"><span data-i18n>Noch keine Anforderungen. Mit</span> <strong data-i18n>Importieren…</strong> <span data-i18n>eine Liste einfügen oder im Chat links aufnehmen lassen.</span></p>
+          <button id="req-more" type="button" class="hidden" data-i18n>Mehr laden</button>
+        </div>
+        <aside id="req-detail" class="req-detail hidden" aria-label="Anforderung" data-i18n-aria-label></aside>
+      </div>
+    </section>
+  </main>
+  <div id="empty-project" class="empty-project hidden" role="status">
+    <p id="empty-text" data-i18n>Dieses Projekt enthält noch keine Diagramme.</p>
+    <button id="btn-empty-new" type="button" data-i18n>Neues Diagramm anlegen</button>
+    <section id="empty-starters" class="starters edit-only hidden" aria-label="Schnellstart" data-i18n-aria-label>
+      <h2 data-i18n>Oder starten Sie mit einem Beispiel</h2>
+      <div id="starter-cards" class="starter-cards"></div>
+      <button id="btn-tour-start" type="button" class="link" data-i18n>Kurzer Rundgang durch die Oberfläche</button>
+    </section>
+  </div>
+  <aside id="tour" class="tour hidden" role="dialog" aria-labelledby="tour-title" aria-live="polite">
+    <strong id="tour-title"></strong>
+    <p id="tour-text"></p>
+    <div class="tour-row">
+      <span id="tour-count" class="muted"></span>
+      <span class="spacer"></span>
+      <button id="tour-close" type="button" data-i18n>Beenden</button>
+      <button id="tour-prev" type="button" data-i18n>Zurück</button>
+      <button id="tour-next" type="button" class="primary" data-i18n>Weiter</button>
+    </div>
+  </aside>
+  </div>
+  </div>
+
+  <dialog id="palette" class="palette" aria-label="Befehlspalette" data-i18n-aria-label>
+    <div class="palette-box">
+      <input id="palette-input" class="palette-input" type="text" role="combobox" aria-expanded="true" aria-controls="palette-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Befehl, Bereich oder Diagramm suchen …" aria-label="Befehl suchen" data-i18n-placeholder data-i18n-aria-label>
+      <ul id="palette-list" class="palette-list" role="listbox" aria-label="Ergebnisse" data-i18n-aria-label></ul>
+      <p id="palette-empty" class="palette-empty hidden" data-i18n>Nichts gefunden.</p>
+      <p class="palette-hint"><span><kbd class="kbd">↑</kbd> <kbd class="kbd">↓</kbd> <span data-i18n>wählen</span></span> <span><kbd class="kbd">↵</kbd> <span data-i18n>ausführen</span></span> <span><kbd class="kbd" data-i18n>Esc</kbd> <span data-i18n>schließen</span></span></p>
+    </div>
+  </dialog>
+
+  <dialog id="new-dialog">
+    <form method="dialog" id="new-form">
+      <h3 data-i18n>Neues Diagramm</h3>
+      <label><span data-i18n>Titel</span> <input id="new-title" required placeholder="Produktions-Deployment" data-i18n-placeholder></label>
+      <label><span data-i18n>Typ</span> <select id="new-type"></select></label>
+      <label><span data-i18n>Vorlage</span> <select id="new-template"></select></label>
+      <label><span data-i18n>Abschnitt</span> <select id="new-section"></select></label>
+      <menu>
+        <button value="cancel" type="button" id="new-cancel" data-i18n>Abbrechen</button>
+        <button value="ok" type="submit" data-i18n>Anlegen</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="compare-dialog">
+    <form method="dialog" id="compare-form">
+      <h3 data-i18n>Versionen vergleichen</h3>
+      <label><span data-i18n>Von</span> <select id="compare-base"></select></label>
+      <label><span data-i18n>Bis</span> <select id="compare-target"></select></label>
+      <menu>
+        <button value="cancel" type="button" id="compare-cancel" data-i18n>Abbrechen</button>
+        <button value="ok" type="submit" data-i18n>Vergleichen</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="settings-dialog" class="members-dialog settings-dialog" aria-labelledby="settings-heading">
+    <h3 id="settings-heading" data-i18n>Persönliche Einstellungen</h3>
+    <p id="settings-user" class="muted"></p>
+    <fieldset>
+      <legend data-i18n>Darstellung</legend>
+      <label class="field" title="Sprache der Oberfläche und der Antworten (die Seite wird neu geladen)" data-i18n-title>
+        <span data-i18n>Sprache</span>
+        <select id="language-select"></select>
+      </label>
+      <label class="field" title="Aussehen der Oberfläche (das Diagramm bleibt unverändert)" data-i18n-title>
+        <span data-i18n>Design</span>
+        <select id="skin-select"></select>
+      </label>
+    </fieldset>
+    <fieldset>
+      <legend data-i18n>Agenten</legend>
+      <p class="muted" data-i18n>Persönliche Zugangstokens für Coding-Agenten (MCP) anlegen und widerrufen.</p>
+      <button id="btn-agent-access" type="button" title="Zugang für Agenten (MCP): persönliche Zugangstokens anlegen und widerrufen" data-i18n-title data-i18n>Agenten-Zugang…</button>
+    </fieldset>
+    <fieldset>
+      <legend data-i18n>Sprachmodell</legend>
+      <span id="provider-info" class="muted"></span>
+    </fieldset>
+    <menu>
+      <button id="settings-close" type="button" data-i18n>Schließen</button>
+    </menu>
+  </dialog>
+
+  <dialog id="name-dialog">
+    <form method="dialog" id="name-form">
+      <h3 id="name-heading">Name</h3>
+      <label><span id="name-label">Name</span> <input id="name-input" autocomplete="off"></label>
+      <menu>
+        <button value="cancel" type="button" id="name-cancel" data-i18n>Abbrechen</button>
+        <button value="ok" type="submit">OK</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="model-dialog" class="model-dialog" aria-labelledby="model-heading">
+    <h3 id="model-heading" data-i18n>Projektmodell</h3>
+    <p class="muted" data-i18n>Elemente, die mehrere Diagramme zeigen. Eine Umbenennung hier erreicht jedes Diagramm, das das Element zeigt.</p>
+    <p id="model-empty" class="muted hidden" data-i18n>Noch keine Projektelemente. Lege eines an oder wähle im Inspektor „Als Projektelement anlegen“.</p>
+    <ul id="model-list" class="model-list" data-edit-zone></ul>
+    <form id="model-new" class="model-new">
+      <input id="model-new-name" placeholder="Name" aria-label="Name des neuen Elements" autocomplete="off" data-i18n-placeholder data-i18n-aria-label>
+      <select id="model-new-kind" aria-label="Art des neuen Elements" data-i18n-aria-label></select>
+      <input id="model-new-description" placeholder="Beschreibung (optional)" aria-label="Beschreibung des neuen Elements" autocomplete="off" data-i18n-placeholder data-i18n-aria-label>
+      <button type="submit" data-i18n>Anlegen</button>
+    </form>
+    <h4 data-i18n>Beziehungen</h4>
+    <p class="muted" data-i18n>Wer mit wem kommuniziert, was worauf läuft, wohin Daten fließen. Kanten und Nachrichten der Diagramme zeigen sie; was ein Diagramm weglässt, sagt nichts aus.</p>
+    <p id="relation-empty" class="muted hidden" data-i18n>Noch keine Beziehungen.</p>
+    <ul id="relation-list" class="model-list relation-list" data-edit-zone></ul>
+    <form id="relation-new" class="model-new relation-new">
+      <select id="relation-new-source" aria-label="Von Element" data-i18n-aria-label></select>
+      <select id="relation-new-kind" aria-label="Art der Beziehung" data-i18n-aria-label></select>
+      <select id="relation-new-target" aria-label="Zu Element" data-i18n-aria-label></select>
+      <input id="relation-new-description" placeholder="Beschreibung (optional)" aria-label="Beschreibung der neuen Beziehung" autocomplete="off" maxlength="300" data-i18n-placeholder data-i18n-aria-label>
+      <button type="submit" data-i18n>Beziehung anlegen</button>
+    </form>
+    <div id="relation-matrix" class="relation-matrix hidden" role="region" aria-label="Beziehungen × Diagramme" data-i18n-aria-label></div>
+    <p id="model-status" class="muted" role="status"></p>
+    <menu>
+      <button id="model-matrix" type="button" aria-pressed="false" title="Welche Diagramme welche Beziehung zeigen" data-i18n-title data-i18n>Matrix</button>
+      <button id="model-adopt" type="button" title="Unverknüpfte Bausteine aller Diagramme (Knoten, Lebenslinien, Partitionen) mit gleichnamigen Projektelementen verknüpfen oder als neue anlegen" data-i18n-title data-i18n>Unverknüpfte übernehmen…</button>
+      <button id="model-sync" type="button" title="Verknüpfte Elemente aller Diagramme auf die Namen des Modells bringen" data-i18n-title data-i18n>Abgleichen</button>
+      <button id="model-close" type="button" data-i18n>Schließen</button>
+    </menu>
+  </dialog>
+
+  <dialog id="agent-dialog" class="model-dialog agent-dialog" aria-labelledby="agent-heading">
+    <h3 id="agent-heading" data-i18n>Zugang für Agenten</h3>
+    <p class="muted"><span data-i18n>Coding-Agenten lesen Komponenten, Zuständigkeiten, Beziehungen und Codeverknüpfungen über den MCP-Endpunkt</span> <code id="agent-url"></code> <span data-i18n>und schlagen Änderungen vor. Sie ändern Diagramme nie selbst: Vorschläge übernimmst du im Dialog „Vorschläge“.</span></p>
+    <p id="agent-disabled" class="muted agent-warning hidden" data-i18n>Der MCP-Endpunkt ist auf diesem Server nicht eingeschaltet (Umgebungsvariable ARCVIZ_MCP=1).</p>
+    <p id="agent-oauth" class="muted hidden" data-i18n>Clients mit OAuth-Unterstützung melden sich selbst an; ein Token brauchst du für sie nicht.</p>
+    <p id="agent-admin" class="muted hidden" data-i18n>Dieser Server nutzt einen gemeinsamen Zugangstoken: jedes Token handelt als Administrator.</p>
+    <h4 data-i18n>Meine Tokens</h4>
+    <p id="agent-empty" class="muted hidden" data-i18n>Noch keine Tokens.</p>
+    <ul id="agent-list" class="model-list agent-list"></ul>
+    <form id="agent-new" class="model-new agent-new">
+      <input id="agent-new-label" placeholder="Bezeichnung (z. B. Laptop)" aria-label="Bezeichnung des Tokens" autocomplete="off" maxlength="64" data-i18n-placeholder data-i18n-aria-label>
+      <select id="agent-new-scope" aria-label="Berechtigung" data-i18n-aria-label>
+        <option value="read" data-i18n>nur lesen</option>
+        <option value="write" data-i18n>lesen und schreiben (Codeverknüpfungen, Vorschläge)</option>
+      </select>
+      <select id="agent-new-days" aria-label="Gültigkeit" data-i18n-aria-label>
+        <option value="30" data-i18n>30 Tage</option>
+        <option value="90" selected data-i18n>90 Tage</option>
+        <option value="365" data-i18n>365 Tage</option>
+      </select>
+      <button type="submit" data-i18n>Token anlegen</button>
+    </form>
+    <div id="agent-created" class="agent-created hidden"></div>
+    <p id="agent-status" class="muted" role="status"></p>
+    <menu>
+      <button id="agent-close" type="button" data-i18n>Schließen</button>
+    </menu>
+  </dialog>
+
+  <dialog id="proposal-dialog" class="model-dialog proposal-dialog" aria-labelledby="proposal-heading">
+    <h3 id="proposal-heading" data-i18n>Vorschläge von Agenten</h3>
+    <p class="muted" data-i18n>Agenten schlagen Änderungen vor, sie ändern nichts selbst. Ein Vorschlag wird als eine Version übernommen, solange sich das Diagramm seitdem nicht geändert hat.</p>
+    <p id="proposal-empty" class="muted hidden" data-i18n>Keine Vorschläge.</p>
+    <ul id="proposal-list" class="model-list proposal-list"></ul>
+    <p id="proposal-status" class="muted" role="status"></p>
+    <menu>
+      <button id="proposal-close" type="button" data-i18n>Schließen</button>
+    </menu>
+  </dialog>
+
+  <dialog id="req-import-dialog" class="model-dialog" aria-labelledby="req-import-heading">
+    <h3 id="req-import-heading" data-i18n>Anforderungen importieren</h3>
+    <p class="muted" data-i18n>Eine Anforderung pro Zeile (Aufzählungszeichen und Nummern werden entfernt), Markdown (Überschriften werden zum Thema) oder CSV mit einer Spalte „text“ oder „Anforderung“. Nichts wird doppelt angelegt.</p>
+    <textarea id="req-import-text" rows="10" aria-label="Anforderungen" data-i18n-aria-label></textarea>
+    <div class="req-import-row">
+      <input id="req-import-file" type="file" accept=".txt,.md,.csv,text/plain,text/csv,text/markdown">
+      <label class="inline small-label"><span data-i18n>Format</span>
+        <select id="req-import-format"><option value="auto" data-i18n>automatisch</option><option value="lines" data-i18n>Zeilen</option><option value="markdown">Markdown</option><option value="csv">CSV</option></select>
+      </label>
+      <input id="req-import-source" placeholder="Quelle (z. B. Dateiname)" aria-label="Quelle" data-i18n-placeholder data-i18n-aria-label>
+    </div>
+    <pre id="req-import-preview" class="req-import-preview" role="status"></pre>
+    <div class="dialog-actions">
+      <button id="req-import-check" type="button" data-i18n>Prüfen</button>
+      <button id="req-import-go" type="button" data-i18n>Importieren</button>
+      <button id="req-import-cancel" type="button" data-i18n>Abbrechen</button>
+    </div>
+  </dialog>
+
+  <dialog id="req-matrix-dialog" class="model-dialog arch-dialog" aria-labelledby="req-matrix-heading">
+    <h3 id="req-matrix-heading" data-i18n>Rückverfolgbarkeit</h3>
+    <p id="req-matrix-empty" class="muted hidden" data-i18n>Noch keine verfeinerten Anforderungen.</p>
+    <table id="req-matrix-table" class="req-table">
+      <thead><tr><th>ID</th><th data-i18n>Aussage</th><th data-i18n>Abdeckung</th><th data-i18n>Treiber</th><th data-i18n>Szenarien</th><th data-i18n>Entscheidungen</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="dialog-actions"><button id="req-matrix-close" type="button" data-i18n>Schließen</button></div>
+  </dialog>
+
+  <dialog id="move-dialog">
+    <form method="dialog" id="move-form">
+      <h3 id="move-heading" data-i18n>Diagramm verschieben</h3>
+      <label><span data-i18n>Projekt</span> <select id="move-project"></select></label>
+      <label><span data-i18n>Abschnitt</span> <select id="move-section"></select></label>
+      <menu>
+        <button value="cancel" type="button" id="move-cancel" data-i18n>Abbrechen</button>
+        <button value="ok" type="submit" data-i18n>Verschieben</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="share-dialog" class="members-dialog" aria-labelledby="share-heading">
+    <h3 id="share-heading" data-i18n>Projekt freigeben</h3>
+    <p id="share-hint" class="muted"></p>
+    <ul id="share-list" class="members-list"></ul>
+    <form id="share-add" class="member-add hidden">
+      <input id="share-add-input" placeholder="Name, E-Mail-Adresse oder Benutzer-ID" aria-label="Freigeben für (Name tippen und Vorschlag wählen, E-Mail-Adresse oder Benutzer-ID)" autocomplete="off" list="share-add-suggestions" data-i18n-placeholder data-i18n-aria-label>
+      <datalist id="share-add-suggestions"></datalist>
+      <select id="share-add-role" aria-label="Rolle der neuen Freigabe" data-i18n-aria-label></select>
+      <button type="submit" data-i18n>Freigeben</button>
+    </form>
+    <p id="share-add-note" class="muted small-label hidden" data-i18n>Freigeben lässt sich für Personen, die Arcviz schon einmal geöffnet haben: Namen tippen und einen Vorschlag wählen.</p>
+    <p id="share-status" class="muted" role="status"></p>
+    <menu>
+      <button id="share-close" type="button" data-i18n>Schließen</button>
+    </menu>
+  </dialog>
+
+  <script src="/static/vendor/mermaid.min.js"></script>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

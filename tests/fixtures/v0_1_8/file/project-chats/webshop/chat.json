@@ -1,0 +1,13 @@
+[
+  {
+    "content": "Welche Diagramme gibt es?",
+    "role": "user",
+    "seq": 1
+  },
+  {
+    "content": "Plattform, Bestellprozess und Checkout.",
+    "operations": [],
+    "role": "assistant",
+    "seq": 2
+  }
+]

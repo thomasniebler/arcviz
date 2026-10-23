@@ -1,0 +1,344 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 2,
+  "exported_at": "2026-10-11T00:00:00+00:00",
+  "diagram": {
+    "id": "runtime-chat-turn",
+    "title": "Runtime: chat turn (apply mode)",
+    "type": "sequence",
+    "nodes": {},
+    "edges": [],
+    "direction": "TB",
+    "created_at": "2026-10-11T00:00:00+00:00",
+    "updated_at": "2026-10-11T00:00:00+00:00",
+    "interaction": {
+      "lifelines": [
+        {
+          "id": "web-ui",
+          "name": "Web UI (chat.js)",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "server",
+          "name": "server.py",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "agent",
+          "name": "DiagramAgent",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "llm",
+          "name": "LLMProvider.run_turn",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "llm-api",
+          "name": "LLM API",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "operations",
+          "name": "operations.apply",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "services",
+          "name": "DiagramService",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "store",
+          "name": "DiagramRepository",
+          "type": null,
+          "actor": false
+        }
+      ],
+      "fragments": [
+        {
+          "element": "message",
+          "id": "m1",
+          "name": "POST /api/diagrams/{id}/chat {message, focus, mode: apply}",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "web-ui",
+          "receiver": "server"
+        },
+        {
+          "element": "message",
+          "id": "m2",
+          "name": "read(id) (access guard; 404 if unknown)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "services"
+        },
+        {
+          "element": "message",
+          "id": "m3",
+          "name": "200 text/event-stream",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "web-ui"
+        },
+        {
+          "element": "message",
+          "id": "m4",
+          "name": "chat() on a worker thread (TurnResponse)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "agent"
+        },
+        {
+          "element": "message",
+          "id": "m5",
+          "name": "load, chat history (summary entry)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "agent",
+          "receiver": "services"
+        },
+        {
+          "element": "message",
+          "id": "m6",
+          "name": "run_turn(system prompt with diagram summary, history, tools)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "agent",
+          "receiver": "llm"
+        },
+        {
+          "element": "combined_fragment",
+          "id": "cf-rounds",
+          "operator": "loop",
+          "covered": [
+            "web-ui",
+            "server",
+            "agent",
+            "llm",
+            "llm-api",
+            "operations",
+            "services",
+            "store"
+          ],
+          "operands": [
+            {
+              "id": "op4",
+              "guard": "up to ARCVIZ_MAX_ROUNDS rounds",
+              "fragments": [
+                {
+                  "element": "message",
+                  "id": "m7",
+                  "name": "request (streamed)",
+                  "sort": "synchCall",
+                  "kind": "complete",
+                  "sender": "llm",
+                  "receiver": "llm-api"
+                },
+                {
+                  "element": "message",
+                  "id": "m8",
+                  "name": "text deltas, tool calls, usage",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "llm-api",
+                  "receiver": "llm"
+                },
+                {
+                  "element": "message",
+                  "id": "m9",
+                  "name": "text_delta, text (SSE)",
+                  "sort": "asynchSignal",
+                  "kind": "complete",
+                  "sender": "llm",
+                  "receiver": "web-ui"
+                },
+                {
+                  "element": "combined_fragment",
+                  "id": "cf-tools",
+                  "operator": "loop",
+                  "covered": [
+                    "web-ui",
+                    "server",
+                    "agent",
+                    "llm",
+                    "llm-api",
+                    "operations",
+                    "services",
+                    "store"
+                  ],
+                  "operands": [
+                    {
+                      "id": "op3",
+                      "guard": "each tool call",
+                      "fragments": [
+                        {
+                          "element": "message",
+                          "id": "m10",
+                          "name": "execute(call)",
+                          "sort": "synchCall",
+                          "kind": "complete",
+                          "sender": "llm",
+                          "receiver": "agent"
+                        },
+                        {
+                          "element": "message",
+                          "id": "m11",
+                          "name": "apply(diagram, op, args)",
+                          "sort": "synchCall",
+                          "kind": "complete",
+                          "sender": "agent",
+                          "receiver": "operations"
+                        },
+                        {
+                          "element": "combined_fragment",
+                          "id": "cf-valid",
+                          "operator": "alt",
+                          "covered": [
+                            "web-ui",
+                            "server",
+                            "agent",
+                            "llm",
+                            "llm-api",
+                            "operations",
+                            "services",
+                            "store"
+                          ],
+                          "operands": [
+                            {
+                              "id": "op1",
+                              "guard": "valid",
+                              "fragments": [
+                                {
+                                  "element": "message",
+                                  "id": "m12",
+                                  "name": "result, touched ids",
+                                  "sort": "reply",
+                                  "kind": "complete",
+                                  "sender": "operations",
+                                  "receiver": "agent"
+                                },
+                                {
+                                  "element": "message",
+                                  "id": "m13",
+                                  "name": "write_through (conditional on the turn's revision)",
+                                  "sort": "synchCall",
+                                  "kind": "complete",
+                                  "sender": "agent",
+                                  "receiver": "services"
+                                },
+                                {
+                                  "element": "message",
+                                  "id": "m14",
+                                  "name": "commit_latest",
+                                  "sort": "synchCall",
+                                  "kind": "complete",
+                                  "sender": "services",
+                                  "receiver": "store"
+                                },
+                                {
+                                  "element": "message",
+                                  "id": "m15",
+                                  "name": "tool_result {diagram, rendering with highlights} (SSE)",
+                                  "sort": "asynchSignal",
+                                  "kind": "complete",
+                                  "sender": "agent",
+                                  "receiver": "web-ui"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "op2",
+                              "guard": "OperationError",
+                              "fragments": [
+                                {
+                                  "element": "message",
+                                  "id": "m16",
+                                  "name": "error (diagram rolled back)",
+                                  "sort": "reply",
+                                  "kind": "complete",
+                                  "sender": "operations",
+                                  "receiver": "agent"
+                                },
+                                {
+                                  "element": "message",
+                                  "id": "m17",
+                                  "name": "error tool result: the model may correct itself",
+                                  "sort": "reply",
+                                  "kind": "complete",
+                                  "sender": "agent",
+                                  "receiver": "llm"
+                                }
+                              ]
+                            }
+                          ],
+                          "messages": []
+                        }
+                      ]
+                    }
+                  ],
+                  "messages": []
+                }
+              ]
+            }
+          ],
+          "messages": []
+        },
+        {
+          "element": "message",
+          "id": "m18",
+          "name": "finally: commit_turn (latest + auto version, conditional), append transcript",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "agent",
+          "receiver": "services"
+        },
+        {
+          "element": "message",
+          "id": "m19",
+          "name": "commit_latest, append_chat",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "services",
+          "receiver": "store"
+        },
+        {
+          "element": "message",
+          "id": "m20",
+          "name": "final {reply, applied, version, diagram, rendering} (SSE)",
+          "sort": "asynchSignal",
+          "kind": "complete",
+          "sender": "agent",
+          "receiver": "web-ui"
+        },
+        {
+          "element": "message",
+          "id": "m21",
+          "name": "maybe compact the chat (background executor)",
+          "sort": "asynchCall",
+          "kind": "complete",
+          "sender": "agent",
+          "receiver": "agent"
+        }
+      ],
+      "executions": [
+        {
+          "id": "ex-agent",
+          "lifeline": "agent",
+          "start": "m4",
+          "finish": "m20"
+        }
+      ]
+    }
+  }
+}

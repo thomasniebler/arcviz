@@ -1,0 +1,12 @@
+{
+  "node_kinds": {
+    "person": {"shape": "stadium", "style": "fill:#08427b,stroke:#052e56,color:#ffffff"},
+    "software_system": {"style": "fill:#1168bd,stroke:#0b4884,color:#ffffff"},
+    "external_system": {"style": "fill:#8a8a8a,stroke:#6b6b6b,color:#ffffff"},
+    "system_boundary": {"container": true, "style": "fill:transparent,stroke:#1168bd,stroke-dasharray:6 4,color:#0b4884"},
+    "container": {"style": "fill:#438dd5,stroke:#2e6295,color:#ffffff"},
+    "container_db": {"shape": "cylinder", "style": "fill:#438dd5,stroke:#2e6295,color:#ffffff"},
+    "container_boundary": {"container": true, "style": "fill:transparent,stroke:#438dd5,stroke-dasharray:6 4,color:#2e6295"},
+    "layer": {"container": true, "style": "fill:transparent,stroke:#5d82a8,stroke-dasharray:3 3,color:#2e6295"}
+  }
+}

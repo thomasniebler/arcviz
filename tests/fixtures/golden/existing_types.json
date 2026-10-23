@@ -1,0 +1,67 @@
+{
+  "templates": {
+    "aks-database": {
+      "document": "77d96175d9c2b26f",
+      "fingerprint": "91a529693c760298",
+      "payload": "16745c06a9a16992",
+      "plantuml": "edaaafd327faa561",
+      "summary": "424cab6b02917778"
+    },
+    "checkout": {
+      "document": "e84f34699f1bad70",
+      "fingerprint": "5c14294e498a1e41",
+      "payload": "bdf5bf1ddc3b1385",
+      "plantuml": "0324651c040ebe3b",
+      "summary": "1ef54efa46eb366c"
+    },
+    "demo": {
+      "document": "392d39bc98c5d4ed",
+      "fingerprint": "f6ab6ae6c025eb57",
+      "payload": "8554e103f5c8a123",
+      "plantuml": "507043437ef28c0d",
+      "summary": "86a4fb318a9b2340"
+    },
+    "empty": {
+      "document": "d457f12e689ce63e",
+      "fingerprint": "2481dda6db75d913",
+      "payload": "71ea442591034ba3",
+      "plantuml": "ea1c73989843c315",
+      "summary": "d351a4246e14881d"
+    },
+    "event-driven": {
+      "document": "7fd90dbecf2df320",
+      "fingerprint": "bb6e7d22f5f57e88",
+      "payload": "55e4c3729b6eea6e",
+      "plantuml": "48282b5d18958760",
+      "summary": "947d8d08d3439d95"
+    },
+    "hub-spoke": {
+      "document": "ad7b8d09b3e215e0",
+      "fingerprint": "23991f9186629e61",
+      "payload": "1c00b897900ae45e",
+      "plantuml": "d808b134daf0d0f9",
+      "summary": "4543489ca8525e1c"
+    },
+    "order-process": {
+      "document": "55f5aec912c50bdb",
+      "fingerprint": "5ef75e1891c58c95",
+      "payload": "59a49090cb4e4f8b",
+      "plantuml": "1524bdc94d2fbd7e",
+      "summary": "35745c222e05449c"
+    }
+  },
+  "types": {
+    "activity": {
+      "prompt": "7e4bc9783525b903",
+      "tools": "26e1a127b1890370"
+    },
+    "deployment": {
+      "prompt": "861c3365a0d9aa06",
+      "tools": "ab40704b3961b5d0"
+    },
+    "sequence": {
+      "prompt": "a1b261a71290059b",
+      "tools": "951a3e4622322a54"
+    }
+  }
+}

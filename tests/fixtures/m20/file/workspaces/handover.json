@@ -1,0 +1,16 @@
+{
+  "document": {
+    "created_at": "2026-10-08T11:12:23+00:00",
+    "id": "handover",
+    "members": [
+      {
+        "added_at": "2026-10-08T11:12:23+00:00",
+        "user": "ed"
+      }
+    ],
+    "owner": "olga",
+    "title": "Handover",
+    "updated_at": "2026-10-08T11:12:23+00:00"
+  },
+  "revision": "56e9c9b179cc0971"
+}

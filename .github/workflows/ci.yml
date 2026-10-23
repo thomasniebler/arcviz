@@ -1,0 +1,191 @@
+name: CI
+
+# Cost model: GitHub Actions bills every job rounded up to a full minute, and every check here takes
+# seconds. So all checks are steps of ONE job (about 3 billed minutes per run instead of one minute
+# per job). Check steps use `if: ${{ !cancelled() }}` so a failure does not hide the later results.
+# See CLAUDE.md, section "CI minutes".
+
+# No `push` trigger: a merge to main carries the content its PR already tested. The weekly run (and
+# workflow_dispatch, e.g. before merging a release PR) runs everything, including the full matrix.
+# PAUSED (2026-10-21): GitHub-hosted runners do not start on this repository (every job ends after about
+# 3 seconds with runner_id 0 and no steps), so each automatic run is a false red and nothing is tested. The
+# checks run locally instead (CLAUDE.md, Commands). To resume, uncomment the two triggers below once
+# Actions works again (docs/spec/build-and-release.md, "CI"). `workflow_dispatch` still starts a run by hand.
+on:
+  # pull_request:
+  #   branches: [main]
+  #   types: [opened, synchronize, reopened, ready_for_review]
+  # schedule:
+  #   - cron: "17 4 * * 1" # Mondays 04:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  statuses: write # the "PR title" commit status
+
+jobs:
+  ci:
+    # Required checks for branch protection: this job ("CI") and the commit status "PR title".
+    name: CI
+    # Drafts cost nothing; CI runs once the PR is marked ready for review.
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2 # the PR merge commit and its base parent, for the changed-file list
+
+      # Which steps this run needs (scripts/ci_scope.py): pull requests by changed paths, scheduled
+      # and manual runs everything. Lint, format and type check always run.
+      - name: Detect scope
+        id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            git diff --name-only HEAD^1 HEAD | python3 scripts/ci_scope.py | tee -a "$GITHUB_OUTPUT"
+          else
+            python3 scripts/ci_scope.py --all | tee -a "$GITHUB_OUTPUT"
+          fi
+
+      # Started first so the emulator warms up while the other checks run.
+      # Non-blocking like the contract step below: a failed image pull must not fail CI.
+      - name: Start Cosmos DB emulator (background)
+        if: steps.scope.outputs.cosmos == 'true'
+        continue-on-error: true
+        run: |
+          docker run -d --name cosmos -p 8081:8081 -p 1234:1234 \
+            mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview --protocol https
+
+      - uses: ./.github/actions/setup
+
+      - name: Lint (ruff check)
+        if: ${{ !cancelled() }}
+        run: ruff check --output-format=github .
+      - name: Format (ruff format --check)
+        if: ${{ !cancelled() }}
+        run: ruff format --check .
+      - name: Type check (mypy)
+        if: ${{ !cancelled() }}
+        run: mypy
+
+      - name: Unit tests (py3.14)
+        if: ${{ !cancelled() && steps.scope.outputs.python == 'true' }}
+        run: pytest --cov=arcviz --cov-report=term-missing --cov-report=xml --junitxml=junit.xml
+      # PRs test the Docker image's Python (3.14) only; the weekly and manual runs cover the matrix.
+      - name: Unit tests (py3.11, py3.13; scheduled and manual runs only)
+        if: ${{ !cancelled() && steps.scope.outputs.full == 'true' }}
+        run: |
+          for v in 3.11 3.13; do
+            venv="$RUNNER_TEMP/venv-$v"
+            UV_PROJECT_ENVIRONMENT="$venv" uv sync --locked --extra dev --python "$v"
+            "$venv/bin/pytest" -q
+          done
+
+      - name: Documentation build (Zensical, strict)
+        if: ${{ !cancelled() && steps.scope.outputs.docs == 'true' }}
+        run: |
+          uv sync --locked --extra dev --group docs
+          zensical build --clean --strict
+
+      # Every wheel contains the documentation site (ADR-0116): build it, build the wheel (the hatch hook refuses one
+      # without the site) and check its contents. Same scope as the image, whose inputs it shares.
+      - name: Wheel with the documentation site
+        if: ${{ !cancelled() && steps.scope.outputs.docker == 'true' }}
+        run: |
+          uv sync --locked --extra dev --group docs
+          python scripts/build_docs_bundle.py
+          uv build --wheel --out-dir "$RUNNER_TEMP/dist"
+          python scripts/check_wheel_docs.py "$RUNNER_TEMP"/dist/*.whl
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        if: ${{ !cancelled() && steps.scope.outputs.python == 'true' }}
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tests/e2e/package-lock.json
+      - name: Frontend unit tests (node --test)
+        if: ${{ !cancelled() && steps.scope.outputs.python == 'true' }}
+        run: node --test tests/js/*.test.mjs
+      - name: Browser smoke test (Playwright)
+        if: ${{ !cancelled() && steps.scope.outputs.python == 'true' }}
+        working-directory: tests/e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm test
+      # The same smoke test with the production ids (`<slug>-<random suffix>`, ADR-0131) instead of the pinned readable
+      # ones (#196): only when the UI, the e2e test or the id scheme changed. Reuses the browser installed above.
+      - name: Browser smoke test with real ids (Playwright)
+        if: ${{ !cancelled() && steps.scope.outputs.python == 'true' && steps.scope.outputs.e2e == 'true' }}
+        working-directory: tests/e2e
+        env:
+          ARCVIZ_E2E_REAL_IDS: "1"
+        run: npm test
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        if: ${{ !cancelled() && steps.scope.outputs.docker == 'true' }}
+      - name: Docker build
+        if: ${{ !cancelled() && steps.scope.outputs.docker == 'true' }}
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          push: false
+          load: true
+          tags: arcviz:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke-test the image
+        if: ${{ !cancelled() && steps.scope.outputs.docker == 'true' }}
+        run: |
+          docker run -d --name arcviz -p 8000:8000 arcviz:ci
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000/api/config && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8000/api/config | grep -q '"templates"'
+          curl -sf http://127.0.0.1:8000/docs/ | grep -q 'Arcviz agent'
+          curl -sf -o /dev/null http://127.0.0.1:8000/docs/architecture/arc42/
+          docker logs arcviz
+          docker rm -f arcviz
+
+      # Store contract against the Cosmos DB Linux emulator. Non-blocking until the emulator has proven
+      # stable on GitHub runners (ADR-0004); the same tests run against the in-process fake above.
+      - name: Store contract (Cosmos DB emulator, non-blocking)
+        if: ${{ !cancelled() && steps.scope.outputs.cosmos == 'true' }}
+        continue-on-error: true
+        # Only this step may see the endpoint: with ARCVIZ_TEST_COSMOS_URL set, the plain pytest steps
+        # would collect tests/test_store_cosmos_live.py and fail without (or before) the emulator.
+        env:
+          ARCVIZ_TEST_COSMOS_URL: https://localhost:8081
+          ARCVIZ_TEST_COSMOS_KEY: C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DD2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==
+          ARCVIZ_TEST_COSMOS_INSECURE: "1"
+        # An open port is not enough: the data plane reports 503 "pgcosmos extension is still
+        # starting" for a while, so wait until real SDK requests succeed.
+        run: |
+          python scripts/wait_for_cosmos.py --timeout 240 || { docker logs cosmos | tail -20; exit 1; }
+          pytest tests/test_store_cosmos_live.py -q
+
+      # Posts the commit status "PR title" on the head commit instead of failing this job, so a later
+      # title edit (pr-title.yml) can update that status without re-running CI.
+      - name: Conventional Commits PR title (commit status "PR title")
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/check_pr_title.py --status
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() && steps.scope.outputs.python == 'true' }}
+        with:
+          name: ci-results
+          if-no-files-found: ignore
+          path: |
+            junit.xml
+            coverage.xml
+            tests/e2e/output/

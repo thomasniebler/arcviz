@@ -1,0 +1,5 @@
+node_modules/
+output/
+.e2e-data/
+.e2e-data-auth/
+.e2e-data-proxy/

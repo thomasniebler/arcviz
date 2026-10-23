@@ -1,0 +1,17 @@
+[
+  {
+    "author": "ada",
+    "author_name": "Ada",
+    "content": "Welche Diagramme gibt es?",
+    "role": "user",
+    "seq": 1
+  },
+  {
+    "author": "ada",
+    "author_name": "Ada",
+    "content": "Plattform, Bestellprozess und Checkout.",
+    "operations": [],
+    "role": "assistant",
+    "seq": 2
+  }
+]

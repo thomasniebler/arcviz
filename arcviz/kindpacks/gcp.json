@@ -1,0 +1,74 @@
+{
+  "node_kinds": {
+    "gcp_project": {
+      "container": true,
+      "style": "fill:#fdfdfd,stroke:#202124,color:#202124"
+    },
+    "gcp_vpc": {
+      "container": true,
+      "style": "fill:#f8fbff,stroke:#4285f4,stroke-dasharray:5 3,color:#202124"
+    },
+    "gcp_compute_engine": {
+      "icon": "gcp:google-cloud",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124"
+    },
+    "gcp_cloud_sql": {
+      "icon": "gcp:google-cloud",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124",
+      "role": "database"
+    },
+    "gcp_cloud_run": {
+      "icon": "gcp:cloud-run",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124",
+      "role": "service"
+    },
+    "gcp_cloud_functions": {
+      "icon": "gcp:cloud-functions",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124",
+      "role": "function"
+    },
+    "gcp_gke": {
+      "icon": "gcp:kubernetes",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124"
+    },
+    "gcp_bigquery": {
+      "icon": "gcp:bigquery",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124"
+    },
+    "gcp_bigtable": {
+      "icon": "gcp:bigtable",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124",
+      "role": "database"
+    },
+    "gcp_cloud_storage": {
+      "icon": "gcp:cloud-storage",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124",
+      "role": "storage"
+    },
+    "gcp_spanner": {
+      "icon": "gcp:spanner",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124",
+      "role": "database",
+      "traits": {
+        "redundancy": "built_in"
+      }
+    },
+    "gcp_pubsub": {
+      "icon": "gcp:pubsub",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124",
+      "role": "queue"
+    },
+    "gcp_dataflow": {
+      "icon": "gcp:dataflow",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124"
+    },
+    "gcp_dataproc": {
+      "icon": "gcp:dataproc",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124"
+    },
+    "gcp_composer": {
+      "icon": "gcp:composer",
+      "style": "fill:#f1f6fe,stroke:#4285f4,color:#202124"
+    }
+  }
+}

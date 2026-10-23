@@ -1,0 +1,1112 @@
+{
+ "version": "0.1.8",
+ "diagrams": {
+  "altsystem": {
+   "fingerprint": "9c97cb73524346c7",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 8,
+     "edge_count": 6,
+     "fingerprint": "9c97cb73524346c7"
+    }
+   ],
+   "version_fingerprints": [
+    "9c97cb73524346c7"
+   ],
+   "undo_target": null,
+   "redo_target": null,
+   "export": {
+    "format": "arcviz-diagram",
+    "schema_version": 1,
+    "exported_at": "2026-10-07T16:16:38+00:00",
+    "diagram": {
+     "id": "altsystem",
+     "title": "Altsystem",
+     "type": "deployment",
+     "nodes": {
+      "api-gateway": {
+       "id": "api-gateway",
+       "name": "api-gateway",
+       "kind": "gateway",
+       "parent": "prod-deployment",
+       "properties": {}
+      },
+      "events": {
+       "id": "events",
+       "name": "events",
+       "kind": "queue",
+       "parent": "prod-deployment",
+       "properties": {}
+      },
+      "idp": {
+       "id": "idp",
+       "name": "Identity Provider",
+       "kind": "external",
+       "parent": null,
+       "properties": {}
+      },
+      "orders-db": {
+       "id": "orders-db",
+       "name": "orders-db",
+       "kind": "database",
+       "parent": "prod-deployment",
+       "properties": {
+        "engine": "postgres"
+       }
+      },
+      "prod-deployment": {
+       "id": "prod-deployment",
+       "name": "prod-deployment",
+       "kind": "deployment",
+       "parent": null,
+       "properties": {
+        "cloud": "azure",
+        "region": "westeurope"
+       }
+      },
+      "service-a": {
+       "id": "service-a",
+       "name": "service-a",
+       "kind": "service",
+       "parent": "prod-deployment",
+       "properties": {
+        "runtime": "container"
+       }
+      },
+      "service-b": {
+       "id": "service-b",
+       "name": "service-b",
+       "kind": "service",
+       "parent": "prod-deployment",
+       "properties": {
+        "runtime": "container"
+       }
+      },
+      "service-c": {
+       "id": "service-c",
+       "name": "service-c",
+       "kind": "service",
+       "parent": "prod-deployment",
+       "properties": {
+        "runtime": "function"
+       }
+      }
+     },
+     "edges": [
+      {
+       "id": "e1",
+       "source": "api-gateway",
+       "target": "service-a",
+       "label": "https",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e2",
+       "source": "api-gateway",
+       "target": "service-b",
+       "label": "https",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e3",
+       "source": "service-a",
+       "target": "orders-db",
+       "label": "sql",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e4",
+       "source": "service-b",
+       "target": "events",
+       "label": "publish",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e5",
+       "source": "service-c",
+       "target": "events",
+       "label": "subscribe",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e6",
+       "source": "api-gateway",
+       "target": "idp",
+       "label": "oidc",
+       "kind": "dependency",
+       "direction": null,
+       "properties": {}
+      }
+     ],
+     "direction": "TB",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "updated_at": "2026-10-07T16:16:38+00:00",
+     "interaction": null
+    }
+   },
+   "summary": "Diagram 'Altsystem' (id: altsystem)\n  - [idp] «external» Identity Provider\n  - [prod-deployment] «deployment» prod-deployment {cloud=azure, region=westeurope}\n    - [api-gateway] «gateway» api-gateway\n    - [events] «queue» events\n    - [orders-db] «database» orders-db {engine=postgres}\n    - [service-a] «service» service-a {runtime=container}\n    - [service-b] «service» service-b {runtime=container}\n    - [service-c] «service» service-c {runtime=function}\nEdges:\n  - [e1] api-gateway -> service-a (connection) \"https\"\n  - [e2] api-gateway -> service-b (connection) \"https\"\n  - [e3] service-a -> orders-db (connection) \"sql\"\n  - [e4] service-b -> events (connection) \"publish\"\n  - [e5] service-c -> events (connection) \"subscribe\"\n  - [e6] api-gateway -> idp (dependency) \"oidc\"",
+   "chat": []
+  },
+  "bestellprozess": {
+   "fingerprint": "07e78e9fa6f7704e",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 16,
+     "edge_count": 13,
+     "fingerprint": "07e78e9fa6f7704e"
+    }
+   ],
+   "version_fingerprints": [
+    "07e78e9fa6f7704e"
+   ],
+   "undo_target": null,
+   "redo_target": null,
+   "export": {
+    "format": "arcviz-diagram",
+    "schema_version": 2,
+    "exported_at": "2026-10-07T16:16:38+00:00",
+    "diagram": {
+     "id": "bestellprozess",
+     "title": "Bestellprozess",
+     "type": "activity",
+     "nodes": {
+      "abbruch": {
+       "id": "abbruch",
+       "name": "Abbruch",
+       "kind": "flow_final_node",
+       "parent": "shop",
+       "properties": {}
+      },
+      "bestellen": {
+       "id": "bestellen",
+       "name": "Bestellung aufgeben",
+       "kind": "opaque_action",
+       "parent": "kunde",
+       "properties": {}
+      },
+      "bestellungen": {
+       "id": "bestellungen",
+       "name": "Bestellungen",
+       "kind": "data_store_node",
+       "parent": "shop",
+       "properties": {}
+      },
+      "ende": {
+       "id": "ende",
+       "name": "Ende",
+       "kind": "activity_final_node",
+       "parent": "lager",
+       "properties": {}
+      },
+      "fork": {
+       "id": "fork",
+       "name": "Fork",
+       "kind": "fork_node",
+       "parent": "shop",
+       "properties": {}
+      },
+      "informieren": {
+       "id": "informieren",
+       "name": "Kunde informieren",
+       "kind": "opaque_action",
+       "parent": "shop",
+       "properties": {}
+      },
+      "join": {
+       "id": "join",
+       "name": "Join",
+       "kind": "join_node",
+       "parent": "lager",
+       "properties": {}
+      },
+      "kommissionieren": {
+       "id": "kommissionieren",
+       "name": "Ware kommissionieren",
+       "kind": "opaque_action",
+       "parent": "lager",
+       "properties": {}
+      },
+      "kunde": {
+       "id": "kunde",
+       "name": "Kunde",
+       "kind": "activity_partition",
+       "parent": null,
+       "properties": {}
+      },
+      "lager": {
+       "id": "lager",
+       "name": "Lager",
+       "kind": "activity_partition",
+       "parent": null,
+       "properties": {}
+      },
+      "pruefen": {
+       "id": "pruefen",
+       "name": "Bestellung prüfen",
+       "kind": "opaque_action",
+       "parent": "shop",
+       "properties": {}
+      },
+      "shop": {
+       "id": "shop",
+       "name": "Shop",
+       "kind": "activity_partition",
+       "parent": null,
+       "properties": {}
+      },
+      "start": {
+       "id": "start",
+       "name": "Start",
+       "kind": "initial_node",
+       "parent": "kunde",
+       "properties": {}
+      },
+      "verfuegbar": {
+       "id": "verfuegbar",
+       "name": "Artikel verfügbar?",
+       "kind": "decision_node",
+       "parent": "shop",
+       "properties": {}
+      },
+      "versenden": {
+       "id": "versenden",
+       "name": "Ware versenden",
+       "kind": "opaque_action",
+       "parent": "lager",
+       "properties": {}
+      },
+      "zahlung": {
+       "id": "zahlung",
+       "name": "Zahlung abwickeln",
+       "kind": "opaque_action",
+       "parent": "shop",
+       "properties": {}
+      }
+     },
+     "edges": [
+      {
+       "id": "e1",
+       "source": "start",
+       "target": "bestellen",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e2",
+       "source": "bestellen",
+       "target": "pruefen",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e3",
+       "source": "pruefen",
+       "target": "verfuegbar",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e4",
+       "source": "fork",
+       "target": "zahlung",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e5",
+       "source": "fork",
+       "target": "kommissionieren",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e6",
+       "source": "zahlung",
+       "target": "join",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e7",
+       "source": "kommissionieren",
+       "target": "join",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e8",
+       "source": "join",
+       "target": "versenden",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e9",
+       "source": "versenden",
+       "target": "ende",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e10",
+       "source": "informieren",
+       "target": "abbruch",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e11",
+       "source": "verfuegbar",
+       "target": "fork",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {
+        "guard": "ja"
+       }
+      },
+      {
+       "id": "e12",
+       "source": "verfuegbar",
+       "target": "informieren",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {
+        "guard": "nein"
+       }
+      },
+      {
+       "id": "e13",
+       "source": "pruefen",
+       "target": "bestellungen",
+       "label": "Bestellung",
+       "kind": "object_flow",
+       "direction": null,
+       "properties": {}
+      }
+     ],
+     "direction": "TB",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "updated_at": "2026-10-07T16:16:38+00:00",
+     "interaction": null
+    }
+   },
+   "summary": "Diagram 'Bestellprozess' (id: bestellprozess, activity diagram)\n  - [kunde] «activity_partition» Kunde\n    - [bestellen] «opaque_action» Bestellung aufgeben\n    - [start] «initial_node» Start\n  - [lager] «activity_partition» Lager\n    - [ende] «activity_final_node» Ende\n    - [join] «join_node» Join\n    - [kommissionieren] «opaque_action» Ware kommissionieren\n    - [versenden] «opaque_action» Ware versenden\n  - [shop] «activity_partition» Shop\n    - [abbruch] «flow_final_node» Abbruch\n    - [verfuegbar] «decision_node» Artikel verfügbar?\n    - [pruefen] «opaque_action» Bestellung prüfen\n    - [bestellungen] «data_store_node» Bestellungen\n    - [fork] «fork_node» Fork\n    - [informieren] «opaque_action» Kunde informieren\n    - [zahlung] «opaque_action» Zahlung abwickeln\nEdges:\n  - [e1] start -> bestellen (control_flow)\n  - [e2] bestellen -> pruefen (control_flow)\n  - [e3] pruefen -> verfuegbar (control_flow)\n  - [e4] fork -> zahlung (control_flow)\n  - [e5] fork -> kommissionieren (control_flow)\n  - [e6] zahlung -> join (control_flow)\n  - [e7] kommissionieren -> join (control_flow)\n  - [e8] join -> versenden (control_flow)\n  - [e9] versenden -> ende (control_flow)\n  - [e10] informieren -> abbruch (control_flow)\n  - [e11] verfuegbar -> fork (control_flow) {guard=ja}\n  - [e12] verfuegbar -> informieren (control_flow) {guard=nein}\n  - [e13] pruefen -> bestellungen (object_flow) \"Bestellung\"",
+   "chat": []
+  },
+  "checkout": {
+   "fingerprint": "1d2bb9a9a6a1eb1c",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 0,
+     "edge_count": 0,
+     "fingerprint": "80b43e2c7f9c995f"
+    },
+    {
+     "version": 2,
+     "label": "Lifeline",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 0,
+     "edge_count": 0,
+     "fingerprint": "84a5146a1c2a5283"
+    },
+    {
+     "version": 3,
+     "label": "Mit Element „Order Service“ verknüpft",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 0,
+     "edge_count": 0,
+     "fingerprint": "1d2bb9a9a6a1eb1c"
+    }
+   ],
+   "version_fingerprints": [
+    "80b43e2c7f9c995f",
+    "84a5146a1c2a5283",
+    "1d2bb9a9a6a1eb1c"
+   ],
+   "undo_target": 2,
+   "redo_target": null,
+   "export": {
+    "format": "arcviz-diagram",
+    "schema_version": 2,
+    "exported_at": "2026-10-07T16:16:38+00:00",
+    "diagram": {
+     "id": "checkout",
+     "title": "Checkout",
+     "type": "sequence",
+     "nodes": {},
+     "edges": [],
+     "direction": "TB",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "updated_at": "2026-10-07T16:16:38+00:00",
+     "interaction": {
+      "lifelines": [
+       {
+        "id": "kunde",
+        "name": "Kunde",
+        "type": null,
+        "actor": true
+       },
+       {
+        "id": "shop",
+        "name": "Shop",
+        "type": "WebApp",
+        "actor": false
+       },
+       {
+        "id": "zahlung",
+        "name": "Zahlung",
+        "type": "PaymentService",
+        "actor": false
+       },
+       {
+        "id": "bestellung",
+        "name": "Bestellung",
+        "type": "Order",
+        "actor": false
+       },
+       {
+        "id": "orders",
+        "name": "Order Service",
+        "type": null,
+        "actor": false,
+        "ref": "order-service"
+       }
+      ],
+      "fragments": [
+       {
+        "element": "message",
+        "id": "m1",
+        "name": "checkout(warenkorb)",
+        "sort": "synchCall",
+        "kind": "complete",
+        "sender": "kunde",
+        "receiver": "shop"
+       },
+       {
+        "element": "message",
+        "id": "m2",
+        "name": "validieren()",
+        "sort": "synchCall",
+        "kind": "complete",
+        "sender": "shop",
+        "receiver": "shop"
+       },
+       {
+        "element": "combined_fragment",
+        "id": "cf1",
+        "operator": "alt",
+        "covered": [
+         "kunde",
+         "shop",
+         "zahlung",
+         "bestellung"
+        ],
+        "operands": [
+         {
+          "id": "op1",
+          "guard": "Zahlung ok",
+          "fragments": [
+           {
+            "element": "message",
+            "id": "m3",
+            "name": "bezahlen(betrag)",
+            "sort": "synchCall",
+            "kind": "complete",
+            "sender": "shop",
+            "receiver": "zahlung"
+           },
+           {
+            "element": "message",
+            "id": "m4",
+            "name": "bestätigt",
+            "sort": "reply",
+            "kind": "complete",
+            "sender": "zahlung",
+            "receiver": "shop"
+           },
+           {
+            "element": "message",
+            "id": "m5",
+            "name": "anlegen",
+            "sort": "createMessage",
+            "kind": "complete",
+            "sender": "shop",
+            "receiver": "bestellung"
+           }
+          ]
+         },
+         {
+          "id": "op2",
+          "guard": "else",
+          "fragments": [
+           {
+            "element": "message",
+            "id": "m6",
+            "name": "Fehler anzeigen",
+            "sort": "asynchSignal",
+            "kind": "complete",
+            "sender": "shop",
+            "receiver": "kunde"
+           }
+          ]
+         }
+        ],
+        "messages": []
+       },
+       {
+        "element": "combined_fragment",
+        "id": "cf2",
+        "operator": "loop",
+        "covered": [
+         "shop",
+         "bestellung"
+        ],
+        "operands": [
+         {
+          "id": "op3",
+          "guard": "für jede Position",
+          "fragments": [
+           {
+            "element": "message",
+            "id": "m7",
+            "name": "position(artikel)",
+            "sort": "asynchCall",
+            "kind": "complete",
+            "sender": "shop",
+            "receiver": "bestellung"
+           }
+          ]
+         }
+        ],
+        "messages": []
+       },
+       {
+        "element": "interaction_use",
+        "id": "ref1",
+        "refers_to": "Versand beauftragen",
+        "covered": [
+         "shop",
+         "bestellung"
+        ]
+       },
+       {
+        "element": "message",
+        "id": "m8",
+        "name": "Bestellbestätigung",
+        "sort": "reply",
+        "kind": "complete",
+        "sender": "shop",
+        "receiver": "kunde"
+       },
+       {
+        "element": "message",
+        "id": "m9",
+        "name": "Sitzung abgelaufen",
+        "sort": "asynchSignal",
+        "kind": "found",
+        "sender": null,
+        "receiver": "shop"
+       },
+       {
+        "element": "message",
+        "id": "m10",
+        "name": "Audit-Ereignis",
+        "sort": "asynchSignal",
+        "kind": "lost",
+        "sender": "shop",
+        "receiver": null
+       },
+       {
+        "element": "message",
+        "id": "m11",
+        "name": "verwerfen",
+        "sort": "deleteMessage",
+        "kind": "complete",
+        "sender": "shop",
+        "receiver": "bestellung"
+       }
+      ],
+      "executions": [
+       {
+        "id": "ex1",
+        "lifeline": "shop",
+        "start": "m1",
+        "finish": "m8"
+       },
+       {
+        "id": "ex2",
+        "lifeline": "zahlung",
+        "start": "m3",
+        "finish": "m4"
+       }
+      ]
+     }
+    }
+   },
+   "summary": "Diagram 'Checkout' (id: checkout, sequence diagram)\nLifelines (left to right):\n  - [kunde] Kunde «actor»\n  - [shop] Shop : WebApp\n  - [zahlung] Zahlung : PaymentService\n  - [bestellung] Bestellung : Order\n  - [orders] Order Service (= element order-service)\nFragments (top to bottom):\n  - [m1] kunde -> shop: checkout(warenkorb) (synchCall)\n  - [m2] shop -> shop: validieren() (synchCall)\n  - [cf1] alt covering kunde, shop, zahlung, bestellung\n    operand [op1] [Zahlung ok]:\n      - [m3] shop -> zahlung: bezahlen(betrag) (synchCall)\n      - [m4] zahlung -> shop: bestätigt (reply)\n      - [m5] shop -> bestellung: anlegen (createMessage)\n    operand [op2] [else]:\n      - [m6] shop -> kunde: Fehler anzeigen (asynchSignal)\n  - [cf2] loop covering shop, bestellung\n    operand [op3] [für jede Position]:\n      - [m7] shop -> bestellung: position(artikel) (asynchCall)\n  - [ref1] ref Versand beauftragen covering shop, bestellung\n  - [m8] shop -> kunde: Bestellbestätigung (reply)\n  - [m9] (found) -> shop: Sitzung abgelaufen (asynchSignal, found)\n  - [m10] shop -> (lost): Audit-Ereignis (asynchSignal, lost)\n  - [m11] shop -> bestellung: verwerfen (deleteMessage)\nExecution specifications:\n  - [ex1] on shop from m1 to m8\n  - [ex2] on zahlung from m3 to m4",
+   "chat": []
+  },
+  "plattform": {
+   "fingerprint": "25861d233af6cd34",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 13,
+     "edge_count": 5,
+     "fingerprint": "de9b2ea9f0d9c204"
+    },
+    {
+     "version": 2,
+     "label": "Order Service",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 14,
+     "edge_count": 5,
+     "fingerprint": "dbfbddaa868d35f7"
+    },
+    {
+     "version": 3,
+     "label": "Vor dem Umbau",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "manual",
+     "restored_from": null,
+     "node_count": 14,
+     "edge_count": 5,
+     "fingerprint": "dbfbddaa868d35f7"
+    },
+    {
+     "version": 4,
+     "label": "Cache",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 15,
+     "edge_count": 5,
+     "fingerprint": "2db42ce8a70fcf21"
+    },
+    {
+     "version": 5,
+     "label": "Undo: restored version 3 (Vor dem Umbau)",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "undo",
+     "restored_from": 3,
+     "node_count": 14,
+     "edge_count": 5,
+     "fingerprint": "dbfbddaa868d35f7"
+    },
+    {
+     "version": 6,
+     "label": "Mit Element „Order Service“ verknüpft",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 14,
+     "edge_count": 5,
+     "fingerprint": "25861d233af6cd34"
+    }
+   ],
+   "version_fingerprints": [
+    "de9b2ea9f0d9c204",
+    "dbfbddaa868d35f7",
+    "dbfbddaa868d35f7",
+    "2db42ce8a70fcf21",
+    "dbfbddaa868d35f7",
+    "25861d233af6cd34"
+   ],
+   "undo_target": 5,
+   "redo_target": null,
+   "export": {
+    "format": "arcviz-diagram",
+    "schema_version": 1,
+    "exported_at": "2026-10-07T16:16:38+00:00",
+    "diagram": {
+     "id": "plattform",
+     "title": "Plattform",
+     "type": "deployment",
+     "nodes": {
+      "acr": {
+       "id": "acr",
+       "name": "container-registry",
+       "kind": "storage",
+       "parent": "prod",
+       "properties": {
+        "sku": "premium"
+       }
+      },
+      "aks-cluster": {
+       "id": "aks-cluster",
+       "name": "aks-cluster",
+       "kind": "cluster",
+       "parent": "aks-subnet",
+       "properties": {
+        "kubernetes": "1.30"
+       }
+      },
+      "aks-subnet": {
+       "id": "aks-subnet",
+       "name": "aks-subnet",
+       "kind": "subnet",
+       "parent": "aks-vnet",
+       "properties": {
+        "cidr": "10.10.0.0/22"
+       }
+      },
+      "aks-vnet": {
+       "id": "aks-vnet",
+       "name": "aks-vnet",
+       "kind": "vnet",
+       "parent": "prod",
+       "properties": {
+        "cidr": "10.10.0.0/16"
+       }
+      },
+      "app-gateway": {
+       "id": "app-gateway",
+       "name": "app-gateway",
+       "kind": "gateway",
+       "parent": "appgw-subnet",
+       "properties": {
+        "sku": "WAF_v2"
+       }
+      },
+      "appgw-subnet": {
+       "id": "appgw-subnet",
+       "name": "appgw-subnet",
+       "kind": "subnet",
+       "parent": "aks-vnet",
+       "properties": {
+        "cidr": "10.10.4.0/24"
+       }
+      },
+      "db-subnet": {
+       "id": "db-subnet",
+       "name": "db-subnet",
+       "kind": "subnet",
+       "parent": "aks-vnet",
+       "properties": {
+        "cidr": "10.10.8.0/24"
+       }
+      },
+      "frontend": {
+       "id": "frontend",
+       "name": "frontend",
+       "kind": "service",
+       "parent": "user-pool",
+       "properties": {
+        "replicas": "2"
+       }
+      },
+      "order-service": {
+       "id": "order-service",
+       "name": "Order Service",
+       "kind": "service",
+       "parent": null,
+       "properties": {},
+       "ref": "order-service"
+      },
+      "orders-api": {
+       "id": "orders-api",
+       "name": "orders-api",
+       "kind": "service",
+       "parent": "user-pool",
+       "properties": {
+        "replicas": "3"
+       }
+      },
+      "postgres": {
+       "id": "postgres",
+       "name": "postgres",
+       "kind": "database",
+       "parent": "db-subnet",
+       "properties": {
+        "engine": "postgres 16",
+        "sku": "GP_Standard_D2s_v3"
+       }
+      },
+      "prod": {
+       "id": "prod",
+       "name": "prod",
+       "kind": "deployment",
+       "parent": null,
+       "properties": {
+        "cloud": "azure",
+        "region": "westeurope"
+       }
+      },
+      "user-pool": {
+       "id": "user-pool",
+       "name": "user-pool",
+       "kind": "node",
+       "parent": "aks-cluster",
+       "properties": {
+        "count": "3",
+        "vm_size": "Standard_D4s_v5"
+       }
+      },
+      "users": {
+       "id": "users",
+       "name": "users",
+       "kind": "external",
+       "parent": null,
+       "properties": {}
+      }
+     },
+     "edges": [
+      {
+       "id": "e1",
+       "source": "users",
+       "target": "app-gateway",
+       "label": null,
+       "kind": "connection",
+       "direction": null,
+       "properties": {
+        "port": "443",
+        "protocol": "https"
+       }
+      },
+      {
+       "id": "e2",
+       "source": "app-gateway",
+       "target": "frontend",
+       "label": "ingress",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e3",
+       "source": "frontend",
+       "target": "orders-api",
+       "label": "REST",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e4",
+       "source": "orders-api",
+       "target": "postgres",
+       "label": "sql",
+       "kind": "connection",
+       "direction": null,
+       "properties": {
+        "port": "5432",
+        "protocol": "postgres"
+       }
+      },
+      {
+       "id": "e5",
+       "source": "acr",
+       "target": "user-pool",
+       "label": "images",
+       "kind": "deploys",
+       "direction": null,
+       "properties": {}
+      }
+     ],
+     "direction": "TB",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "updated_at": "2026-10-07T16:16:38+00:00",
+     "interaction": null
+    }
+   },
+   "summary": "Diagram 'Plattform' (id: plattform)\n  - [order-service] «service» Order Service (= element order-service)\n  - [prod] «deployment» prod {cloud=azure, region=westeurope}\n    - [aks-vnet] «vnet» aks-vnet {cidr=10.10.0.0/16}\n      - [aks-subnet] «subnet» aks-subnet {cidr=10.10.0.0/22}\n        - [aks-cluster] «cluster» aks-cluster {kubernetes=1.30}\n          - [user-pool] «node» user-pool {count=3, vm_size=Standard_D4s_v5}\n            - [frontend] «service» frontend {replicas=2}\n            - [orders-api] «service» orders-api {replicas=3}\n      - [appgw-subnet] «subnet» appgw-subnet {cidr=10.10.4.0/24}\n        - [app-gateway] «gateway» app-gateway {sku=WAF_v2}\n      - [db-subnet] «subnet» db-subnet {cidr=10.10.8.0/24}\n        - [postgres] «database» postgres {engine=postgres 16, sku=GP_Standard_D2s_v3}\n    - [acr] «storage» container-registry {sku=premium}\n  - [users] «external» users\nEdges:\n  - [e1] users -> app-gateway (connection) {port=443, protocol=https}\n  - [e2] app-gateway -> frontend (connection) \"ingress\"\n  - [e3] frontend -> orders-api (connection) \"REST\"\n  - [e4] orders-api -> postgres (connection) \"sql\" {port=5432, protocol=postgres}\n  - [e5] acr -> user-pool (deploys) \"images\"",
+   "chat": [
+    {
+     "role": "user",
+     "content": "Füge einen Order Service hinzu.",
+     "seq": 1
+    },
+    {
+     "role": "assistant",
+     "content": "Erledigt.",
+     "seq": 2
+    }
+   ]
+  },
+  "versuch": {
+   "fingerprint": "44b57ba0d42a72d7",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 0,
+     "edge_count": 0,
+     "fingerprint": "44b57ba0d42a72d7"
+    }
+   ],
+   "version_fingerprints": [
+    "44b57ba0d42a72d7"
+   ],
+   "undo_target": null,
+   "redo_target": null,
+   "export": {
+    "format": "arcviz-diagram",
+    "schema_version": 1,
+    "exported_at": "2026-10-07T16:16:38+00:00",
+    "diagram": {
+     "id": "versuch",
+     "title": "Versuch",
+     "type": "deployment",
+     "nodes": {},
+     "edges": [],
+     "direction": "TB",
+     "created_at": "2026-10-07T16:16:38+00:00",
+     "updated_at": "2026-10-07T16:16:38+00:00",
+     "interaction": null
+    }
+   },
+   "summary": "Diagram 'Versuch' (id: versuch)\n  (no nodes yet)\nEdges: (none)",
+   "chat": []
+  }
+ },
+ "projects": {
+  "default": {
+   "id": "default",
+   "title": "Standardprojekt",
+   "description": "",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "altsystem",
+     "section": null,
+     "added_at": "2026-10-07T16:16:38.717027+00:00"
+    }
+   ],
+   "elements": []
+  },
+  "labor": {
+   "id": "labor",
+   "title": "Labor",
+   "description": "",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "versuch",
+     "section": null,
+     "added_at": "2026-10-07T16:16:38.714425+00:00"
+    }
+   ],
+   "elements": []
+  },
+  "webshop": {
+   "id": "webshop",
+   "title": "Webshop",
+   "description": "Online-Shop mit Bestellung und Zahlung",
+   "sections": [
+    {
+     "id": "bestellung",
+     "title": "Bestellung",
+     "parent": null
+    },
+    {
+     "id": "zahlung",
+     "title": "Order Service",
+     "parent": "bestellung",
+     "element": "order-service"
+    }
+   ],
+   "diagrams": [
+    {
+     "diagram": "plattform",
+     "section": null,
+     "added_at": "2026-10-07T16:16:38.701133+00:00"
+    },
+    {
+     "diagram": "bestellprozess",
+     "section": "bestellung",
+     "added_at": "2026-10-07T16:16:38.705082+00:00"
+    },
+    {
+     "diagram": "checkout",
+     "section": "zahlung",
+     "added_at": "2026-10-07T16:16:38.712389+00:00"
+    }
+   ],
+   "elements": [
+    {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "component",
+     "description": "Nimmt Bestellungen an",
+     "parent": null
+    }
+   ]
+  }
+ },
+ "project_chats": {
+  "default": [],
+  "labor": [],
+  "webshop": [
+   {
+    "role": "user",
+    "content": "Welche Diagramme gibt es?",
+    "seq": 1
+   },
+   {
+    "role": "assistant",
+    "content": "Plattform, Bestellprozess und Checkout.",
+    "seq": 2
+   }
+  ]
+ }
+}

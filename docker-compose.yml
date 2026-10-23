@@ -1,0 +1,30 @@
+services:
+  arcviz:
+    build: .
+    image: ghcr.io/thomasniebler/arcviz:latest
+    ports:
+      - "8000:8000"
+    environment:
+      ARCVIZ_PROVIDER: ${ARCVIZ_PROVIDER:-anthropic}
+      ARCVIZ_MODEL: ${ARCVIZ_MODEL:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      # Optional Git mirror of the diagram history (see docs: Configuration); keep it on the volume.
+      ARCVIZ_GIT_DIR: ${ARCVIZ_GIT_DIR:-}
+      ARCVIZ_GIT_PUSH: ${ARCVIZ_GIT_PUSH:-0}
+      ARCVIZ_GIT_REMOTE: ${ARCVIZ_GIT_REMOTE:-origin}
+      # Optional authentication (see docs: Configuration). Set ARCVIZ_AUTH=token and a long random token
+      # before the port is reachable by others.
+      ARCVIZ_AUTH: ${ARCVIZ_AUTH:-off}
+      ARCVIZ_AUTH_TOKEN: ${ARCVIZ_AUTH_TOKEN:-}
+      # Logs (see docs: Configuration): json for a log collector.
+      ARCVIZ_LOG_FORMAT: ${ARCVIZ_LOG_FORMAT:-text}
+      ARCVIZ_LOG_LEVEL: ${ARCVIZ_LOG_LEVEL:-info}
+      ARCVIZ_LOG_PSEUDONYM_KEY: ${ARCVIZ_LOG_PSEUDONYM_KEY:-}
+    volumes:
+      - arcviz-data:/data
+    restart: unless-stopped
+
+volumes:
+  arcviz-data:

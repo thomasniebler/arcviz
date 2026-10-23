@@ -1,0 +1,15 @@
+{
+  "document": {
+    "added": {
+      "own:home_fdee430d40bd57deeac186cd9790033d": "2026-10-11T11:09:06+00:00",
+      "own:webshop": "2026-10-11T11:09:06+00:00"
+    },
+    "own": [
+      "home_fdee430d40bd57deeac186cd9790033d",
+      "webshop"
+    ],
+    "shared": [],
+    "user": "ada"
+  },
+  "revision": "dbe72864ce027dc3"
+}

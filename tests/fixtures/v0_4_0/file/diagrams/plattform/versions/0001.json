@@ -1,0 +1,25 @@
+{
+  "diagram": {
+    "created_at": "2026-10-11T11:09:06+00:00",
+    "direction": "TB",
+    "edges": [],
+    "id": "plattform",
+    "interaction": null,
+    "nodes": {},
+    "title": "Plattform",
+    "type": "deployment",
+    "updated_at": "2026-10-11T11:09:06+00:00"
+  },
+  "meta": {
+    "author": "ada",
+    "author_name": "Ada",
+    "created_at": "2026-10-11T11:09:06+00:00",
+    "edge_count": 0,
+    "fingerprint": "9dc9a20bf9b0d841",
+    "label": "Initial state",
+    "node_count": 0,
+    "restored_from": null,
+    "source": "initial",
+    "version": 1
+  }
+}

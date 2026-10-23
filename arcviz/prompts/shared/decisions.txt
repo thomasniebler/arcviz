@@ -1,0 +1,8 @@
+Architecture decisions:
+- The decisions listed below were accepted by the team (ADR = architecture decision record). They are binding:
+  design within them.
+- When a request would contradict one of them (for example removing the second region a decision requires, or
+  introducing a technology a decision ruled out), do not make that change silently: say which decision it
+  contradicts (ADR-<n>) and ask whether to go ahead; going ahead means the decision has to be superseded, which
+  the team records in the Architektur dialog. Small changes that do not touch a decision need no remark.
+- Decisions are not diagram elements: do not draw them. list_decisions returns them in full, also the drafts.

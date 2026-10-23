@@ -1,0 +1,163 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 1,
+  "exported_at": "2026-10-06T00:00:00+00:00",
+  "diagram": {
+    "id": "deployment",
+    "title": "Arcviz: reference deployment on Azure Container Apps",
+    "nodes": {
+      "browser": {
+        "id": "browser",
+        "name": "Browser of a signed-in user",
+        "kind": "external",
+        "parent": null,
+        "properties": {}
+      },
+      "aca-env": {
+        "id": "aca-env",
+        "name": "Container Apps environment",
+        "kind": "deployment",
+        "parent": null,
+        "properties": {
+          "guide": "docs/deploy-azure.md"
+        }
+      },
+      "ingress": {
+        "id": "ingress",
+        "name": "Ingress with Easy Auth (Entra ID)",
+        "kind": "gateway",
+        "parent": "aca-env",
+        "properties": {
+          "port": "443"
+        }
+      },
+      "replica": {
+        "id": "replica",
+        "name": "Container app replica (exactly one with the file store)",
+        "kind": "node",
+        "parent": "aca-env",
+        "properties": {
+          "image": "ghcr.io/thomasniebler/arcviz"
+        }
+      },
+      "uvicorn": {
+        "id": "uvicorn",
+        "name": "arcviz: uvicorn and FastAPI on port 8000",
+        "kind": "service",
+        "parent": "replica",
+        "properties": {
+          "code": "arcviz/server.py"
+        }
+      },
+      "docs-bundle": {
+        "id": "docs-bundle",
+        "name": "Documentation site (arcviz/docs_site)",
+        "kind": "artifact",
+        "parent": "replica",
+        "properties": {
+          "code": "scripts/build_docs_bundle.py"
+        }
+      },
+      "data-share": {
+        "id": "data-share",
+        "name": "Azure Files share mounted at /data",
+        "kind": "storage",
+        "parent": "aca-env",
+        "properties": {
+          "spec": "docs/deploy-azure.md"
+        }
+      },
+      "secret": {
+        "id": "secret",
+        "name": "Container Apps secret: LLM API key",
+        "kind": "artifact",
+        "parent": "aca-env",
+        "properties": {}
+      },
+      "llm": {
+        "id": "llm",
+        "name": "LLM API",
+        "kind": "external",
+        "parent": null,
+        "properties": {}
+      },
+      "cosmos": {
+        "id": "cosmos",
+        "name": "Azure Cosmos DB (alternative to the share)",
+        "kind": "database",
+        "parent": null,
+        "properties": {
+          "spec": "docs/spec/persistence.md"
+        }
+      }
+    },
+    "edges": [
+      {
+        "id": "e1",
+        "source": "browser",
+        "target": "ingress",
+        "label": "HTTPS",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e2",
+        "source": "ingress",
+        "target": "uvicorn",
+        "label": "HTTP 8000",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e3",
+        "source": "uvicorn",
+        "target": "docs-bundle",
+        "label": "serves /docs",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e4",
+        "source": "uvicorn",
+        "target": "data-share",
+        "label": "JSON files (single writer)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e5",
+        "source": "uvicorn",
+        "target": "cosmos",
+        "label": "or: HTTPS, several replicas",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e6",
+        "source": "secret",
+        "target": "uvicorn",
+        "label": "env var",
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e7",
+        "source": "uvicorn",
+        "target": "llm",
+        "label": "HTTPS",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      }
+    ],
+    "direction": "TB",
+    "created_at": "2026-10-06T00:00:00+00:00",
+    "updated_at": "2026-10-06T00:00:00+00:00"
+  }
+}

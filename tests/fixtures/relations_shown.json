@@ -1,0 +1,715 @@
+[
+ {
+  "name": "linked edge",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "w": {
+     "id": "w",
+     "name": "w",
+     "kind": "service",
+     "ref": "web"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api"
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "w",
+     "target": "a",
+     "kind": "dependency",
+     "ref": "r1"
+    }
+   ]
+  },
+  "relation": {
+   "id": "r1",
+   "kind": "communicates",
+   "source": "web",
+   "target": "api"
+  },
+  "shows": true,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "unlinked edge that fits, either way",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "w": {
+     "id": "w",
+     "name": "w",
+     "kind": "service",
+     "ref": "web"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api"
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "a",
+     "target": "w",
+     "kind": "connection"
+    }
+   ]
+  },
+  "relation": {
+   "id": "r1",
+   "kind": "communicates",
+   "source": "web",
+   "target": "api"
+  },
+  "shows": true,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "edge whose kind cannot show the relation",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "w": {
+     "id": "w",
+     "name": "w",
+     "kind": "service",
+     "ref": "web"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api"
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "w",
+     "target": "a",
+     "kind": "deploys"
+    }
+   ]
+  },
+  "relation": {
+   "id": "r1",
+   "kind": "communicates",
+   "source": "web",
+   "target": "api"
+  },
+  "shows": false,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "data flow drawn backwards",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api"
+    },
+    "b": {
+     "id": "b",
+     "name": "b",
+     "kind": "database",
+     "ref": "db"
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "b",
+     "target": "a",
+     "kind": "connection"
+    }
+   ]
+  },
+  "relation": {
+   "id": "r2",
+   "kind": "data_flow",
+   "source": "api",
+   "target": "db"
+  },
+  "shows": false,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "data flow drawn forwards",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api"
+    },
+    "b": {
+     "id": "b",
+     "name": "b",
+     "kind": "database",
+     "ref": "db"
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "a",
+     "target": "b",
+     "kind": "connection"
+    }
+   ]
+  },
+  "relation": {
+   "id": "r2",
+   "kind": "data_flow",
+   "source": "api",
+   "target": "db"
+  },
+  "shows": true,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "deployed_on by nesting",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "s": {
+     "id": "s",
+     "name": "s",
+     "kind": "node",
+     "ref": "srv"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api",
+     "parent": "s"
+    }
+   },
+   "edges": []
+  },
+  "relation": {
+   "id": "r3",
+   "kind": "deployed_on",
+   "source": "api",
+   "target": "srv"
+  },
+  "shows": true,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "deployed_on by nesting through a linked subsystem",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "s": {
+     "id": "s",
+     "name": "s",
+     "kind": "node",
+     "ref": "srv"
+    },
+    "g": {
+     "id": "g",
+     "name": "g",
+     "kind": "group",
+     "ref": "billing",
+     "parent": "s"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api",
+     "parent": "g"
+    }
+   },
+   "edges": []
+  },
+  "relation": {
+   "id": "r3",
+   "kind": "deployed_on",
+   "source": "api",
+   "target": "srv"
+  },
+  "shows": true,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "deployed_on by nesting through an unlinked group",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "s": {
+     "id": "s",
+     "name": "s",
+     "kind": "node",
+     "ref": "srv"
+    },
+    "g": {
+     "id": "g",
+     "name": "g",
+     "kind": "group",
+     "parent": "s"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api",
+     "parent": "g"
+    }
+   },
+   "edges": []
+  },
+  "relation": {
+   "id": "r3",
+   "kind": "deployed_on",
+   "source": "api",
+   "target": "srv"
+  },
+  "shows": true,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "deployed_on: the nearest node is another one",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "c": {
+     "id": "c",
+     "name": "c",
+     "kind": "cluster",
+     "ref": "srv"
+    },
+    "p": {
+     "id": "p",
+     "name": "p",
+     "kind": "node",
+     "ref": "pod",
+     "parent": "c"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api",
+     "parent": "p"
+    }
+   },
+   "edges": []
+  },
+  "relation": {
+   "id": "r3",
+   "kind": "deployed_on",
+   "source": "api",
+   "target": "srv"
+  },
+  "shows": false,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "deployed_on by a deploys edge",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "s": {
+     "id": "s",
+     "name": "s",
+     "kind": "node",
+     "ref": "srv"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api"
+    }
+   },
+   "edges": [
+    {
+     "id": "e1",
+     "source": "a",
+     "target": "s",
+     "kind": "deploys"
+    }
+   ]
+  },
+  "relation": {
+   "id": "r3",
+   "kind": "deployed_on",
+   "source": "api",
+   "target": "srv"
+  },
+  "shows": true,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "deployed_on not drawn",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "s": {
+     "id": "s",
+     "name": "s",
+     "kind": "node",
+     "ref": "srv"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api"
+    }
+   },
+   "edges": []
+  },
+  "relation": {
+   "id": "r3",
+   "kind": "deployed_on",
+   "source": "api",
+   "target": "srv"
+  },
+  "shows": false,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "linked message",
+  "diagram": {
+   "id": "q",
+   "title": "Q",
+   "type": "sequence",
+   "interaction": {
+    "lifelines": [
+     {
+      "id": "x",
+      "name": "x",
+      "ref": "web"
+     },
+     {
+      "id": "y",
+      "name": "y",
+      "ref": "api"
+     }
+    ],
+    "fragments": [
+     {
+      "element": "message",
+      "id": "m1",
+      "name": "call()",
+      "sender": "y",
+      "receiver": "x",
+      "ref": "r1"
+     }
+    ]
+   }
+  },
+  "relation": {
+   "id": "r1",
+   "kind": "communicates",
+   "source": "web",
+   "target": "api"
+  },
+  "shows": true,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "unlinked message that fits",
+  "diagram": {
+   "id": "q",
+   "title": "Q",
+   "type": "sequence",
+   "interaction": {
+    "lifelines": [
+     {
+      "id": "x",
+      "name": "x",
+      "ref": "web"
+     },
+     {
+      "id": "y",
+      "name": "y",
+      "ref": "api"
+     }
+    ],
+    "fragments": [
+     {
+      "element": "message",
+      "id": "m1",
+      "name": "call()",
+      "sender": "x",
+      "receiver": "y"
+     }
+    ]
+   }
+  },
+  "relation": {
+   "id": "r1",
+   "kind": "communicates",
+   "source": "web",
+   "target": "api"
+  },
+  "shows": true,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "activity diagrams show nothing",
+  "diagram": {
+   "id": "a",
+   "title": "A",
+   "type": "activity",
+   "nodes": {
+    "p": {
+     "id": "p",
+     "name": "p",
+     "kind": "activity_partition",
+     "ref": "web"
+    },
+    "q": {
+     "id": "q",
+     "name": "q",
+     "kind": "activity_partition",
+     "ref": "api"
+    }
+   },
+   "edges": []
+  },
+  "relation": {
+   "id": "r1",
+   "kind": "communicates",
+   "source": "web",
+   "target": "api"
+  },
+  "shows": false,
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  }
+ },
+ {
+  "name": "unlinked containers never match element ids like undefined or null",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "s": {
+     "id": "s",
+     "name": "s",
+     "kind": "node",
+     "ref": "srv"
+    },
+    "u": {
+     "id": "u",
+     "name": "u",
+     "kind": "node",
+     "parent": "s"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api",
+     "parent": "u"
+    }
+   },
+   "edges": []
+  },
+  "relation": {
+   "id": "r3",
+   "kind": "deployed_on",
+   "source": "api",
+   "target": "srv"
+  },
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem",
+   "undefined": "node",
+   "null": "node",
+   "constructor": "node"
+  },
+  "shows": true
+ },
+ {
+  "name": "an element id that is an inherited object key",
+  "diagram": {
+   "id": "d",
+   "title": "D",
+   "nodes": {
+    "s": {
+     "id": "s",
+     "name": "s",
+     "kind": "node",
+     "ref": "srv"
+    },
+    "c": {
+     "id": "c",
+     "name": "c",
+     "kind": "node",
+     "ref": "constructor",
+     "parent": "s"
+    },
+    "a": {
+     "id": "a",
+     "name": "a",
+     "kind": "service",
+     "ref": "api",
+     "parent": "c"
+    }
+   },
+   "edges": []
+  },
+  "relation": {
+   "id": "r3",
+   "kind": "deployed_on",
+   "source": "api",
+   "target": "srv"
+  },
+  "kinds": {
+   "web": "component",
+   "api": "component",
+   "db": "data",
+   "srv": "node",
+   "pod": "node",
+   "cluster": "node",
+   "billing": "subsystem"
+  },
+  "shows": true
+ }
+]

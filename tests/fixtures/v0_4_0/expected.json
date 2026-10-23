@@ -1,0 +1,2360 @@
+{
+ "version": "0.4.0",
+ "diagrams": {
+  "bestellprozess": {
+   "dump": {
+    "id": "bestellprozess",
+    "title": "Bestellprozess",
+    "type": "activity",
+    "nodes": {
+     "abbruch": {
+      "id": "abbruch",
+      "name": "Abbruch",
+      "kind": "flow_final_node",
+      "parent": "shop",
+      "properties": {}
+     },
+     "bestellen": {
+      "id": "bestellen",
+      "name": "Bestellung aufgeben",
+      "kind": "opaque_action",
+      "parent": "kunde",
+      "properties": {}
+     },
+     "bestellungen": {
+      "id": "bestellungen",
+      "name": "Bestellungen",
+      "kind": "data_store_node",
+      "parent": "shop",
+      "properties": {}
+     },
+     "ende": {
+      "id": "ende",
+      "name": "Ende",
+      "kind": "activity_final_node",
+      "parent": "lager",
+      "properties": {}
+     },
+     "fork": {
+      "id": "fork",
+      "name": "Fork",
+      "kind": "fork_node",
+      "parent": "shop",
+      "properties": {}
+     },
+     "informieren": {
+      "id": "informieren",
+      "name": "Kunde informieren",
+      "kind": "opaque_action",
+      "parent": "shop",
+      "properties": {}
+     },
+     "join": {
+      "id": "join",
+      "name": "Join",
+      "kind": "join_node",
+      "parent": "lager",
+      "properties": {}
+     },
+     "kommissionieren": {
+      "id": "kommissionieren",
+      "name": "Ware kommissionieren",
+      "kind": "opaque_action",
+      "parent": "lager",
+      "properties": {}
+     },
+     "kunde": {
+      "id": "kunde",
+      "name": "Kunde",
+      "kind": "activity_partition",
+      "parent": null,
+      "properties": {}
+     },
+     "lager": {
+      "id": "lager",
+      "name": "Lager",
+      "kind": "activity_partition",
+      "parent": null,
+      "properties": {}
+     },
+     "pruefen": {
+      "id": "pruefen",
+      "name": "Bestellung prüfen",
+      "kind": "opaque_action",
+      "parent": "shop",
+      "properties": {}
+     },
+     "shop": {
+      "id": "shop",
+      "name": "Shop",
+      "kind": "activity_partition",
+      "parent": null,
+      "properties": {}
+     },
+     "start": {
+      "id": "start",
+      "name": "Start",
+      "kind": "initial_node",
+      "parent": "kunde",
+      "properties": {}
+     },
+     "verfuegbar": {
+      "id": "verfuegbar",
+      "name": "Artikel verfügbar?",
+      "kind": "decision_node",
+      "parent": "shop",
+      "properties": {}
+     },
+     "versenden": {
+      "id": "versenden",
+      "name": "Ware versenden",
+      "kind": "opaque_action",
+      "parent": "lager",
+      "properties": {}
+     },
+     "zahlung": {
+      "id": "zahlung",
+      "name": "Zahlung abwickeln",
+      "kind": "opaque_action",
+      "parent": "shop",
+      "properties": {}
+     }
+    },
+    "edges": [
+     {
+      "id": "e1",
+      "source": "start",
+      "target": "bestellen",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e2",
+      "source": "bestellen",
+      "target": "pruefen",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e3",
+      "source": "pruefen",
+      "target": "verfuegbar",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e4",
+      "source": "fork",
+      "target": "zahlung",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e5",
+      "source": "fork",
+      "target": "kommissionieren",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e6",
+      "source": "zahlung",
+      "target": "join",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e7",
+      "source": "kommissionieren",
+      "target": "join",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e8",
+      "source": "join",
+      "target": "versenden",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e9",
+      "source": "versenden",
+      "target": "ende",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e10",
+      "source": "informieren",
+      "target": "abbruch",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e11",
+      "source": "verfuegbar",
+      "target": "fork",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {
+       "guard": "ja"
+      }
+     },
+     {
+      "id": "e12",
+      "source": "verfuegbar",
+      "target": "informieren",
+      "label": null,
+      "kind": "control_flow",
+      "direction": null,
+      "properties": {
+       "guard": "nein"
+      }
+     },
+     {
+      "id": "e13",
+      "source": "pruefen",
+      "target": "bestellungen",
+      "label": "Bestellung",
+      "kind": "object_flow",
+      "direction": null,
+      "properties": {}
+     }
+    ],
+    "direction": "TB",
+    "interaction": null
+   },
+   "fingerprint": "07e78e9fa6f7704e",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 16,
+     "edge_count": 13,
+     "fingerprint": "07e78e9fa6f7704e",
+     "author": "ada",
+     "author_name": "Ada"
+    }
+   ],
+   "version_fingerprints": [
+    "07e78e9fa6f7704e"
+   ],
+   "export": {
+    "format": "arcviz-diagram",
+    "schema_version": 2,
+    "diagram": {
+     "id": "bestellprozess",
+     "title": "Bestellprozess",
+     "type": "activity",
+     "nodes": {
+      "abbruch": {
+       "id": "abbruch",
+       "name": "Abbruch",
+       "kind": "flow_final_node",
+       "parent": "shop",
+       "properties": {}
+      },
+      "bestellen": {
+       "id": "bestellen",
+       "name": "Bestellung aufgeben",
+       "kind": "opaque_action",
+       "parent": "kunde",
+       "properties": {}
+      },
+      "bestellungen": {
+       "id": "bestellungen",
+       "name": "Bestellungen",
+       "kind": "data_store_node",
+       "parent": "shop",
+       "properties": {}
+      },
+      "ende": {
+       "id": "ende",
+       "name": "Ende",
+       "kind": "activity_final_node",
+       "parent": "lager",
+       "properties": {}
+      },
+      "fork": {
+       "id": "fork",
+       "name": "Fork",
+       "kind": "fork_node",
+       "parent": "shop",
+       "properties": {}
+      },
+      "informieren": {
+       "id": "informieren",
+       "name": "Kunde informieren",
+       "kind": "opaque_action",
+       "parent": "shop",
+       "properties": {}
+      },
+      "join": {
+       "id": "join",
+       "name": "Join",
+       "kind": "join_node",
+       "parent": "lager",
+       "properties": {}
+      },
+      "kommissionieren": {
+       "id": "kommissionieren",
+       "name": "Ware kommissionieren",
+       "kind": "opaque_action",
+       "parent": "lager",
+       "properties": {}
+      },
+      "kunde": {
+       "id": "kunde",
+       "name": "Kunde",
+       "kind": "activity_partition",
+       "parent": null,
+       "properties": {}
+      },
+      "lager": {
+       "id": "lager",
+       "name": "Lager",
+       "kind": "activity_partition",
+       "parent": null,
+       "properties": {}
+      },
+      "pruefen": {
+       "id": "pruefen",
+       "name": "Bestellung prüfen",
+       "kind": "opaque_action",
+       "parent": "shop",
+       "properties": {}
+      },
+      "shop": {
+       "id": "shop",
+       "name": "Shop",
+       "kind": "activity_partition",
+       "parent": null,
+       "properties": {}
+      },
+      "start": {
+       "id": "start",
+       "name": "Start",
+       "kind": "initial_node",
+       "parent": "kunde",
+       "properties": {}
+      },
+      "verfuegbar": {
+       "id": "verfuegbar",
+       "name": "Artikel verfügbar?",
+       "kind": "decision_node",
+       "parent": "shop",
+       "properties": {}
+      },
+      "versenden": {
+       "id": "versenden",
+       "name": "Ware versenden",
+       "kind": "opaque_action",
+       "parent": "lager",
+       "properties": {}
+      },
+      "zahlung": {
+       "id": "zahlung",
+       "name": "Zahlung abwickeln",
+       "kind": "opaque_action",
+       "parent": "shop",
+       "properties": {}
+      }
+     },
+     "edges": [
+      {
+       "id": "e1",
+       "source": "start",
+       "target": "bestellen",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e2",
+       "source": "bestellen",
+       "target": "pruefen",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e3",
+       "source": "pruefen",
+       "target": "verfuegbar",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e4",
+       "source": "fork",
+       "target": "zahlung",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e5",
+       "source": "fork",
+       "target": "kommissionieren",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e6",
+       "source": "zahlung",
+       "target": "join",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e7",
+       "source": "kommissionieren",
+       "target": "join",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e8",
+       "source": "join",
+       "target": "versenden",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e9",
+       "source": "versenden",
+       "target": "ende",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e10",
+       "source": "informieren",
+       "target": "abbruch",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e11",
+       "source": "verfuegbar",
+       "target": "fork",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {
+        "guard": "ja"
+       }
+      },
+      {
+       "id": "e12",
+       "source": "verfuegbar",
+       "target": "informieren",
+       "label": null,
+       "kind": "control_flow",
+       "direction": null,
+       "properties": {
+        "guard": "nein"
+       }
+      },
+      {
+       "id": "e13",
+       "source": "pruefen",
+       "target": "bestellungen",
+       "label": "Bestellung",
+       "kind": "object_flow",
+       "direction": null,
+       "properties": {}
+      }
+     ],
+     "direction": "TB",
+     "created_at": "2026-10-11T11:09:06+00:00",
+     "updated_at": "2026-10-11T11:09:06+00:00",
+     "interaction": null
+    }
+   },
+   "summary": "Diagram 'Bestellprozess' (id: bestellprozess, activity diagram)\n  - [kunde] «activity_partition» Kunde\n    - [bestellen] «opaque_action» Bestellung aufgeben\n    - [start] «initial_node» Start\n  - [lager] «activity_partition» Lager\n    - [ende] «activity_final_node» Ende\n    - [join] «join_node» Join\n    - [kommissionieren] «opaque_action» Ware kommissionieren\n    - [versenden] «opaque_action» Ware versenden\n  - [shop] «activity_partition» Shop\n    - [abbruch] «flow_final_node» Abbruch\n    - [verfuegbar] «decision_node» Artikel verfügbar?\n    - [pruefen] «opaque_action» Bestellung prüfen\n    - [bestellungen] «data_store_node» Bestellungen\n    - [fork] «fork_node» Fork\n    - [informieren] «opaque_action» Kunde informieren\n    - [zahlung] «opaque_action» Zahlung abwickeln\nEdges:\n  - [e1] start -> bestellen (control_flow)\n  - [e2] bestellen -> pruefen (control_flow)\n  - [e3] pruefen -> verfuegbar (control_flow)\n  - [e4] fork -> zahlung (control_flow)\n  - [e5] fork -> kommissionieren (control_flow)\n  - [e6] zahlung -> join (control_flow)\n  - [e7] kommissionieren -> join (control_flow)\n  - [e8] join -> versenden (control_flow)\n  - [e9] versenden -> ende (control_flow)\n  - [e10] informieren -> abbruch (control_flow)\n  - [e11] verfuegbar -> fork (control_flow) {guard=ja}\n  - [e12] verfuegbar -> informieren (control_flow) {guard=nein}\n  - [e13] pruefen -> bestellungen (object_flow) \"Bestellung\""
+  },
+  "checkout": {
+   "dump": {
+    "id": "checkout",
+    "title": "Checkout",
+    "type": "sequence",
+    "nodes": {},
+    "edges": [],
+    "direction": "TB",
+    "interaction": {
+     "lifelines": [
+      {
+       "id": "kunde",
+       "name": "Kunde",
+       "type": null,
+       "actor": true
+      },
+      {
+       "id": "shop",
+       "name": "Shop",
+       "type": "WebApp",
+       "actor": false
+      },
+      {
+       "id": "zahlung",
+       "name": "Zahlung",
+       "type": "PaymentService",
+       "actor": false
+      },
+      {
+       "id": "bestellung",
+       "name": "Bestellung",
+       "type": "Order",
+       "actor": false
+      },
+      {
+       "id": "orders",
+       "name": "Order Service",
+       "type": null,
+       "actor": false,
+       "ref": "order-service"
+      }
+     ],
+     "fragments": [
+      {
+       "element": "message",
+       "id": "m1",
+       "name": "checkout(warenkorb)",
+       "sort": "synchCall",
+       "kind": "complete",
+       "sender": "kunde",
+       "receiver": "shop"
+      },
+      {
+       "element": "message",
+       "id": "m2",
+       "name": "validieren()",
+       "sort": "synchCall",
+       "kind": "complete",
+       "sender": "shop",
+       "receiver": "shop"
+      },
+      {
+       "element": "combined_fragment",
+       "id": "cf1",
+       "operator": "alt",
+       "covered": [
+        "kunde",
+        "shop",
+        "zahlung",
+        "bestellung"
+       ],
+       "operands": [
+        {
+         "id": "op1",
+         "guard": "Zahlung ok",
+         "fragments": [
+          {
+           "element": "message",
+           "id": "m3",
+           "name": "bezahlen(betrag)",
+           "sort": "synchCall",
+           "kind": "complete",
+           "sender": "shop",
+           "receiver": "zahlung"
+          },
+          {
+           "element": "message",
+           "id": "m4",
+           "name": "bestätigt",
+           "sort": "reply",
+           "kind": "complete",
+           "sender": "zahlung",
+           "receiver": "shop"
+          },
+          {
+           "element": "message",
+           "id": "m5",
+           "name": "anlegen",
+           "sort": "createMessage",
+           "kind": "complete",
+           "sender": "shop",
+           "receiver": "bestellung"
+          }
+         ]
+        },
+        {
+         "id": "op2",
+         "guard": "else",
+         "fragments": [
+          {
+           "element": "message",
+           "id": "m6",
+           "name": "Fehler anzeigen",
+           "sort": "asynchSignal",
+           "kind": "complete",
+           "sender": "shop",
+           "receiver": "kunde"
+          }
+         ]
+        }
+       ],
+       "messages": []
+      },
+      {
+       "element": "combined_fragment",
+       "id": "cf2",
+       "operator": "loop",
+       "covered": [
+        "shop",
+        "bestellung"
+       ],
+       "operands": [
+        {
+         "id": "op3",
+         "guard": "für jede Position",
+         "fragments": [
+          {
+           "element": "message",
+           "id": "m7",
+           "name": "position(artikel)",
+           "sort": "asynchCall",
+           "kind": "complete",
+           "sender": "shop",
+           "receiver": "bestellung"
+          }
+         ]
+        }
+       ],
+       "messages": []
+      },
+      {
+       "element": "interaction_use",
+       "id": "ref1",
+       "refers_to": "Versand beauftragen",
+       "covered": [
+        "shop",
+        "bestellung"
+       ]
+      },
+      {
+       "element": "message",
+       "id": "m8",
+       "name": "Bestellbestätigung",
+       "sort": "reply",
+       "kind": "complete",
+       "sender": "shop",
+       "receiver": "kunde"
+      },
+      {
+       "element": "message",
+       "id": "m9",
+       "name": "Sitzung abgelaufen",
+       "sort": "asynchSignal",
+       "kind": "found",
+       "sender": null,
+       "receiver": "shop"
+      },
+      {
+       "element": "message",
+       "id": "m10",
+       "name": "Audit-Ereignis",
+       "sort": "asynchSignal",
+       "kind": "lost",
+       "sender": "shop",
+       "receiver": null
+      },
+      {
+       "element": "message",
+       "id": "m11",
+       "name": "verwerfen",
+       "sort": "deleteMessage",
+       "kind": "complete",
+       "sender": "shop",
+       "receiver": "bestellung"
+      }
+     ],
+     "executions": [
+      {
+       "id": "ex1",
+       "lifeline": "shop",
+       "start": "m1",
+       "finish": "m8"
+      },
+      {
+       "id": "ex2",
+       "lifeline": "zahlung",
+       "start": "m3",
+       "finish": "m4"
+      }
+     ]
+    }
+   },
+   "fingerprint": "1d2bb9a9a6a1eb1c",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 0,
+     "edge_count": 0,
+     "fingerprint": "80b43e2c7f9c995f",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 2,
+     "label": "Lifeline",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 0,
+     "edge_count": 0,
+     "fingerprint": "84a5146a1c2a5283",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 3,
+     "label": "Mit Element „Order Service“ verknüpft",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 0,
+     "edge_count": 0,
+     "fingerprint": "1d2bb9a9a6a1eb1c",
+     "author": "ada",
+     "author_name": "Ada"
+    }
+   ],
+   "version_fingerprints": [
+    "80b43e2c7f9c995f",
+    "84a5146a1c2a5283",
+    "1d2bb9a9a6a1eb1c"
+   ],
+   "export": {
+    "format": "arcviz-diagram",
+    "schema_version": 2,
+    "diagram": {
+     "id": "checkout",
+     "title": "Checkout",
+     "type": "sequence",
+     "nodes": {},
+     "edges": [],
+     "direction": "TB",
+     "created_at": "2026-10-11T11:09:06+00:00",
+     "updated_at": "2026-10-11T11:09:07+00:00",
+     "interaction": {
+      "lifelines": [
+       {
+        "id": "kunde",
+        "name": "Kunde",
+        "type": null,
+        "actor": true
+       },
+       {
+        "id": "shop",
+        "name": "Shop",
+        "type": "WebApp",
+        "actor": false
+       },
+       {
+        "id": "zahlung",
+        "name": "Zahlung",
+        "type": "PaymentService",
+        "actor": false
+       },
+       {
+        "id": "bestellung",
+        "name": "Bestellung",
+        "type": "Order",
+        "actor": false
+       },
+       {
+        "id": "orders",
+        "name": "Order Service",
+        "type": null,
+        "actor": false,
+        "ref": "order-service"
+       }
+      ],
+      "fragments": [
+       {
+        "element": "message",
+        "id": "m1",
+        "name": "checkout(warenkorb)",
+        "sort": "synchCall",
+        "kind": "complete",
+        "sender": "kunde",
+        "receiver": "shop"
+       },
+       {
+        "element": "message",
+        "id": "m2",
+        "name": "validieren()",
+        "sort": "synchCall",
+        "kind": "complete",
+        "sender": "shop",
+        "receiver": "shop"
+       },
+       {
+        "element": "combined_fragment",
+        "id": "cf1",
+        "operator": "alt",
+        "covered": [
+         "kunde",
+         "shop",
+         "zahlung",
+         "bestellung"
+        ],
+        "operands": [
+         {
+          "id": "op1",
+          "guard": "Zahlung ok",
+          "fragments": [
+           {
+            "element": "message",
+            "id": "m3",
+            "name": "bezahlen(betrag)",
+            "sort": "synchCall",
+            "kind": "complete",
+            "sender": "shop",
+            "receiver": "zahlung"
+           },
+           {
+            "element": "message",
+            "id": "m4",
+            "name": "bestätigt",
+            "sort": "reply",
+            "kind": "complete",
+            "sender": "zahlung",
+            "receiver": "shop"
+           },
+           {
+            "element": "message",
+            "id": "m5",
+            "name": "anlegen",
+            "sort": "createMessage",
+            "kind": "complete",
+            "sender": "shop",
+            "receiver": "bestellung"
+           }
+          ]
+         },
+         {
+          "id": "op2",
+          "guard": "else",
+          "fragments": [
+           {
+            "element": "message",
+            "id": "m6",
+            "name": "Fehler anzeigen",
+            "sort": "asynchSignal",
+            "kind": "complete",
+            "sender": "shop",
+            "receiver": "kunde"
+           }
+          ]
+         }
+        ],
+        "messages": []
+       },
+       {
+        "element": "combined_fragment",
+        "id": "cf2",
+        "operator": "loop",
+        "covered": [
+         "shop",
+         "bestellung"
+        ],
+        "operands": [
+         {
+          "id": "op3",
+          "guard": "für jede Position",
+          "fragments": [
+           {
+            "element": "message",
+            "id": "m7",
+            "name": "position(artikel)",
+            "sort": "asynchCall",
+            "kind": "complete",
+            "sender": "shop",
+            "receiver": "bestellung"
+           }
+          ]
+         }
+        ],
+        "messages": []
+       },
+       {
+        "element": "interaction_use",
+        "id": "ref1",
+        "refers_to": "Versand beauftragen",
+        "covered": [
+         "shop",
+         "bestellung"
+        ]
+       },
+       {
+        "element": "message",
+        "id": "m8",
+        "name": "Bestellbestätigung",
+        "sort": "reply",
+        "kind": "complete",
+        "sender": "shop",
+        "receiver": "kunde"
+       },
+       {
+        "element": "message",
+        "id": "m9",
+        "name": "Sitzung abgelaufen",
+        "sort": "asynchSignal",
+        "kind": "found",
+        "sender": null,
+        "receiver": "shop"
+       },
+       {
+        "element": "message",
+        "id": "m10",
+        "name": "Audit-Ereignis",
+        "sort": "asynchSignal",
+        "kind": "lost",
+        "sender": "shop",
+        "receiver": null
+       },
+       {
+        "element": "message",
+        "id": "m11",
+        "name": "verwerfen",
+        "sort": "deleteMessage",
+        "kind": "complete",
+        "sender": "shop",
+        "receiver": "bestellung"
+       }
+      ],
+      "executions": [
+       {
+        "id": "ex1",
+        "lifeline": "shop",
+        "start": "m1",
+        "finish": "m8"
+       },
+       {
+        "id": "ex2",
+        "lifeline": "zahlung",
+        "start": "m3",
+        "finish": "m4"
+       }
+      ]
+     }
+    }
+   },
+   "summary": "Diagram 'Checkout' (id: checkout, sequence diagram)\nLifelines (left to right):\n  - [kunde] Kunde «actor»\n  - [shop] Shop : WebApp\n  - [zahlung] Zahlung : PaymentService\n  - [bestellung] Bestellung : Order\n  - [orders] Order Service (= element order-service)\nFragments (top to bottom):\n  - [m1] kunde -> shop: checkout(warenkorb) (synchCall)\n  - [m2] shop -> shop: validieren() (synchCall)\n  - [cf1] alt covering kunde, shop, zahlung, bestellung\n    operand [op1] [Zahlung ok]:\n      - [m3] shop -> zahlung: bezahlen(betrag) (synchCall)\n      - [m4] zahlung -> shop: bestätigt (reply)\n      - [m5] shop -> bestellung: anlegen (createMessage)\n    operand [op2] [else]:\n      - [m6] shop -> kunde: Fehler anzeigen (asynchSignal)\n  - [cf2] loop covering shop, bestellung\n    operand [op3] [für jede Position]:\n      - [m7] shop -> bestellung: position(artikel) (asynchCall)\n  - [ref1] ref Versand beauftragen covering shop, bestellung\n  - [m8] shop -> kunde: Bestellbestätigung (reply)\n  - [m9] (found) -> shop: Sitzung abgelaufen (asynchSignal, found)\n  - [m10] shop -> (lost): Audit-Ereignis (asynchSignal, lost)\n  - [m11] shop -> bestellung: verwerfen (deleteMessage)\nExecution specifications:\n  - [ex1] on shop from m1 to m8\n  - [ex2] on zahlung from m3 to m4"
+  },
+  "notizen": {
+   "dump": {
+    "id": "notizen",
+    "title": "Notizen",
+    "type": "deployment",
+    "nodes": {
+     "api-gateway": {
+      "id": "api-gateway",
+      "name": "api-gateway",
+      "kind": "gateway",
+      "parent": "prod-deployment",
+      "properties": {}
+     },
+     "events": {
+      "id": "events",
+      "name": "events",
+      "kind": "queue",
+      "parent": "prod-deployment",
+      "properties": {}
+     },
+     "idp": {
+      "id": "idp",
+      "name": "Identity Provider",
+      "kind": "external",
+      "parent": null,
+      "properties": {}
+     },
+     "orders-db": {
+      "id": "orders-db",
+      "name": "orders-db",
+      "kind": "database",
+      "parent": "prod-deployment",
+      "properties": {
+       "engine": "postgres"
+      }
+     },
+     "prod-deployment": {
+      "id": "prod-deployment",
+      "name": "prod-deployment",
+      "kind": "deployment",
+      "parent": null,
+      "properties": {
+       "cloud": "azure",
+       "region": "westeurope"
+      }
+     },
+     "service-a": {
+      "id": "service-a",
+      "name": "service-a",
+      "kind": "service",
+      "parent": "prod-deployment",
+      "properties": {
+       "runtime": "container"
+      }
+     },
+     "service-b": {
+      "id": "service-b",
+      "name": "service-b",
+      "kind": "service",
+      "parent": "prod-deployment",
+      "properties": {
+       "runtime": "container"
+      }
+     },
+     "service-c": {
+      "id": "service-c",
+      "name": "service-c",
+      "kind": "service",
+      "parent": "prod-deployment",
+      "properties": {
+       "runtime": "function"
+      }
+     }
+    },
+    "edges": [
+     {
+      "id": "e1",
+      "source": "api-gateway",
+      "target": "service-a",
+      "label": "https",
+      "kind": "connection",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e2",
+      "source": "api-gateway",
+      "target": "service-b",
+      "label": "https",
+      "kind": "connection",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e3",
+      "source": "service-a",
+      "target": "orders-db",
+      "label": "sql",
+      "kind": "connection",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e4",
+      "source": "service-b",
+      "target": "events",
+      "label": "publish",
+      "kind": "connection",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e5",
+      "source": "service-c",
+      "target": "events",
+      "label": "subscribe",
+      "kind": "connection",
+      "direction": null,
+      "properties": {}
+     },
+     {
+      "id": "e6",
+      "source": "api-gateway",
+      "target": "idp",
+      "label": "oidc",
+      "kind": "dependency",
+      "direction": null,
+      "properties": {}
+     }
+    ],
+    "direction": "TB",
+    "interaction": null
+   },
+   "fingerprint": "42c8676cf64579ed",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 8,
+     "edge_count": 6,
+     "fingerprint": "42c8676cf64579ed",
+     "author": "ada",
+     "author_name": "Ada"
+    }
+   ],
+   "version_fingerprints": [
+    "42c8676cf64579ed"
+   ],
+   "export": {
+    "format": "arcviz-diagram",
+    "schema_version": 1,
+    "diagram": {
+     "id": "notizen",
+     "title": "Notizen",
+     "type": "deployment",
+     "nodes": {
+      "api-gateway": {
+       "id": "api-gateway",
+       "name": "api-gateway",
+       "kind": "gateway",
+       "parent": "prod-deployment",
+       "properties": {}
+      },
+      "events": {
+       "id": "events",
+       "name": "events",
+       "kind": "queue",
+       "parent": "prod-deployment",
+       "properties": {}
+      },
+      "idp": {
+       "id": "idp",
+       "name": "Identity Provider",
+       "kind": "external",
+       "parent": null,
+       "properties": {}
+      },
+      "orders-db": {
+       "id": "orders-db",
+       "name": "orders-db",
+       "kind": "database",
+       "parent": "prod-deployment",
+       "properties": {
+        "engine": "postgres"
+       }
+      },
+      "prod-deployment": {
+       "id": "prod-deployment",
+       "name": "prod-deployment",
+       "kind": "deployment",
+       "parent": null,
+       "properties": {
+        "cloud": "azure",
+        "region": "westeurope"
+       }
+      },
+      "service-a": {
+       "id": "service-a",
+       "name": "service-a",
+       "kind": "service",
+       "parent": "prod-deployment",
+       "properties": {
+        "runtime": "container"
+       }
+      },
+      "service-b": {
+       "id": "service-b",
+       "name": "service-b",
+       "kind": "service",
+       "parent": "prod-deployment",
+       "properties": {
+        "runtime": "container"
+       }
+      },
+      "service-c": {
+       "id": "service-c",
+       "name": "service-c",
+       "kind": "service",
+       "parent": "prod-deployment",
+       "properties": {
+        "runtime": "function"
+       }
+      }
+     },
+     "edges": [
+      {
+       "id": "e1",
+       "source": "api-gateway",
+       "target": "service-a",
+       "label": "https",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e2",
+       "source": "api-gateway",
+       "target": "service-b",
+       "label": "https",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e3",
+       "source": "service-a",
+       "target": "orders-db",
+       "label": "sql",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e4",
+       "source": "service-b",
+       "target": "events",
+       "label": "publish",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e5",
+       "source": "service-c",
+       "target": "events",
+       "label": "subscribe",
+       "kind": "connection",
+       "direction": null,
+       "properties": {}
+      },
+      {
+       "id": "e6",
+       "source": "api-gateway",
+       "target": "idp",
+       "label": "oidc",
+       "kind": "dependency",
+       "direction": null,
+       "properties": {}
+      }
+     ],
+     "direction": "TB",
+     "created_at": "2026-10-11T11:09:06+00:00",
+     "updated_at": "2026-10-11T11:09:06+00:00",
+     "interaction": null
+    }
+   },
+   "summary": "Diagram 'Notizen' (id: notizen)\n  - [idp] «external» Identity Provider\n  - [prod-deployment] «deployment» prod-deployment {cloud=azure, region=westeurope}\n    - [api-gateway] «gateway» api-gateway\n    - [events] «queue» events\n    - [orders-db] «database» orders-db {engine=postgres}\n    - [service-a] «service» service-a {runtime=container}\n    - [service-b] «service» service-b {runtime=container}\n    - [service-c] «service» service-c {runtime=function}\nEdges:\n  - [e1] api-gateway -> service-a (connection) \"https\"\n  - [e2] api-gateway -> service-b (connection) \"https\"\n  - [e3] service-a -> orders-db (connection) \"sql\"\n  - [e4] service-b -> events (connection) \"publish\"\n  - [e5] service-c -> events (connection) \"subscribe\"\n  - [e6] api-gateway -> idp (dependency) \"oidc\""
+  },
+  "plattform": {
+   "dump": {
+    "id": "plattform",
+    "title": "Plattform",
+    "type": "deployment",
+    "nodes": {
+     "cluster": {
+      "id": "cluster",
+      "name": "Cluster",
+      "kind": "cluster",
+      "parent": null,
+      "properties": {},
+      "ref": "cluster"
+     },
+     "db": {
+      "id": "db",
+      "name": "Orders DB",
+      "kind": "database",
+      "parent": null,
+      "properties": {},
+      "ref": "orders-db",
+      "description": "PostgreSQL"
+     },
+     "orders": {
+      "id": "orders",
+      "name": "Order Service",
+      "kind": "service",
+      "parent": "cluster",
+      "properties": {},
+      "ref": "order-service"
+     },
+     "shop": {
+      "id": "shop",
+      "name": "Shop",
+      "kind": "service",
+      "parent": "cluster",
+      "properties": {}
+     }
+    },
+    "edges": [
+     {
+      "id": "e1",
+      "source": "shop",
+      "target": "orders",
+      "label": "Bestellung",
+      "kind": "connection",
+      "direction": null,
+      "properties": {
+       "port": "443",
+       "protocol": "HTTPS"
+      }
+     },
+     {
+      "id": "e2",
+      "source": "orders",
+      "target": "db",
+      "label": null,
+      "kind": "connection",
+      "direction": "both",
+      "properties": {}
+     }
+    ],
+    "direction": "TB",
+    "interaction": null
+   },
+   "fingerprint": "cdde6b4c73340ec1",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 0,
+     "edge_count": 0,
+     "fingerprint": "9dc9a20bf9b0d841",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 2,
+     "label": "Cluster",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 1,
+     "edge_count": 0,
+     "fingerprint": "ef000022116d9aae",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 3,
+     "label": "Shop",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 2,
+     "edge_count": 0,
+     "fingerprint": "2a9e4406c2dccf2e",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 4,
+     "label": "OS",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 3,
+     "edge_count": 0,
+     "fingerprint": "a87c38d6115c3747",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 5,
+     "label": "DB",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 4,
+     "edge_count": 0,
+     "fingerprint": "9a6b860d9064b885",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 6,
+     "label": "E1",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 4,
+     "edge_count": 1,
+     "fingerprint": "dd934d64450f8371",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 7,
+     "label": "E2",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 4,
+     "edge_count": 2,
+     "fingerprint": "f0886af692819685",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 8,
+     "label": "Vor dem Umbau",
+     "source": "manual",
+     "restored_from": null,
+     "node_count": 4,
+     "edge_count": 2,
+     "fingerprint": "f0886af692819685",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 9,
+     "label": "Cache",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 5,
+     "edge_count": 2,
+     "fingerprint": "89d8a3bbf433c833",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 10,
+     "label": "Undo: restored version 8 (Vor dem Umbau)",
+     "source": "undo",
+     "restored_from": 8,
+     "node_count": 4,
+     "edge_count": 2,
+     "fingerprint": "f0886af692819685",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 11,
+     "label": "Mit Element „Cluster“ verknüpft",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 4,
+     "edge_count": 2,
+     "fingerprint": "cf05bff9af38a127",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 12,
+     "label": "Mit Element „Order Service“ verknüpft",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 4,
+     "edge_count": 2,
+     "fingerprint": "346ccc74d5bba275",
+     "author": "ada",
+     "author_name": "Ada"
+    },
+    {
+     "version": 13,
+     "label": "Mit Element „Orders DB“ verknüpft",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 4,
+     "edge_count": 2,
+     "fingerprint": "cdde6b4c73340ec1",
+     "author": "ada",
+     "author_name": "Ada"
+    }
+   ],
+   "version_fingerprints": [
+    "9dc9a20bf9b0d841",
+    "ef000022116d9aae",
+    "2a9e4406c2dccf2e",
+    "a87c38d6115c3747",
+    "9a6b860d9064b885",
+    "dd934d64450f8371",
+    "f0886af692819685",
+    "f0886af692819685",
+    "89d8a3bbf433c833",
+    "f0886af692819685",
+    "cf05bff9af38a127",
+    "346ccc74d5bba275",
+    "cdde6b4c73340ec1"
+   ],
+   "export": {
+    "format": "arcviz-diagram",
+    "schema_version": 1,
+    "diagram": {
+     "id": "plattform",
+     "title": "Plattform",
+     "type": "deployment",
+     "nodes": {
+      "cluster": {
+       "id": "cluster",
+       "name": "Cluster",
+       "kind": "cluster",
+       "parent": null,
+       "properties": {},
+       "ref": "cluster"
+      },
+      "db": {
+       "id": "db",
+       "name": "Orders DB",
+       "kind": "database",
+       "parent": null,
+       "properties": {},
+       "ref": "orders-db",
+       "description": "PostgreSQL"
+      },
+      "orders": {
+       "id": "orders",
+       "name": "Order Service",
+       "kind": "service",
+       "parent": "cluster",
+       "properties": {},
+       "ref": "order-service"
+      },
+      "shop": {
+       "id": "shop",
+       "name": "Shop",
+       "kind": "service",
+       "parent": "cluster",
+       "properties": {}
+      }
+     },
+     "edges": [
+      {
+       "id": "e1",
+       "source": "shop",
+       "target": "orders",
+       "label": "Bestellung",
+       "kind": "connection",
+       "direction": null,
+       "properties": {
+        "port": "443",
+        "protocol": "HTTPS"
+       }
+      },
+      {
+       "id": "e2",
+       "source": "orders",
+       "target": "db",
+       "label": null,
+       "kind": "connection",
+       "direction": "both",
+       "properties": {}
+      }
+     ],
+     "direction": "TB",
+     "created_at": "2026-10-11T11:09:06+00:00",
+     "updated_at": "2026-10-11T11:09:07+00:00",
+     "interaction": null
+    }
+   },
+   "summary": "Diagram 'Plattform' (id: plattform)\n  - [cluster] «cluster» Cluster (= element cluster)\n    - [orders] «service» Order Service (= element order-service)\n    - [shop] «service» Shop\n  - [db] «database» Orders DB (= element orders-db) — note: \"PostgreSQL\"\nEdges:\n  - [e1] shop -> orders (connection) \"Bestellung\" {port=443, protocol=HTTPS}\n  - [e2] orders -> db (connection, direction=both)"
+  }
+ },
+ "projects": {
+  "home_9c1623f0d38e28e9594f2ef31a7ec909": {
+   "id": "home_9c1623f0d38e28e9594f2ef31a7ec909",
+   "title": "Standardprojekt",
+   "description": "",
+   "sections": [],
+   "diagrams": [],
+   "elements": [],
+   "workspace": "user_9c1623f0d38e28e9594f2ef31a7ec909",
+   "incarnation": "939ec45d1f78ad9f981ea762"
+  },
+  "home_fdee430d40bd57deeac186cd9790033d": {
+   "id": "home_fdee430d40bd57deeac186cd9790033d",
+   "title": "Standardprojekt",
+   "description": "",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "notizen",
+     "section": null,
+     "added_at": "2026-10-11T11:09:06.923982+00:00"
+    }
+   ],
+   "elements": [],
+   "workspace": "user_fdee430d40bd57deeac186cd9790033d",
+   "incarnation": "2d79efa7a07a76bbc006559a"
+  },
+  "webshop": {
+   "id": "webshop",
+   "title": "Webshop",
+   "description": "Online-Shop mit Bestellung und Zahlung",
+   "sections": [
+    {
+     "id": "bestellung",
+     "title": "Bestellung",
+     "parent": null
+    },
+    {
+     "id": "zahlung",
+     "title": "Order Service",
+     "parent": "bestellung",
+     "element": "order-service"
+    }
+   ],
+   "diagrams": [
+    {
+     "diagram": "plattform",
+     "section": null,
+     "added_at": "2026-10-11T11:09:06.852331+00:00"
+    },
+    {
+     "diagram": "bestellprozess",
+     "section": "bestellung",
+     "added_at": "2026-10-11T11:09:06.875542+00:00"
+    },
+    {
+     "diagram": "checkout",
+     "section": "zahlung",
+     "added_at": "2026-10-11T11:09:06.896136+00:00"
+    }
+   ],
+   "elements": [
+    {
+     "id": "shop",
+     "name": "Shop",
+     "kind": "system",
+     "description": "Der Webshop",
+     "parent": null
+    },
+    {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "component",
+     "description": "Nimmt Bestellungen an",
+     "parent": "shop"
+    },
+    {
+     "id": "orders-db",
+     "name": "Orders DB",
+     "kind": "data",
+     "description": "",
+     "parent": null
+    },
+    {
+     "id": "cluster",
+     "name": "Cluster",
+     "kind": "node",
+     "description": "",
+     "parent": null
+    }
+   ],
+   "workspace": "user_fdee430d40bd57deeac186cd9790033d",
+   "roles": {
+    "ed": "editor"
+   },
+   "incarnation": "a533159c5e8c6c06247c057d"
+  }
+ },
+ "models": {
+  "webshop": {
+   "project": "webshop",
+   "elements": [
+    {
+     "id": "shop",
+     "name": "Shop",
+     "kind": "system",
+     "description": "Der Webshop",
+     "parent": null,
+     "usages": [],
+     "sections": []
+    },
+    {
+     "id": "order-service",
+     "name": "Order Service",
+     "kind": "component",
+     "description": "Nimmt Bestellungen an",
+     "parent": "shop",
+     "usages": [
+      {
+       "diagram": "plattform",
+       "title": "Plattform",
+       "type": "deployment",
+       "view": "orders",
+       "name": "Order Service"
+      },
+      {
+       "diagram": "checkout",
+       "title": "Checkout",
+       "type": "sequence",
+       "view": "orders",
+       "name": "Order Service"
+      }
+     ],
+     "sections": [
+      "zahlung"
+     ]
+    },
+    {
+     "id": "orders-db",
+     "name": "Orders DB",
+     "kind": "data",
+     "description": "",
+     "parent": null,
+     "usages": [
+      {
+       "diagram": "plattform",
+       "title": "Plattform",
+       "type": "deployment",
+       "view": "db",
+       "name": "Orders DB"
+      }
+     ],
+     "sections": []
+    },
+    {
+     "id": "cluster",
+     "name": "Cluster",
+     "kind": "node",
+     "description": "",
+     "parent": null,
+     "usages": [
+      {
+       "diagram": "plattform",
+       "title": "Plattform",
+       "type": "deployment",
+       "view": "cluster",
+       "name": "Cluster"
+      }
+     ],
+     "sections": []
+    }
+   ]
+  }
+ },
+ "bundles": {
+  "webshop": {
+   "format": "arcviz-project",
+   "schema_version": 2,
+   "project": {
+    "id": "webshop",
+    "title": "Webshop",
+    "description": "Online-Shop mit Bestellung und Zahlung",
+    "sections": [
+     {
+      "id": "bestellung",
+      "title": "Bestellung",
+      "parent": null
+     },
+     {
+      "id": "zahlung",
+      "title": "Order Service",
+      "parent": "bestellung",
+      "element": "order-service"
+     }
+    ],
+    "diagrams": [
+     {
+      "diagram": "plattform",
+      "section": null
+     },
+     {
+      "diagram": "bestellprozess",
+      "section": "bestellung"
+     },
+     {
+      "diagram": "checkout",
+      "section": "zahlung"
+     }
+    ],
+    "elements": [
+     {
+      "id": "shop",
+      "name": "Shop",
+      "kind": "system",
+      "description": "Der Webshop",
+      "parent": null
+     },
+     {
+      "id": "order-service",
+      "name": "Order Service",
+      "kind": "component",
+      "description": "Nimmt Bestellungen an",
+      "parent": "shop"
+     },
+     {
+      "id": "orders-db",
+      "name": "Orders DB",
+      "kind": "data",
+      "description": "",
+      "parent": null
+     },
+     {
+      "id": "cluster",
+      "name": "Cluster",
+      "kind": "node",
+      "description": "",
+      "parent": null
+     }
+    ]
+   },
+   "diagrams": [
+    {
+     "format": "arcviz-diagram",
+     "schema_version": 1,
+     "diagram": {
+      "id": "plattform",
+      "title": "Plattform",
+      "type": "deployment",
+      "nodes": {
+       "cluster": {
+        "id": "cluster",
+        "name": "Cluster",
+        "kind": "cluster",
+        "parent": null,
+        "properties": {},
+        "ref": "cluster"
+       },
+       "db": {
+        "id": "db",
+        "name": "Orders DB",
+        "kind": "database",
+        "parent": null,
+        "properties": {},
+        "ref": "orders-db",
+        "description": "PostgreSQL"
+       },
+       "orders": {
+        "id": "orders",
+        "name": "Order Service",
+        "kind": "service",
+        "parent": "cluster",
+        "properties": {},
+        "ref": "order-service"
+       },
+       "shop": {
+        "id": "shop",
+        "name": "Shop",
+        "kind": "service",
+        "parent": "cluster",
+        "properties": {}
+       }
+      },
+      "edges": [
+       {
+        "id": "e1",
+        "source": "shop",
+        "target": "orders",
+        "label": "Bestellung",
+        "kind": "connection",
+        "direction": null,
+        "properties": {
+         "port": "443",
+         "protocol": "HTTPS"
+        }
+       },
+       {
+        "id": "e2",
+        "source": "orders",
+        "target": "db",
+        "label": null,
+        "kind": "connection",
+        "direction": "both",
+        "properties": {}
+       }
+      ],
+      "direction": "TB",
+      "created_at": "2026-10-11T11:09:06+00:00",
+      "updated_at": "2026-10-11T11:09:07+00:00",
+      "interaction": null
+     }
+    },
+    {
+     "format": "arcviz-diagram",
+     "schema_version": 2,
+     "diagram": {
+      "id": "bestellprozess",
+      "title": "Bestellprozess",
+      "type": "activity",
+      "nodes": {
+       "abbruch": {
+        "id": "abbruch",
+        "name": "Abbruch",
+        "kind": "flow_final_node",
+        "parent": "shop",
+        "properties": {}
+       },
+       "bestellen": {
+        "id": "bestellen",
+        "name": "Bestellung aufgeben",
+        "kind": "opaque_action",
+        "parent": "kunde",
+        "properties": {}
+       },
+       "bestellungen": {
+        "id": "bestellungen",
+        "name": "Bestellungen",
+        "kind": "data_store_node",
+        "parent": "shop",
+        "properties": {}
+       },
+       "ende": {
+        "id": "ende",
+        "name": "Ende",
+        "kind": "activity_final_node",
+        "parent": "lager",
+        "properties": {}
+       },
+       "fork": {
+        "id": "fork",
+        "name": "Fork",
+        "kind": "fork_node",
+        "parent": "shop",
+        "properties": {}
+       },
+       "informieren": {
+        "id": "informieren",
+        "name": "Kunde informieren",
+        "kind": "opaque_action",
+        "parent": "shop",
+        "properties": {}
+       },
+       "join": {
+        "id": "join",
+        "name": "Join",
+        "kind": "join_node",
+        "parent": "lager",
+        "properties": {}
+       },
+       "kommissionieren": {
+        "id": "kommissionieren",
+        "name": "Ware kommissionieren",
+        "kind": "opaque_action",
+        "parent": "lager",
+        "properties": {}
+       },
+       "kunde": {
+        "id": "kunde",
+        "name": "Kunde",
+        "kind": "activity_partition",
+        "parent": null,
+        "properties": {}
+       },
+       "lager": {
+        "id": "lager",
+        "name": "Lager",
+        "kind": "activity_partition",
+        "parent": null,
+        "properties": {}
+       },
+       "pruefen": {
+        "id": "pruefen",
+        "name": "Bestellung prüfen",
+        "kind": "opaque_action",
+        "parent": "shop",
+        "properties": {}
+       },
+       "shop": {
+        "id": "shop",
+        "name": "Shop",
+        "kind": "activity_partition",
+        "parent": null,
+        "properties": {}
+       },
+       "start": {
+        "id": "start",
+        "name": "Start",
+        "kind": "initial_node",
+        "parent": "kunde",
+        "properties": {}
+       },
+       "verfuegbar": {
+        "id": "verfuegbar",
+        "name": "Artikel verfügbar?",
+        "kind": "decision_node",
+        "parent": "shop",
+        "properties": {}
+       },
+       "versenden": {
+        "id": "versenden",
+        "name": "Ware versenden",
+        "kind": "opaque_action",
+        "parent": "lager",
+        "properties": {}
+       },
+       "zahlung": {
+        "id": "zahlung",
+        "name": "Zahlung abwickeln",
+        "kind": "opaque_action",
+        "parent": "shop",
+        "properties": {}
+       }
+      },
+      "edges": [
+       {
+        "id": "e1",
+        "source": "start",
+        "target": "bestellen",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e2",
+        "source": "bestellen",
+        "target": "pruefen",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e3",
+        "source": "pruefen",
+        "target": "verfuegbar",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e4",
+        "source": "fork",
+        "target": "zahlung",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e5",
+        "source": "fork",
+        "target": "kommissionieren",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e6",
+        "source": "zahlung",
+        "target": "join",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e7",
+        "source": "kommissionieren",
+        "target": "join",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e8",
+        "source": "join",
+        "target": "versenden",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e9",
+        "source": "versenden",
+        "target": "ende",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e10",
+        "source": "informieren",
+        "target": "abbruch",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {}
+       },
+       {
+        "id": "e11",
+        "source": "verfuegbar",
+        "target": "fork",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {
+         "guard": "ja"
+        }
+       },
+       {
+        "id": "e12",
+        "source": "verfuegbar",
+        "target": "informieren",
+        "label": null,
+        "kind": "control_flow",
+        "direction": null,
+        "properties": {
+         "guard": "nein"
+        }
+       },
+       {
+        "id": "e13",
+        "source": "pruefen",
+        "target": "bestellungen",
+        "label": "Bestellung",
+        "kind": "object_flow",
+        "direction": null,
+        "properties": {}
+       }
+      ],
+      "direction": "TB",
+      "created_at": "2026-10-11T11:09:06+00:00",
+      "updated_at": "2026-10-11T11:09:06+00:00",
+      "interaction": null
+     }
+    },
+    {
+     "format": "arcviz-diagram",
+     "schema_version": 2,
+     "diagram": {
+      "id": "checkout",
+      "title": "Checkout",
+      "type": "sequence",
+      "nodes": {},
+      "edges": [],
+      "direction": "TB",
+      "created_at": "2026-10-11T11:09:06+00:00",
+      "updated_at": "2026-10-11T11:09:07+00:00",
+      "interaction": {
+       "lifelines": [
+        {
+         "id": "kunde",
+         "name": "Kunde",
+         "type": null,
+         "actor": true
+        },
+        {
+         "id": "shop",
+         "name": "Shop",
+         "type": "WebApp",
+         "actor": false
+        },
+        {
+         "id": "zahlung",
+         "name": "Zahlung",
+         "type": "PaymentService",
+         "actor": false
+        },
+        {
+         "id": "bestellung",
+         "name": "Bestellung",
+         "type": "Order",
+         "actor": false
+        },
+        {
+         "id": "orders",
+         "name": "Order Service",
+         "type": null,
+         "actor": false,
+         "ref": "order-service"
+        }
+       ],
+       "fragments": [
+        {
+         "element": "message",
+         "id": "m1",
+         "name": "checkout(warenkorb)",
+         "sort": "synchCall",
+         "kind": "complete",
+         "sender": "kunde",
+         "receiver": "shop"
+        },
+        {
+         "element": "message",
+         "id": "m2",
+         "name": "validieren()",
+         "sort": "synchCall",
+         "kind": "complete",
+         "sender": "shop",
+         "receiver": "shop"
+        },
+        {
+         "element": "combined_fragment",
+         "id": "cf1",
+         "operator": "alt",
+         "covered": [
+          "kunde",
+          "shop",
+          "zahlung",
+          "bestellung"
+         ],
+         "operands": [
+          {
+           "id": "op1",
+           "guard": "Zahlung ok",
+           "fragments": [
+            {
+             "element": "message",
+             "id": "m3",
+             "name": "bezahlen(betrag)",
+             "sort": "synchCall",
+             "kind": "complete",
+             "sender": "shop",
+             "receiver": "zahlung"
+            },
+            {
+             "element": "message",
+             "id": "m4",
+             "name": "bestätigt",
+             "sort": "reply",
+             "kind": "complete",
+             "sender": "zahlung",
+             "receiver": "shop"
+            },
+            {
+             "element": "message",
+             "id": "m5",
+             "name": "anlegen",
+             "sort": "createMessage",
+             "kind": "complete",
+             "sender": "shop",
+             "receiver": "bestellung"
+            }
+           ]
+          },
+          {
+           "id": "op2",
+           "guard": "else",
+           "fragments": [
+            {
+             "element": "message",
+             "id": "m6",
+             "name": "Fehler anzeigen",
+             "sort": "asynchSignal",
+             "kind": "complete",
+             "sender": "shop",
+             "receiver": "kunde"
+            }
+           ]
+          }
+         ],
+         "messages": []
+        },
+        {
+         "element": "combined_fragment",
+         "id": "cf2",
+         "operator": "loop",
+         "covered": [
+          "shop",
+          "bestellung"
+         ],
+         "operands": [
+          {
+           "id": "op3",
+           "guard": "für jede Position",
+           "fragments": [
+            {
+             "element": "message",
+             "id": "m7",
+             "name": "position(artikel)",
+             "sort": "asynchCall",
+             "kind": "complete",
+             "sender": "shop",
+             "receiver": "bestellung"
+            }
+           ]
+          }
+         ],
+         "messages": []
+        },
+        {
+         "element": "interaction_use",
+         "id": "ref1",
+         "refers_to": "Versand beauftragen",
+         "covered": [
+          "shop",
+          "bestellung"
+         ]
+        },
+        {
+         "element": "message",
+         "id": "m8",
+         "name": "Bestellbestätigung",
+         "sort": "reply",
+         "kind": "complete",
+         "sender": "shop",
+         "receiver": "kunde"
+        },
+        {
+         "element": "message",
+         "id": "m9",
+         "name": "Sitzung abgelaufen",
+         "sort": "asynchSignal",
+         "kind": "found",
+         "sender": null,
+         "receiver": "shop"
+        },
+        {
+         "element": "message",
+         "id": "m10",
+         "name": "Audit-Ereignis",
+         "sort": "asynchSignal",
+         "kind": "lost",
+         "sender": "shop",
+         "receiver": null
+        },
+        {
+         "element": "message",
+         "id": "m11",
+         "name": "verwerfen",
+         "sort": "deleteMessage",
+         "kind": "complete",
+         "sender": "shop",
+         "receiver": "bestellung"
+        }
+       ],
+       "executions": [
+        {
+         "id": "ex1",
+         "lifeline": "shop",
+         "start": "m1",
+         "finish": "m8"
+        },
+        {
+         "id": "ex2",
+         "lifeline": "zahlung",
+         "start": "m3",
+         "finish": "m4"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,460 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 1,
+  "exported_at": "2026-10-07T00:00:00+00:00",
+  "diagram": {
+    "id": "c4-components-web-ui",
+    "title": "Arcviz web UI: module layers (C4 level 3)",
+    "type": "deployment",
+    "nodes": {
+      "browser-ui": {
+        "id": "browser-ui",
+        "name": "Web UI",
+        "kind": "container_boundary",
+        "parent": null,
+        "properties": {
+          "code": "arcviz/static/index.html",
+          "spec": "docs/architecture/specs/frontend-modules.md"
+        }
+      },
+      "app-layer": {
+        "id": "app-layer",
+        "name": "entry point",
+        "kind": "layer",
+        "parent": "browser-ui",
+        "properties": {}
+      },
+      "js-app": {
+        "id": "js-app",
+        "name": "app.js",
+        "kind": "component",
+        "parent": "app-layer",
+        "properties": {
+          "code": "arcviz/static/app.js"
+        }
+      },
+      "chat-layer": {
+        "id": "chat-layer",
+        "name": "chat",
+        "kind": "layer",
+        "parent": "browser-ui",
+        "properties": {}
+      },
+      "js-chat": {
+        "id": "js-chat",
+        "name": "chat.js",
+        "kind": "component",
+        "parent": "chat-layer",
+        "properties": {
+          "code": "arcviz/static/chat.js"
+        }
+      },
+      "features": {
+        "id": "features",
+        "name": "features",
+        "kind": "layer",
+        "parent": "browser-ui",
+        "properties": {}
+      },
+      "js-inspector": {
+        "id": "js-inspector",
+        "name": "inspector.js",
+        "kind": "component",
+        "parent": "features",
+        "properties": {
+          "code": "arcviz/static/inspector.js"
+        }
+      },
+      "js-versions": {
+        "id": "js-versions",
+        "name": "versions.js",
+        "kind": "component",
+        "parent": "features",
+        "properties": {
+          "code": "arcviz/static/versions.js"
+        }
+      },
+      "js-export": {
+        "id": "js-export",
+        "name": "export.js",
+        "kind": "component",
+        "parent": "features",
+        "properties": {
+          "code": "arcviz/static/export.js"
+        }
+      },
+      "js-voice": {
+        "id": "js-voice",
+        "name": "voice.js",
+        "kind": "component",
+        "parent": "features",
+        "properties": {
+          "code": "arcviz/static/voice.js"
+        }
+      },
+      "js-splitter": {
+        "id": "js-splitter",
+        "name": "splitter.js",
+        "kind": "component",
+        "parent": "features",
+        "properties": {
+          "code": "arcviz/static/splitter.js"
+        }
+      },
+      "js-review": {
+        "id": "js-review",
+        "name": "review.js",
+        "kind": "component",
+        "parent": "features",
+        "properties": {
+          "code": "arcviz/static/review.js"
+        }
+      },
+      "js-appearance": {
+        "id": "js-appearance",
+        "name": "appearance.js",
+        "kind": "component",
+        "parent": "features",
+        "properties": {
+          "code": "arcviz/static/appearance.js"
+        }
+      },
+      "navigator-layer": {
+        "id": "navigator-layer",
+        "name": "navigator",
+        "kind": "layer",
+        "parent": "browser-ui",
+        "properties": {}
+      },
+      "js-navigator": {
+        "id": "js-navigator",
+        "name": "navigator.js",
+        "kind": "component",
+        "parent": "navigator-layer",
+        "properties": {
+          "code": "arcviz/static/navigator.js"
+        }
+      },
+      "hub": {
+        "id": "hub",
+        "name": "hub",
+        "kind": "layer",
+        "parent": "browser-ui",
+        "properties": {}
+      },
+      "js-diagram": {
+        "id": "js-diagram",
+        "name": "diagram.js",
+        "kind": "component",
+        "parent": "hub",
+        "properties": {
+          "code": "arcviz/static/diagram.js"
+        }
+      },
+      "views": {
+        "id": "views",
+        "name": "views",
+        "kind": "layer",
+        "parent": "browser-ui",
+        "properties": {}
+      },
+      "js-canvas": {
+        "id": "js-canvas",
+        "name": "canvas.js",
+        "kind": "component",
+        "parent": "views",
+        "properties": {
+          "code": "arcviz/static/canvas.js"
+        }
+      },
+      "js-chatlog": {
+        "id": "js-chatlog",
+        "name": "chatlog.js",
+        "kind": "component",
+        "parent": "views",
+        "properties": {
+          "code": "arcviz/static/chatlog.js"
+        }
+      },
+      "js-ui": {
+        "id": "js-ui",
+        "name": "ui.js",
+        "kind": "component",
+        "parent": "views",
+        "properties": {
+          "code": "arcviz/static/ui.js"
+        }
+      },
+      "base": {
+        "id": "base",
+        "name": "base",
+        "kind": "layer",
+        "parent": "browser-ui",
+        "properties": {}
+      },
+      "js-dom": {
+        "id": "js-dom",
+        "name": "dom.js",
+        "kind": "component",
+        "parent": "base",
+        "properties": {
+          "code": "arcviz/static/dom.js"
+        }
+      },
+      "js-state": {
+        "id": "js-state",
+        "name": "state.js",
+        "kind": "component",
+        "parent": "base",
+        "properties": {
+          "code": "arcviz/static/state.js"
+        }
+      },
+      "js-api": {
+        "id": "js-api",
+        "name": "api.js",
+        "kind": "component",
+        "parent": "base",
+        "properties": {
+          "code": "arcviz/static/api.js"
+        }
+      },
+      "pure": {
+        "id": "pure",
+        "name": "pure logic (no DOM, Node-tested)",
+        "kind": "layer",
+        "parent": "browser-ui",
+        "properties": {}
+      },
+      "js-geometry": {
+        "id": "js-geometry",
+        "name": "geometry.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/geometry.js"
+        }
+      },
+      "js-sse": {
+        "id": "js-sse",
+        "name": "sse.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/sse.js"
+        }
+      },
+      "js-model": {
+        "id": "js-model",
+        "name": "model.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/model.js"
+        }
+      },
+      "js-format": {
+        "id": "js-format",
+        "name": "format.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/format.js"
+        }
+      },
+      "js-commands": {
+        "id": "js-commands",
+        "name": "commands.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/commands.js"
+        }
+      },
+      "js-speech": {
+        "id": "js-speech",
+        "name": "speech.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/speech.js"
+        }
+      },
+      "js-reply": {
+        "id": "js-reply",
+        "name": "reply.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/reply.js"
+        }
+      },
+      "js-proposal": {
+        "id": "js-proposal",
+        "name": "proposal.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/proposal.js"
+        }
+      },
+      "js-findings": {
+        "id": "js-findings",
+        "name": "findings.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/findings.js"
+        }
+      },
+      "js-skins": {
+        "id": "js-skins",
+        "name": "skins.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/skins.js"
+        }
+      },
+      "js-projects": {
+        "id": "js-projects",
+        "name": "projects.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/projects.js"
+        }
+      },
+      "app-server": {
+        "id": "app-server",
+        "name": "Application server (/api)",
+        "kind": "container",
+        "parent": null,
+        "properties": {}
+      },
+      "mermaid-lib": {
+        "id": "mermaid-lib",
+        "name": "Mermaid 11 (vendored)",
+        "kind": "external_system",
+        "parent": null,
+        "properties": {
+          "code": "arcviz/static/vendor/mermaid.min.js"
+        }
+      },
+      "js-projectchat": {
+        "id": "js-projectchat",
+        "name": "projectchat.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/projectchat.js"
+        }
+      },
+      "js-modelpanel": {
+        "id": "js-modelpanel",
+        "name": "modelpanel.js",
+        "kind": "component",
+        "parent": "features",
+        "properties": {
+          "code": "arcviz/static/modelpanel.js"
+        }
+      },
+      "js-sharedmodel": {
+        "id": "js-sharedmodel",
+        "name": "sharedmodel.js",
+        "kind": "component",
+        "parent": "pure",
+        "properties": {
+          "code": "arcviz/static/sharedmodel.js"
+        }
+      }
+    },
+    "edges": [
+      {
+        "id": "e1",
+        "source": "app-layer",
+        "target": "chat-layer",
+        "label": "imports",
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e2",
+        "source": "chat-layer",
+        "target": "features",
+        "label": "imports",
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e3",
+        "source": "features",
+        "target": "navigator-layer",
+        "label": "imports",
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e9",
+        "source": "navigator-layer",
+        "target": "hub",
+        "label": "imports",
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e4",
+        "source": "hub",
+        "target": "views",
+        "label": "imports",
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e5",
+        "source": "views",
+        "target": "base",
+        "label": "imports",
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e6",
+        "source": "base",
+        "target": "pure",
+        "label": "imports",
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e7",
+        "source": "js-api",
+        "target": "app-server",
+        "label": "fetch, SSE",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e8",
+        "source": "js-canvas",
+        "target": "mermaid-lib",
+        "label": "render SVG",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      }
+    ],
+    "direction": "TB",
+    "created_at": "2026-10-06T00:00:00+00:00",
+    "updated_at": "2026-10-07T06:34:03+00:00",
+    "interaction": null
+  }
+}

@@ -1,0 +1,1326 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 1,
+  "exported_at": "2026-10-07T00:00:00+00:00",
+  "diagram": {
+    "id": "c4-components-server",
+    "title": "Arcviz application server: components (C4 level 3)",
+    "type": "deployment",
+    "nodes": {
+      "web-ui": {
+        "id": "web-ui",
+        "name": "Web UI",
+        "kind": "container",
+        "parent": null,
+        "properties": {}
+      },
+      "app": {
+        "id": "app",
+        "name": "Application server",
+        "kind": "container_boundary",
+        "parent": null,
+        "properties": {}
+      },
+      "server": {
+        "id": "server",
+        "name": "server.py: HTTP and SSE API, wiring",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/server.py",
+          "spec": "docs/spec/http-server.md"
+        }
+      },
+      "agent": {
+        "id": "agent",
+        "name": "agent.py: chat turn, tools, system prompt",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/agent.py",
+          "spec": "docs/spec/agent.md"
+        }
+      },
+      "llm": {
+        "id": "llm",
+        "name": "llm/: provider-neutral tool loop, providers",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/llm/",
+          "spec": "docs/spec/llm-layer.md"
+        }
+      },
+      "operations": {
+        "id": "operations",
+        "name": "operations.py: the single mutation path",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/operations.py",
+          "spec": "docs/spec/operations.md"
+        }
+      },
+      "model": {
+        "id": "model",
+        "name": "model.py: Diagram, kinds, integrity (imported by every module except llm/)",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/model.py",
+          "spec": "docs/spec/domain-model.md"
+        }
+      },
+      "kinds": {
+        "id": "kinds",
+        "name": "kinds.py: kinds file loader",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/kinds.py",
+          "spec": "docs/spec/domain-model.md#kinds-file"
+        }
+      },
+      "templates": {
+        "id": "templates",
+        "name": "templates.py: starter diagrams",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/templates.py",
+          "spec": "docs/spec/domain-model.md#templates"
+        }
+      },
+      "proposal": {
+        "id": "proposal",
+        "name": "proposal.py: propose, confirm, discard",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/proposal.py",
+          "spec": "docs/spec/agent.md"
+        }
+      },
+      "mermaid": {
+        "id": "mermaid",
+        "name": "mermaid.py: Diagram to Mermaid source",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/mermaid.py",
+          "spec": "docs/spec/rendering.md"
+        }
+      },
+      "diff": {
+        "id": "diff",
+        "name": "diff.py: version comparison",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/diff.py",
+          "spec": "docs/spec/rendering.md#comparison-marks"
+        }
+      },
+      "exchange": {
+        "id": "exchange",
+        "name": "exchange.py: JSON import and export, PlantUML",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/exchange.py",
+          "spec": "docs/spec/exchange.md"
+        }
+      },
+      "rules": {
+        "id": "rules",
+        "name": "rules.py: rule checks, Finding",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/rules.py",
+          "spec": "docs/spec/review.md"
+        }
+      },
+      "review": {
+        "id": "review",
+        "name": "review.py: LLM review",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/review.py",
+          "spec": "docs/spec/review.md#llm-review"
+        }
+      },
+      "store": {
+        "id": "store",
+        "name": "store/: DiagramRepository and backends",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/store/",
+          "spec": "docs/spec/persistence.md"
+        }
+      },
+      "gitmirror": {
+        "id": "gitmirror",
+        "name": "gitmirror.py: Git mirror",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/gitmirror.py",
+          "spec": "docs/spec/persistence.md#git-mirror"
+        }
+      },
+      "llm-api": {
+        "id": "llm-api",
+        "name": "LLM API",
+        "kind": "external_system",
+        "parent": null,
+        "properties": {}
+      },
+      "data": {
+        "id": "data",
+        "name": "Diagram store or Cosmos DB",
+        "kind": "container_db",
+        "parent": null,
+        "properties": {}
+      },
+      "git-repo": {
+        "id": "git-repo",
+        "name": "Git mirror repository",
+        "kind": "container_db",
+        "parent": null,
+        "properties": {}
+      },
+      "render": {
+        "id": "render",
+        "name": "render.py: renderer per diagram type",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/render.py",
+          "spec": "docs/spec/diagram-types.md"
+        }
+      },
+      "agent-types": {
+        "id": "agent-types",
+        "name": "agent_types.py: tools and prompts of activity and sequence diagrams",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/agent_types.py",
+          "spec": "docs/spec/diagram-types.md"
+        }
+      },
+      "sequence": {
+        "id": "sequence",
+        "name": "sequence.py: Interaction model of sequence diagrams",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/sequence.py",
+          "spec": "docs/spec/diagram-types.md"
+        }
+      },
+      "sequence-ops": {
+        "id": "sequence-ops",
+        "name": "sequence_ops.py: sequence-diagram operations",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/sequence_ops.py",
+          "spec": "docs/spec/diagram-types.md"
+        }
+      },
+      "sequence-svg": {
+        "id": "sequence-svg",
+        "name": "sequence_svg.py: sequence diagram to SVG",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/sequence_svg.py",
+          "spec": "docs/spec/diagram-types.md"
+        }
+      },
+      "limits": {
+        "id": "limits",
+        "name": "limits.py: request size and rate limits",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/limits.py",
+          "spec": "docs/spec/http-server.md#application-factory"
+        }
+      },
+      "auth": {
+        "id": "auth",
+        "name": "auth.py: optional authentication, the caller's identity",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/auth.py",
+          "spec": "docs/spec/http-server.md#application-factory"
+        }
+      },
+      "services": {
+        "id": "services",
+        "name": "services/: application services (read-modify-write) and the access policy",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/services/",
+          "spec": "docs/architecture/specs/application-services.md"
+        }
+      },
+      "ports": {
+        "id": "ports",
+        "name": "ports.py: persistence ports, errors, value types",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/ports.py",
+          "spec": "docs/architecture/specs/application-services.md"
+        }
+      },
+      "projects": {
+        "id": "projects",
+        "name": "projects.py: Project, section tree, project operations",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/projects.py",
+          "spec": "docs/spec/projects.md"
+        }
+      },
+      "cli": {
+        "id": "cli",
+        "name": "cli.py: arcviz-migrate (copy, project repair)",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/cli.py",
+          "spec": "docs/spec/persistence.md#migration"
+        }
+      },
+      "project-agent": {
+        "id": "project-agent",
+        "name": "project_agent.py: project chat across diagrams",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/project_agent.py",
+          "spec": "docs/spec/agent.md#project-chat"
+        }
+      },
+      "project-review": {
+        "id": "project-review",
+        "name": "project_review.py: project rules and review",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/project_review.py",
+          "spec": "docs/spec/review.md#project-review"
+        }
+      },
+      "project-model": {
+        "id": "project-model",
+        "name": "project_model.py: shared model elements, element kinds, view links",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/project_model.py",
+          "spec": "docs/spec/projects.md"
+        }
+      },
+      "agent-model": {
+        "id": "agent-model",
+        "name": "agent_model.py: element tools of both chats",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/agent_model.py",
+          "spec": "docs/spec/agent.md"
+        }
+      },
+      "workspaces": {
+        "id": "workspaces",
+        "name": "workspaces.py: users, workspaces with owners, project roles",
+        "kind": "component",
+        "parent": "app",
+        "properties": {
+          "code": "arcviz/workspaces.py",
+          "spec": "docs/architecture/specs/workspaces-and-sharing.md"
+        }
+      }
+    },
+    "edges": [
+      {
+        "id": "e1",
+        "source": "web-ui",
+        "target": "server",
+        "label": "JSON, SSE",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e2",
+        "source": "server",
+        "target": "agent",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e3",
+        "source": "server",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e4",
+        "source": "server",
+        "target": "store",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e5",
+        "source": "server",
+        "target": "proposal",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e6",
+        "source": "server",
+        "target": "review",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e7",
+        "source": "server",
+        "target": "rules",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e8",
+        "source": "server",
+        "target": "exchange",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e9",
+        "source": "server",
+        "target": "diff",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e10",
+        "source": "server",
+        "target": "mermaid",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e11",
+        "source": "server",
+        "target": "templates",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e12",
+        "source": "server",
+        "target": "kinds",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e13",
+        "source": "server",
+        "target": "llm",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e14",
+        "source": "agent",
+        "target": "llm",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e15",
+        "source": "agent",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e18",
+        "source": "agent",
+        "target": "proposal",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e21",
+        "source": "review",
+        "target": "llm",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e22",
+        "source": "review",
+        "target": "rules",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e23",
+        "source": "rules",
+        "target": "mermaid",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e24",
+        "source": "exchange",
+        "target": "mermaid",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e25",
+        "source": "templates",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e26",
+        "source": "store",
+        "target": "gitmirror",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e28",
+        "source": "llm",
+        "target": "llm-api",
+        "label": "HTTPS",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e29",
+        "source": "store",
+        "target": "data",
+        "label": "file I/O, SQL or HTTPS",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e30",
+        "source": "gitmirror",
+        "target": "git-repo",
+        "label": "git CLI",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e17",
+        "source": "agent",
+        "target": "agent-types",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e27",
+        "source": "agent",
+        "target": "render",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e31",
+        "source": "agent-types",
+        "target": "llm",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e32",
+        "source": "agent-types",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e33",
+        "source": "agent-types",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e34",
+        "source": "gitmirror",
+        "target": "render",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e35",
+        "source": "model",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e36",
+        "source": "operations",
+        "target": "sequence-ops",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e38",
+        "source": "render",
+        "target": "mermaid",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e39",
+        "source": "render",
+        "target": "sequence-svg",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e40",
+        "source": "sequence-ops",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e41",
+        "source": "sequence-ops",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e42",
+        "source": "sequence-svg",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e43",
+        "source": "server",
+        "target": "render",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e44",
+        "source": "server",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e45",
+        "source": "server",
+        "target": "limits",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e46",
+        "source": "server",
+        "target": "auth",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e47",
+        "source": "auth",
+        "target": "limits",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e48",
+        "source": "agent",
+        "target": "ports",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e49",
+        "source": "agent",
+        "target": "services",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e51",
+        "source": "proposal",
+        "target": "services",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e52",
+        "source": "server",
+        "target": "ports",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e53",
+        "source": "server",
+        "target": "services",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e54",
+        "source": "services",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e55",
+        "source": "services",
+        "target": "ports",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e56",
+        "source": "store",
+        "target": "ports",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e57",
+        "source": "ports",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e58",
+        "source": "projects",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e59",
+        "source": "services",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e60",
+        "source": "store",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e61",
+        "source": "cli",
+        "target": "ports",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e62",
+        "source": "cli",
+        "target": "services",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e63",
+        "source": "cli",
+        "target": "store",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e64",
+        "source": "exchange",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e65",
+        "source": "services",
+        "target": "exchange",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e66",
+        "source": "project-agent",
+        "target": "agent",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e67",
+        "source": "project-agent",
+        "target": "llm",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e68",
+        "source": "project-agent",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e69",
+        "source": "project-agent",
+        "target": "ports",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e70",
+        "source": "project-agent",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e71",
+        "source": "project-agent",
+        "target": "proposal",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e72",
+        "source": "project-agent",
+        "target": "render",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e73",
+        "source": "project-agent",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e74",
+        "source": "project-agent",
+        "target": "services",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e75",
+        "source": "server",
+        "target": "project-agent",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e76",
+        "source": "project-review",
+        "target": "llm",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e77",
+        "source": "project-review",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e78",
+        "source": "project-review",
+        "target": "review",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e79",
+        "source": "project-review",
+        "target": "rules",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e80",
+        "source": "server",
+        "target": "project-review",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e16",
+        "source": "operations",
+        "target": "project-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e20",
+        "source": "operations",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e81",
+        "source": "exchange",
+        "target": "project-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e82",
+        "source": "projects",
+        "target": "project-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e83",
+        "source": "services",
+        "target": "project-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e84",
+        "source": "server",
+        "target": "project-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e85",
+        "source": "project-review",
+        "target": "project-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e86",
+        "source": "project-review",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e87",
+        "source": "agent",
+        "target": "agent-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e88",
+        "source": "agent",
+        "target": "project-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e89",
+        "source": "agent",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e90",
+        "source": "agent-model",
+        "target": "llm",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e91",
+        "source": "agent-model",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e92",
+        "source": "agent-model",
+        "target": "ports",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e93",
+        "source": "agent-model",
+        "target": "project-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e94",
+        "source": "agent-model",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e95",
+        "source": "agent-model",
+        "target": "services",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e96",
+        "source": "project-agent",
+        "target": "agent-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e98",
+        "source": "auth",
+        "target": "workspaces",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e99",
+        "source": "cli",
+        "target": "workspaces",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e105",
+        "source": "cli",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e100",
+        "source": "server",
+        "target": "workspaces",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e101",
+        "source": "services",
+        "target": "workspaces",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e102",
+        "source": "workspaces",
+        "target": "projects",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e103",
+        "source": "ports",
+        "target": "workspaces",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e104",
+        "source": "store",
+        "target": "workspaces",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e106",
+        "source": "project-model",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e107",
+        "source": "exchange",
+        "target": "operations",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e108",
+        "source": "rules",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e109",
+        "source": "exchange",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e110",
+        "source": "diff",
+        "target": "sequence",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e111",
+        "source": "agent-types",
+        "target": "project-model",
+        "label": null,
+        "kind": "dependency",
+        "direction": null,
+        "properties": {}
+      }
+    ],
+    "direction": "TB",
+    "created_at": "2026-10-06T00:00:00+00:00",
+    "updated_at": "2026-10-07T06:42:18+00:00",
+    "interaction": null
+  }
+}

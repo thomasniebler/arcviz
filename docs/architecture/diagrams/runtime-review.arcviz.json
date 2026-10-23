@@ -1,0 +1,185 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 2,
+  "exported_at": "2026-10-11T00:00:00+00:00",
+  "diagram": {
+    "id": "runtime-review",
+    "title": "Runtime: architecture review",
+    "type": "sequence",
+    "nodes": {},
+    "edges": [],
+    "direction": "TB",
+    "created_at": "2026-10-11T00:00:00+00:00",
+    "updated_at": "2026-10-11T00:00:00+00:00",
+    "interaction": {
+      "lifelines": [
+        {
+          "id": "web-ui",
+          "name": "Web UI (review.js)",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "server",
+          "name": "server.py",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "rules",
+          "name": "rules.py",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "review",
+          "name": "review.py",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "llm-api",
+          "name": "LLM API",
+          "type": null,
+          "actor": false
+        }
+      ],
+      "fragments": [
+        {
+          "element": "message",
+          "id": "m1",
+          "name": "GET /checks",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "web-ui",
+          "receiver": "server"
+        },
+        {
+          "element": "message",
+          "id": "m2",
+          "name": "run_checks(diagram)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "rules"
+        },
+        {
+          "element": "message",
+          "id": "m3",
+          "name": "rule findings",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "rules",
+          "receiver": "server"
+        },
+        {
+          "element": "message",
+          "id": "m4",
+          "name": "findings (rules)",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "web-ui"
+        },
+        {
+          "element": "message",
+          "id": "m5",
+          "name": "POST /review",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "web-ui",
+          "receiver": "server"
+        },
+        {
+          "element": "message",
+          "id": "m6",
+          "name": "review(provider, diagram)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "review"
+        },
+        {
+          "element": "message",
+          "id": "m7",
+          "name": "run_checks",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "review",
+          "receiver": "rules"
+        },
+        {
+          "element": "message",
+          "id": "m8",
+          "name": "rule findings",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "rules",
+          "receiver": "review"
+        },
+        {
+          "element": "message",
+          "id": "m9",
+          "name": "complete_tool (submit_review only)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "review",
+          "receiver": "llm-api"
+        },
+        {
+          "element": "message",
+          "id": "m10",
+          "name": "findings (arguments)",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "llm-api",
+          "receiver": "review"
+        },
+        {
+          "element": "message",
+          "id": "m11",
+          "name": "parse_review: drop unknown ids, count invalid findings",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "review",
+          "receiver": "review"
+        },
+        {
+          "element": "message",
+          "id": "m12",
+          "name": "rule + LLM findings, llm.ok",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "review",
+          "receiver": "server"
+        },
+        {
+          "element": "message",
+          "id": "m13",
+          "name": "findings (nothing stored)",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "web-ui"
+        },
+        {
+          "element": "message",
+          "id": "m14",
+          "name": "highlight on the SVG; Als Vorschlag umsetzen: a propose-mode chat turn (6.3)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "web-ui",
+          "receiver": "web-ui"
+        }
+      ],
+      "executions": [
+        {
+          "id": "ex-review",
+          "lifeline": "review",
+          "start": "m6",
+          "finish": "m12"
+        }
+      ]
+    }
+  }
+}

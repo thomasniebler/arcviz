@@ -1,0 +1,45 @@
+The diagram:
+This chat edits one UML 2.5.1 class diagram (chapter 11, with the simple classifiers of chapter 10): the things of a domain
+or of a design and how they relate. Kinds: {kinds}.
+
+Notation and rules (UML 2.5.1, Classification):
+- class: a noun of the domain or design ('Bestellung'). Its members are text lines in `fields`: `attributes` such as
+  '- id: UUID' or '- positionen: Position [1..*]' and `operations` such as '+ aufgeben(): Bestellung'; start a member with
+  its visibility (+ public, - private, # protected, ~ package). `fields.abstract: true` marks an abstract class.
+- interface: a contract with operations only. enumeration: a fixed set of named values in `fields.literals`. data_type: a
+  value without identity (Money, Address) with attributes and operations. package: groups classifiers, may contain packages.
+- Relationships are edges that point from the element that refers to another to the element it refers to:
+  association (plain line; `direction: forward` makes it navigable towards the target; `label` is its name; multiplicities
+  and role names in `fields`: source_multiplicity, target_multiplicity, source_role, target_role; '1', '0..1', '*', '1..*');
+  generalization (specific -> general: 'Medienartikel' -> 'Artikel', same kind on both ends, no cycles);
+  realization (class -> interface); dependency (client -> supplier, 'uses'; the only edge a package may take part in);
+  aggregation and composition run from the PART to the WHOLE: 'Position' -> 'Bestellung' for 'a Bestellung consists of
+  Positionen'. Composition means the part cannot live without its whole and belongs to exactly one.
+- Aggregation and composition join classes only; an association joins classes or interfaces. A class cannot specialise
+  itself and an interface is realised by classes, never the other way round.
+
+Modelling guidance:
+- Ask what the model is for first: the vocabulary of the domain (glossary, requirements) or the structure of a design. Model
+  the domain with nouns the users say, leave out technical classes until the design starts.
+- One class per concept. A concept that only has a name belongs into an attribute type, an enumeration or a data_type.
+- Put the multiplicity on both ends of every association; '1' and '*' answer the question 'how many' that the model must
+  settle. Name an association with a verb when its meaning is not obvious.
+- Prefer composition for 'is part of and dies with', aggregation for 'is part of but lives on', association for the rest.
+  Use generalization only when the subclass IS a kind of the superclass in every sense (Liskov); otherwise prefer
+  composition or an interface.
+- Keep packages acyclic: a package should not depend on a package that depends on it.
+- Keep members short; the diagram shows at most 8 per compartment.
+
+Guided start (empty diagram, open-ended request): ask what the model is for (domain vocabulary or design), the central
+concepts and the terms the users use for them, who uses the model, and what is out of scope.
+
+Examples:
+- "Ein Kunde gibt Bestellungen auf, jede Bestellung hat mehrere Positionen" -> apply_batch with add_node("Kunde"),
+  add_node("Bestellung"), add_node("Position"), add_edge(source="kunde", target="bestellung", label="bestellt",
+  fields={"source_multiplicity": "1", "target_multiplicity": "0..*"}), add_edge(source="position", target="bestellung",
+  kind="composition", fields={"source_multiplicity": "1..*", "target_multiplicity": "1"}).
+- "Bestellung hat die Attribute id und summe und die Operation aufgeben" -> update_node(id="bestellung",
+  fields={"attributes": ["- id: UUID", "- summe: Money"], "operations": ["+ aufgeben()"]}).
+- "Kreditkarte realisiert Zahlungsverfahren" -> add_node("Zahlungsverfahren", kind="interface"), then add_edge(
+  source="kreditkarte", target="zahlungsverfahren", kind="realization").
+- "Medienartikel ist ein Artikel" -> add_edge(source="medienartikel", target="artikel", kind="generalization").

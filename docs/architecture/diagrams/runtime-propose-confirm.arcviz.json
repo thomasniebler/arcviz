@@ -1,0 +1,203 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 2,
+  "exported_at": "2026-10-11T00:00:00+00:00",
+  "diagram": {
+    "id": "runtime-propose-confirm",
+    "title": "Runtime: propose, then confirm",
+    "type": "sequence",
+    "nodes": {},
+    "edges": [],
+    "direction": "TB",
+    "created_at": "2026-10-11T00:00:00+00:00",
+    "updated_at": "2026-10-11T00:00:00+00:00",
+    "interaction": {
+      "lifelines": [
+        {
+          "id": "web-ui",
+          "name": "Web UI",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "server",
+          "name": "server.py",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "agent",
+          "name": "DiagramAgent",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "proposal",
+          "name": "proposal.py",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "services",
+          "name": "DiagramService",
+          "type": null,
+          "actor": false
+        }
+      ],
+      "fragments": [
+        {
+          "element": "message",
+          "id": "m1",
+          "name": "POST /chat {mode: propose}",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "web-ui",
+          "receiver": "server"
+        },
+        {
+          "element": "message",
+          "id": "m2",
+          "name": "chat(propose=True): dry run on an in-memory copy, no write, no version",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "agent"
+        },
+        {
+          "element": "message",
+          "id": "m3",
+          "name": "final.proposal {operations, base and result fingerprints, diagram_diff} (SSE)",
+          "sort": "asynchSignal",
+          "kind": "complete",
+          "sender": "agent",
+          "receiver": "web-ui"
+        },
+        {
+          "element": "message",
+          "id": "m4",
+          "name": "preview with diff marks; the user confirms or discards",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "web-ui",
+          "receiver": "web-ui"
+        },
+        {
+          "element": "message",
+          "id": "m5",
+          "name": "POST /proposal/apply {operations, base, result}",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "web-ui",
+          "receiver": "server"
+        },
+        {
+          "element": "message",
+          "id": "m6",
+          "name": "apply_proposal",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "proposal"
+        },
+        {
+          "element": "message",
+          "id": "m7",
+          "name": "load latest",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "proposal",
+          "receiver": "services"
+        },
+        {
+          "element": "combined_fragment",
+          "id": "cf-base",
+          "operator": "alt",
+          "covered": [
+            "web-ui",
+            "server",
+            "agent",
+            "proposal",
+            "services"
+          ],
+          "operands": [
+            {
+              "id": "op1",
+              "guard": "latest fingerprint ≠ base",
+              "fragments": [
+                {
+                  "element": "message",
+                  "id": "m8",
+                  "name": "stale",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "proposal",
+                  "receiver": "server"
+                },
+                {
+                  "element": "message",
+                  "id": "m9",
+                  "name": "409 (stale proposal)",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "server",
+                  "receiver": "web-ui"
+                }
+              ]
+            },
+            {
+              "id": "op2",
+              "guard": "else",
+              "fragments": [
+                {
+                  "element": "message",
+                  "id": "m10",
+                  "name": "replay the operations through operations.apply, compare with result",
+                  "sort": "synchCall",
+                  "kind": "complete",
+                  "sender": "proposal",
+                  "receiver": "proposal"
+                },
+                {
+                  "element": "message",
+                  "id": "m11",
+                  "name": "commit latest + version, conditional on the replayed state's revision",
+                  "sort": "synchCall",
+                  "kind": "complete",
+                  "sender": "proposal",
+                  "receiver": "services"
+                },
+                {
+                  "element": "message",
+                  "id": "m12",
+                  "name": "applied",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "proposal",
+                  "receiver": "server"
+                },
+                {
+                  "element": "message",
+                  "id": "m13",
+                  "name": "detail",
+                  "sort": "reply",
+                  "kind": "complete",
+                  "sender": "server",
+                  "receiver": "web-ui"
+                }
+              ]
+            }
+          ],
+          "messages": []
+        }
+      ],
+      "executions": [
+        {
+          "id": "ex-proposal",
+          "lifeline": "proposal",
+          "start": "m6",
+          "finish": null
+        }
+      ]
+    }
+  }
+}

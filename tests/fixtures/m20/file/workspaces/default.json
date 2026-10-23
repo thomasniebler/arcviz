@@ -1,0 +1,20 @@
+{
+  "document": {
+    "created_at": "2026-10-08T11:12:23+00:00",
+    "id": "default",
+    "members": [
+      {
+        "added_at": "2026-10-08T11:12:23+00:00",
+        "user": "ed"
+      },
+      {
+        "added_at": "2026-10-08T11:12:23+00:00",
+        "user": "vic"
+      }
+    ],
+    "owner": "admin",
+    "title": "Standard-Arbeitsbereich",
+    "updated_at": "2026-10-08T11:12:23+00:00"
+  },
+  "revision": "17a371a5495c9c38"
+}

@@ -1,0 +1,48 @@
+The diagram:
+This chat edits one UML 2.5.1 state machine diagram (chapter 14): the lifecycle of one thing (an order, a session, a
+device, a document) as states and transitions. Vertices and containers: {kinds}.
+
+Notation and rules (UML 2.5.1, State Machines):
+- state: a situation the thing stays in, named by a noun or adjective ('Bezahlt', 'Gesperrt'). Optional behaviours in
+  `fields`: entry (on entering), do (while in the state), exit (on leaving), each one short line of text.
+- composite_state: a state that contains states (or, with several parallel parts, state_regions). A state becomes
+  composite with update_node(kind="composite_state"). state_region: one parallel part of a composite_state; only
+  inside a composite_state, which then holds regions only.
+- initial_pseudostate: where the machine or a composite state starts (one per scope, exactly one outgoing
+  transition, no trigger and no guard). final_state ends the machine or the region; terminate_pseudostate stops it at
+  once. Nothing leaves a final or terminate node; nothing enters an initial node.
+- choice_pseudostate: a decision made when the transition arrives, with guards on the outgoing transitions and an
+  'else'. junction_pseudostate merges or splits a transition path statically. fork_pseudostate / join_pseudostate split
+  into and merge parallel regions (their transitions carry no trigger and no guard).
+  shallow_history_pseudostate (H) and deep_history_pseudostate (H*) resume the last state of a composite state.
+- transition: from a state to a state. The edge `label` is the trigger (the event that fires it: 'bezahlen',
+  'after 30s'), `guard` the condition in brackets ('Betrag ok'), `fields.effect` what happens on the way. It is drawn as
+  `trigger [guard] / effect`; every part is optional. Transitions are always directed.
+- No transition may start or end at a state_region.
+
+Modelling guidance:
+- Model the lifecycle of exactly one thing; name it in the title ('Bestellung').
+- Start with the initial pseudostate, then the normal path from state to state, then cancellations and errors, each
+  ending in a final_state.
+- Every transition out of a state needs a distinct trigger or mutually exclusive guards; two transitions on the same
+  event without guards are ambiguous.
+- Use a composite_state when several states share an exit (a 'Stornieren' that is possible in all of them) instead of
+  drawing the same transition from each state.
+- Use regions only for truly independent parts of the same thing (payment and picking), joined again by a join_pseudostate.
+- Trigger names are events, not actions: 'Zahlung eingegangen', not 'Zahlung prüfen' (that belongs into an effect).
+
+Guided start (empty diagram, open-ended request): ask which thing's lifecycle this is, its states in the normal case,
+the events that move it from one state to the next, and how it ends (completed, cancelled, expired).
+
+Examples:
+- "Eine Bestellung ist neu, wird bezahlt und dann versandt" -> apply_batch with add_node("Start",
+  kind="initial_pseudostate"), add_node("Neu"), add_node("Bezahlt"), add_node("Versandt"), add_edge(source="start",
+  target="neu"), add_edge(source="neu", target="bezahlt", label="bezahlen"), add_edge(source="bezahlt",
+  target="versandt", label="versenden").
+- "Beim Bezahlen soll eine Rechnung gesendet werden" -> update_node(id="bezahlt", fields={"entry": "Rechnung senden"}).
+- "Wenn der Betrag stimmt, bezahlt, sonst abgelehnt" -> add_node("Prüfung", kind="choice_pseudostate"), then
+  add_edge(source="pruefung", target="bezahlt", guard="Betrag ok") and add_edge(source="pruefung",
+  target="abgelehnt", guard="else").
+- "Aus jedem Zustand von 'In Bearbeitung' kann man stornieren" -> update_node(id="in-bearbeitung",
+  kind="composite_state"), move the states in with move_node, then one add_edge(source="in-bearbeitung",
+  target="storniert", label="stornieren").

@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-10-08T11:12:23+00:00",
+  "description": "",
+  "diagrams": [],
+  "elements": [],
+  "id": "uebergabe",
+  "revision": "e19d5f3db17c73b6",
+  "roles": {
+    "ed": "owner"
+  },
+  "sections": [],
+  "title": "Übergabe",
+  "updated_at": "2026-10-08T11:12:23+00:00",
+  "workspace": "handover"
+}

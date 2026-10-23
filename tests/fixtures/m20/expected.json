@@ -1,0 +1,218 @@
+{
+ "era": "M20",
+ "roles": {
+  "default": {
+   "admin": "owner",
+   "olga": null,
+   "ed": "viewer",
+   "vic": "viewer",
+   "zed": null,
+   "gone": null,
+   "out": null
+  },
+  "labor": {
+   "admin": null,
+   "olga": "owner",
+   "ed": "viewer",
+   "vic": "viewer",
+   "zed": "viewer",
+   "gone": null,
+   "out": null
+  },
+  "plattform": {
+   "admin": null,
+   "olga": "owner",
+   "ed": "owner",
+   "vic": "editor",
+   "zed": "viewer",
+   "gone": null,
+   "out": null
+  },
+  "uebergabe": {
+   "admin": null,
+   "olga": "owner",
+   "ed": "owner",
+   "vic": null,
+   "zed": null,
+   "gone": null,
+   "out": null
+  },
+  "webshop": {
+   "admin": "owner",
+   "olga": null,
+   "ed": "editor",
+   "vic": "viewer",
+   "zed": null,
+   "gone": null,
+   "out": null
+  }
+ },
+ "projects": {
+  "default": {
+   "id": "default",
+   "title": "Standardprojekt",
+   "description": "",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "altsystem",
+     "section": null,
+     "added_at": "2026-10-08T11:12:23.673993+00:00"
+    }
+   ],
+   "elements": [],
+   "workspace": "default"
+  },
+  "labor": {
+   "id": "labor",
+   "title": "Labor",
+   "description": "",
+   "sections": [],
+   "diagrams": [],
+   "elements": [],
+   "workspace": "team",
+   "roles": {
+    "gone": "editor",
+    "olga": "owner"
+   }
+  },
+  "plattform": {
+   "id": "plattform",
+   "title": "Plattform",
+   "description": "",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "netz",
+     "section": null,
+     "added_at": "2026-10-08T11:12:23.694817+00:00"
+    }
+   ],
+   "elements": [],
+   "workspace": "team",
+   "roles": {
+    "ed": "owner",
+    "vic": "editor"
+   }
+  },
+  "uebergabe": {
+   "id": "uebergabe",
+   "title": "Übergabe",
+   "description": "",
+   "sections": [],
+   "diagrams": [],
+   "elements": [],
+   "workspace": "handover",
+   "roles": {
+    "ed": "owner"
+   }
+  },
+  "webshop": {
+   "id": "webshop",
+   "title": "Webshop",
+   "description": "Online-Shop",
+   "sections": [],
+   "diagrams": [
+    {
+     "diagram": "bestellprozess",
+     "section": null,
+     "added_at": "2026-10-08T11:12:23.678229+00:00"
+    }
+   ],
+   "elements": [],
+   "workspace": "default",
+   "roles": {
+    "admin": "owner",
+    "ed": "editor"
+   }
+  }
+ },
+ "diagrams": {
+  "altsystem": {
+   "fingerprint": "9c97cb73524346c7",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 8,
+     "edge_count": 6,
+     "fingerprint": "9c97cb73524346c7",
+     "author": "admin",
+     "author_name": "Administrator"
+    }
+   ]
+  },
+  "bestellprozess": {
+   "fingerprint": "fd9325ca8c25cc41",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 16,
+     "edge_count": 13,
+     "fingerprint": "07e78e9fa6f7704e",
+     "author": "admin",
+     "author_name": "Administrator"
+    },
+    {
+     "version": 2,
+     "label": "Umbenannt",
+     "source": "auto",
+     "restored_from": null,
+     "node_count": 16,
+     "edge_count": 13,
+     "fingerprint": "fd9325ca8c25cc41",
+     "author": "admin",
+     "author_name": "Administrator"
+    }
+   ]
+  },
+  "netz": {
+   "fingerprint": "35d93d9fa1c808e4",
+   "versions": [
+    {
+     "version": 1,
+     "label": "Initial state",
+     "source": "initial",
+     "restored_from": null,
+     "node_count": 13,
+     "edge_count": 5,
+     "fingerprint": "35d93d9fa1c808e4",
+     "author": "ed",
+     "author_name": "Ed Editor"
+    }
+   ]
+  }
+ },
+ "workspaces": {
+  "default": {
+   "owner": "admin",
+   "members": [
+    "ed",
+    "vic"
+   ]
+  },
+  "handover": {
+   "owner": "olga",
+   "members": [
+    "ed"
+   ]
+  },
+  "leer": {
+   "owner": "zed",
+   "members": []
+  },
+  "team": {
+   "owner": "olga",
+   "members": [
+    "ed",
+    "vic",
+    "zed"
+   ]
+  }
+ }
+}

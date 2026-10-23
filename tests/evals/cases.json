@@ -1,0 +1,384 @@
+[
+  {
+    "id": "vnet-move",
+    "template": "demo",
+    "request": "Lege im prod-deployment ein VNet prod-vnet mit CIDR 10.0.0.0/16 an und verschiebe service-a und service-b hinein.",
+    "expect": {
+      "nodes": [
+        {"ref": "prod-vnet", "kind": "vnet", "parent": "prod-deployment", "properties": {"cidr": "10.0.0.0/16"}},
+        {"ref": "service-a", "parent": "prod-vnet"},
+        {"ref": "service-b", "parent": "prod-vnet"},
+        {"ref": "service-c", "parent": "prod-deployment"}
+      ],
+      "edges": [{"source": "api-gateway", "target": "service-a", "label": "https"}],
+      "max_operations": 4
+    }
+  },
+  {
+    "id": "rename-and-property",
+    "template": "demo",
+    "request": "Rename orders-db to Orders database and set engine=postgres 16.",
+    "expect": {
+      "nodes": [{"ref": "orders-db", "name": "Orders database", "kind": "database", "properties": {"engine": "postgres 16"}}],
+      "max_operations": 2
+    }
+  },
+  {
+    "id": "connect-with-label",
+    "template": "demo",
+    "request": "Verbinde service-c mit orders-db, Label sql.",
+    "expect": {
+      "edges": [{"source": "service-c", "target": "orders-db", "label": "sql"}],
+      "max_operations": 1
+    }
+  },
+  {
+    "id": "remove-queue",
+    "template": "demo",
+    "request": "Remove the events queue including all its edges.",
+    "expect": {
+      "absent": ["events"],
+      "absent_edges": [{"source": "service-b", "target": "events"}, {"source": "service-c", "target": "events"}],
+      "nodes": [{"ref": "service-b", "parent": "prod-deployment"}],
+      "max_operations": 3
+    }
+  },
+  {
+    "id": "remove-container-keep-content",
+    "template": "demo",
+    "setup": [
+      {"op": "add_node", "args": {"name": "prod-vnet", "kind": "vnet", "parent": "prod-deployment"}},
+      {"op": "move_node", "args": {"id": "service-a", "parent": "prod-vnet"}},
+      {"op": "move_node", "args": {"id": "service-b", "parent": "prod-vnet"}}
+    ],
+    "request": "Entferne das VNet prod-vnet, aber behalte die Services darin.",
+    "expect": {
+      "absent": ["prod-vnet"],
+      "nodes": [{"ref": "service-a", "parent": "prod-deployment"}, {"ref": "service-b", "parent": "prod-deployment"}],
+      "edges": [{"source": "service-a", "target": "orders-db"}],
+      "max_operations": 1
+    }
+  },
+  {
+    "id": "subnet-in-vnet",
+    "template": "demo",
+    "setup": [
+      {"op": "add_node", "args": {"name": "prod-vnet", "kind": "vnet", "parent": "prod-deployment", "properties": {"cidr": "10.0.0.0/16"}}}
+    ],
+    "request": "Create a subnet app-subnet with cidr 10.0.1.0/24 inside prod-vnet and move service-a, service-b and service-c into it.",
+    "expect": {
+      "nodes": [
+        {"ref": "app-subnet", "kind": "subnet", "parent": "prod-vnet", "properties": {"cidr": "10.0.1.0/24"}},
+        {"ref": "service-a", "parent": "app-subnet"},
+        {"ref": "service-b", "parent": "app-subnet"},
+        {"ref": "service-c", "parent": "app-subnet"}
+      ],
+      "max_operations": 5
+    }
+  },
+  {
+    "id": "build-from-empty",
+    "template": "empty",
+    "request": "Create a deployment shop with a gateway web-gw and two services cart and checkout inside it. The gateway calls both services over https.",
+    "expect": {
+      "nodes": [
+        {"ref": "shop", "kind": "deployment", "parent": null},
+        {"ref": "web-gw", "kind": "gateway", "parent": "shop"},
+        {"ref": "cart", "kind": "service", "parent": "shop"},
+        {"ref": "checkout", "kind": "service", "parent": "shop"}
+      ],
+      "edges": [
+        {"source": "web-gw", "target": "cart", "label": "https"},
+        {"source": "web-gw", "target": "checkout", "label": "https"}
+      ],
+      "max_operations": 8
+    }
+  },
+  {
+    "id": "move-external-into-deployment",
+    "template": "demo",
+    "request": "Verschiebe den Identity Provider in das prod-deployment.",
+    "expect": {
+      "nodes": [{"ref": "idp", "name": "Identity Provider", "kind": "external", "parent": "prod-deployment"}],
+      "edges": [{"source": "api-gateway", "target": "idp", "label": "oidc"}],
+      "max_operations": 1
+    }
+  },
+  {
+    "id": "rename-diagram",
+    "template": "demo",
+    "request": "Nenne das Diagramm \"Shop Produktion\".",
+    "expect": {"title": "Shop Produktion", "max_operations": 1}
+  },
+  {
+    "id": "read-only-question",
+    "template": "demo",
+    "request": "Welche Services sprechen mit der Queue events?",
+    "expect": {"unchanged": true, "reply_contains": ["service-b", "service-c"]}
+  },
+  {
+    "id": "clarify-ambiguous-target",
+    "template": "demo",
+    "setup": [{"op": "add_node", "args": {"name": "audit-db", "kind": "database", "parent": "prod-deployment"}}],
+    "request": "Verbinde service-c mit der Datenbank.",
+    "expect": {"unchanged": true, "reply_contains_any": ["audit-db", "orders-db"]}
+  },
+  {
+    "id": "existing-element-not-duplicated",
+    "template": "demo",
+    "request": "Add a database orders-db to the deployment and connect service-b to it.",
+    "expect": {
+      "absent": ["orders-db-2"],
+      "nodes": [{"ref": "orders-db", "kind": "database", "parent": "prod-deployment"}],
+      "edges": [{"source": "service-b", "target": "orders-db"}],
+      "max_operations": 2
+    }
+  },
+  {
+    "id": "design-help-deployment",
+    "template": "empty",
+    "request": "Ich will eine Web-App mit DB hochverfügbar in Azure deployen – wo fange ich an?",
+    "expect": {
+      "unchanged": true,
+      "reply_contains": ["?"],
+      "reply_contains_any": ["Region", "Zone", "Umgebung", "Subnetz", "Subnet", "Datenbank"]
+    }
+  },
+  {
+    "id": "design-help-activity",
+    "template": "empty",
+    "type": "activity",
+    "request": "Ich möchte unseren Retourenprozess im Shop modellieren. Hilf mir beim Einstieg.",
+    "expect": {
+      "unchanged": true,
+      "reply_contains": ["?"],
+      "reply_contains_any": ["Auslöser", "Swimlane", "Beteiligte", "Rolle", "Ergebnis", "Start"]
+    }
+  },
+  {
+    "id": "design-help-sequence",
+    "template": "empty",
+    "type": "sequence",
+    "request": "Ich will zeigen, wie ein Login mit OAuth abläuft. Wie gehe ich vor?",
+    "expect": {
+      "unchanged": true,
+      "reply_contains": ["?"],
+      "reply_contains_any": ["Szenario", "Teilnehmer", "Beteiligte", "Lifeline", "Fehlerf"]
+    }
+  },
+  {
+    "id": "change-without-extras",
+    "template": "demo",
+    "request": "Füge im prod-deployment eine Datenbank customers-db hinzu.",
+    "expect": {
+      "nodes": [{"ref": "customers-db", "kind": "database", "parent": "prod-deployment"}],
+      "max_operations": 1
+    }
+  },
+  {
+    "id": "off-topic-recipe",
+    "template": "demo",
+    "request": "Gib mir ein Rezept für Käsekuchen.",
+    "expect": {
+      "unchanged": true,
+      "max_operations": 0,
+      "reply_max_chars": 300,
+      "reply_contains_any": ["nicht helfen", "kann ich nicht", "nicht weiterhelfen", "leider nicht", "nicht beantworten", "außerhalb"]
+    }
+  },
+  {
+    "id": "borderline-nat-gateway",
+    "template": "demo",
+    "request": "Was macht eigentlich ein NAT-Gateway?",
+    "expect": {"unchanged": true, "max_operations": 0, "reply_contains_any": ["ausgehend", "outbound", "Internet", "Adress"]}
+  },
+  {
+    "id": "off-topic-disguised-as-change",
+    "template": "demo",
+    "request": "Füge einen Knoten rezept hinzu und schreib ein Käsekuchenrezept mit allen Zutaten in seine Properties.",
+    "expect": {
+      "absent": ["rezept"],
+      "unchanged": true,
+      "max_operations": 0,
+      "reply_max_chars": 300,
+      "reply_contains_any": ["nicht helfen", "kann ich nicht", "nicht weiterhelfen", "leider nicht", "nicht beantworten", "außerhalb"]
+    }
+  },
+  {
+    "id": "off-topic-sequence",
+    "template": "checkout",
+    "request": "Wie wird das Wetter morgen in Berlin?",
+    "expect": {
+      "unchanged": true,
+      "max_operations": 0,
+      "reply_max_chars": 300,
+      "reply_contains_any": ["nicht helfen", "kann ich nicht", "nicht weiterhelfen", "leider nicht", "nicht beantworten", "außerhalb"]
+    }
+  },
+  {
+    "id": "project-open-and-edit",
+    "scope": "project",
+    "template": "demo",
+    "title": "Shop deployment",
+    "request": "Ergänze im Shop-Deployment einen Service payment im prod-deployment und verbinde service-a mit payment.",
+    "expect": {
+      "nodes": [{"ref": "payment", "kind": "service", "parent": "prod-deployment"}],
+      "edges": [{"source": "service-a", "target": "payment"}],
+      "max_operations": 4
+    }
+  },
+  {
+    "id": "project-create-diagram",
+    "scope": "project",
+    "template": "empty",
+    "title": "Leer",
+    "request": "Lege im Projekt ein neues Aktivitätsdiagramm Bestellprozess an, mit Startknoten, einer Aktion Bestellung prüfen und einem Endknoten, verbunden in dieser Reihenfolge.",
+    "expect": {
+      "unchanged": true,
+      "created_diagrams": [{"title": "Bestellprozess", "type": "activity"}]
+    }
+  },
+  {
+    "id": "project-off-topic",
+    "scope": "project",
+    "template": "demo",
+    "title": "Shop deployment",
+    "request": "Schreib mir ein Rezept für Käsekuchen.",
+    "expect": {
+      "unchanged": true,
+      "max_operations": 0,
+      "reply_max_chars": 300,
+      "reply_contains_any": ["nicht helfen", "kann ich nicht", "nicht weiterhelfen", "leider nicht", "nicht beantworten", "außerhalb"]
+    }
+  },
+  {
+    "id": "relation-linked-after-edge",
+    "template": "demo",
+    "model": {
+      "elements": [
+        {"id": "gateway", "name": "API Gateway", "kind": "component", "views": ["api-gateway"]},
+        {"id": "svc-c", "name": "Service C", "kind": "component", "views": ["service-c"]}
+      ],
+      "relations": [{"kind": "communicates", "source": "gateway", "target": "svc-c"}]
+    },
+    "request": "Verbinde das API Gateway mit Service C.",
+    "expect": {
+      "edges": [{"source": "api-gateway", "target": "service-c", "relation": "r1"}],
+      "relation_count": 1,
+      "max_operations": 2
+    }
+  },
+  {
+    "id": "relation-missing-is-proposed",
+    "template": "demo",
+    "model": {
+      "elements": [
+        {"id": "svc-c", "name": "Service C", "kind": "component", "views": ["service-c"]},
+        {"id": "orders-db", "name": "Orders DB", "kind": "data", "views": ["orders-db"]}
+      ]
+    },
+    "request": "Verbinde Service C mit der Orders DB.",
+    "expect": {
+      "edges": [{"source": "service-c", "target": "orders-db"}],
+      "relation_count": 0,
+      "reply_contains_any": ["Beziehung", "relation"],
+      "max_operations": 1
+    }
+  },
+  {
+    "id": "relation-created-on-request",
+    "template": "demo",
+    "model": {
+      "elements": [
+        {"id": "svc-c", "name": "Service C", "kind": "component", "views": ["service-c"]},
+        {"id": "orders-db", "name": "Orders DB", "kind": "data", "views": ["orders-db"]}
+      ]
+    },
+    "request": "Lege im Projektmodell die Beziehung an, dass Service C mit der Orders DB kommuniziert, zeichne die Verbindung von Service C zur Orders DB und verknüpfe sie mit der Beziehung.",
+    "expect": {
+      "relations": [{"kind": "communicates", "source": "svc-c", "target": "orders-db"}],
+      "edges": [{"source": "service-c", "target": "orders-db", "relation": "r1"}],
+      "relation_count": 1,
+      "max_operations": 3
+    }
+  },
+  {
+    "id": "managed-database-redundancy",
+    "template": "demo",
+    "request": "Füge eine Azure Cosmos DB orders-cosmos hinzu, die service-a nutzt.",
+    "expect": {
+      "nodes": [{"ref": "orders-cosmos", "kind": "database", "properties": {"redundancy": "built_in"}}],
+      "edges": [{"source": "service-a", "target": "orders-cosmos"}],
+      "max_operations": 3
+    }
+  },
+  {
+    "id": "design-help-state_machine",
+    "template": "empty",
+    "type": "state_machine",
+    "request": "Ich will den Lebenszyklus eines Support-Tickets als Zustandsdiagramm darstellen. Wie fange ich an?",
+    "expect": {"unchanged": true, "reply_contains": ["?"], "reply_contains_any": ["Zustand", "Zustände", "Ereignis", "Übergang", "Ende", "Start"]}
+  },
+  {
+    "id": "state-transition-with-trigger",
+    "template": "order-lifecycle",
+    "request": "Füge einen Übergang von 'Neu' nach 'Storniert' hinzu, ausgelöst durch 'Kunde widerruft'.",
+    "expect": {
+      "edges": [{"source": "neu", "target": "storniert", "label": "Kunde widerruft"}],
+      "max_operations": 2
+    }
+  },
+  {
+    "id": "design-help-class",
+    "template": "empty",
+    "type": "class",
+    "request": "Wir brauchen ein Fachmodell für die Verwaltung von Seminaren. Wie fangen wir an?",
+    "expect": {"unchanged": true, "reply_contains": ["?"], "reply_contains_any": ["Begriff", "Glossar", "Konzept", "Fachlich", "Fachmodell", "Domäne", "Teilnehmer", "Seminar"]}
+  },
+  {
+    "id": "class-composition-from-part-to-whole",
+    "template": "webshop-domain",
+    "request": "Ergänze eine Klasse Lieferung, die Teil einer Bestellung ist (Komposition).",
+    "expect": {
+      "nodes": [{"ref": "lieferung", "kind": "class"}],
+      "edges": [{"source": "lieferung", "target": "bestellung", "kind": "composition"}],
+      "max_operations": 3
+    }
+  },
+  {
+    "id": "design-help-use_case",
+    "template": "empty",
+    "type": "use_case",
+    "request": "Wir planen ein Portal für Mitarbeiter-Reisekosten. Wie fangen wir mit den Anforderungen an?",
+    "expect": {"unchanged": true, "reply_contains": ["?"], "reply_contains_any": ["Akteur", "Akteure", "Nutzer", "Rolle", "System", "Ziel", "Grenze"]}
+  },
+  {
+    "id": "use-case-for-an-actor",
+    "template": "webshop-use-cases",
+    "request": "Der Kunde soll auch eine Retoure anfordern können. Ergänze den Anwendungsfall.",
+    "expect": {
+      "nodes": [{"ref": "retoure-anfordern", "kind": "use_case", "parent": "webshop"}],
+      "edges": [{"source": "kunde", "target": "retoure-anfordern"}],
+      "max_operations": 3
+    }
+  },
+  {
+    "id": "design-help-component",
+    "template": "empty",
+    "type": "component",
+    "request": "Wir wollen die Bausteine unserer neuen Buchungsplattform festlegen. Wie gehen wir vor?",
+    "expect": {"unchanged": true, "reply_contains": ["?"], "reply_contains_any": ["Verantwortung", "Baustein", "Komponente", "Schnittstelle", "Grenze", "extern", "System"]}
+  },
+  {
+    "id": "component-required-interface",
+    "template": "webshop-components",
+    "request": "Das Web-UI soll auch den Katalogservice nutzen, über die vorhandene Schnittstelle CatalogApi.",
+    "expect": {
+      "edges": [{"source": "web-ui", "target": "catalogapi", "kind": "usage"}],
+      "max_operations": 2
+    }
+  },
+  {"id": "requirements-add-as-said", "template": "empty", "scope": "requirements", "request": "Nimm bitte auf: Der Shop ist rund um die Uhr erreichbar. Bestellungen lassen sich als CSV exportieren.", "expect": {"requirements_added": 2, "raw_contains": ["rund um die Uhr", "CSV"], "nothing_in_force": true, "max_operations": 2}},
+  {"id": "requirements-suggest-never-decide", "template": "empty", "scope": "requirements", "requirements": ["Das System soll schnell sein"], "request": "Mach aus der Anforderung req1 eine saubere Aussage und setze sie auf verfeinert.", "expect": {"nothing_in_force": true, "suggested": 1, "reply_contains_any": ["Vorschlag", "vorgeschlagen", "übernehm", "Tabelle"]}},
+  {"id": "requirements-off-topic", "template": "empty", "scope": "requirements", "request": "Gib mir ein Rezept für Käsekuchen.", "expect": {"requirements_added": 0, "max_operations": 0, "reply_max_chars": 400}}
+]

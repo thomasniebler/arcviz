@@ -1,0 +1,47 @@
+{
+  "created_at": "2026-10-07T16:16:38+00:00",
+  "description": "Online-Shop mit Bestellung und Zahlung",
+  "diagrams": [
+    {
+      "added_at": "2026-10-07T16:16:38.701133+00:00",
+      "diagram": "plattform",
+      "section": null
+    },
+    {
+      "added_at": "2026-10-07T16:16:38.705082+00:00",
+      "diagram": "bestellprozess",
+      "section": "bestellung"
+    },
+    {
+      "added_at": "2026-10-07T16:16:38.712389+00:00",
+      "diagram": "checkout",
+      "section": "zahlung"
+    }
+  ],
+  "elements": [
+    {
+      "description": "Nimmt Bestellungen an",
+      "id": "order-service",
+      "kind": "component",
+      "name": "Order Service",
+      "parent": null
+    }
+  ],
+  "id": "webshop",
+  "revision": "b165511523c70c70",
+  "sections": [
+    {
+      "id": "bestellung",
+      "parent": null,
+      "title": "Bestellung"
+    },
+    {
+      "element": "order-service",
+      "id": "zahlung",
+      "parent": "bestellung",
+      "title": "Order Service"
+    }
+  ],
+  "title": "Webshop",
+  "updated_at": "2026-10-07T16:16:38+00:00"
+}

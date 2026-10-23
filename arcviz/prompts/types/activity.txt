@@ -1,0 +1,41 @@
+The diagram:
+This chat edits one UML 2.5.1 activity diagram. It is an Activity: ActivityNodes connected by directed
+ActivityEdges, optionally grouped into ActivityPartitions (swimlanes, containers that may hold nodes and
+further partitions). Available kinds: {kinds}.
+
+Notation and rules (UML 2.5.1, chapter 15):
+- opaque_action: an action, named with a verb phrase. initial_node starts the flow (no incoming edges);
+  activity_final_node ends the whole activity, flow_final_node ends a single flow (no outgoing edges).
+- decision_node: one incoming edge, several outgoing control flows, each with a `guard` ('ja'/'nein',
+  'else', a condition). merge_node joins alternative flows again without synchronising.
+- fork_node splits into parallel flows; join_node waits for all of them. Use them in pairs.
+- object_flow carries objects/data, typically into or out of a central_buffer_node or data_store_node;
+  control_flow orders everything else.
+- No edge may start or end at an activity_partition; put the nodes inside partitions with `parent`.
+
+Modelling guidance:
+- Start from a use case or business trigger and its result: one initial_node, the main path first, then
+  the alternatives and error paths, each ending in a final node.
+- One swimlane (activity_partition) per responsible role, department or system; every action sits in the
+  lane of whoever performs it.
+- Guards must be complete and mutually exclusive: every decision covers all cases (add an 'else' guard
+  when in doubt).
+- Pair every fork_node with a join_node, and bring alternative branches back together with a merge_node
+  instead of letting many edges run into one action.
+- Avoid spaghetti flows: few crossing edges, no jumps back and forth between lanes without reason, loops as
+  an explicit decision with a guard.
+- Keep one level of abstraction per diagram; if a step needs its own detail, suggest a separate diagram
+  for it instead of mixing levels.
+
+Guided start (empty diagram, open-ended request): ask for the trigger and the expected result of the
+process, the participants (roles or systems, which become swimlanes) and the main steps of the normal case.
+
+Examples:
+- "Nach 'Bestellung prüfen' entscheiden: verfügbar -> 'Versenden', sonst 'Kunde informieren'"
+  -> apply_batch with add_node(name="verfügbar?", kind="decision_node"), add_node("Versenden",
+     kind="opaque_action"), add_node("Kunde informieren", kind="opaque_action"), add_edge(source=
+     "bestellung-prufen", target="verfugbar"), add_edge(source="verfugbar", target="versenden", guard="ja"),
+     add_edge(source="verfugbar", target="kunde-informieren", guard="nein").
+- "Zahlung und Kommissionierung parallel" -> fork_node before and join_node after the two actions.
+- "Lege eine Swimlane Lager an und verschiebe 'Kommissionieren' hinein"
+  -> add_node(name="Lager", kind="activity_partition"), then move_node(id="kommissionieren", parent="lager").

@@ -1,0 +1,83 @@
+{
+  "node_kinds": {
+    "azure_subscription": {
+      "container": true,
+      "style": "fill:#fdfdfd,stroke:#002050,color:#002050"
+    },
+    "azure_resource_group": {
+      "container": true,
+      "style": "fill:#f7fbfe,stroke:#0078d4,stroke-dasharray:5 3,color:#002050"
+    },
+    "azure_functions": {
+      "icon": "azure:functions",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050",
+      "role": "function"
+    },
+    "azure_sql": {
+      "icon": "azure:sql",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050",
+      "role": "database"
+    },
+    "azure_aks": {
+      "icon": "azure:kubernetes",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050"
+    },
+    "azure_cache_redis": {
+      "icon": "azure:redis",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050"
+    },
+    "azure_postgresql": {
+      "icon": "azure:postgresql",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050",
+      "role": "database"
+    },
+    "azure_data_explorer": {
+      "icon": "azure:data-explorer",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050"
+    },
+    "azure_devops": {
+      "icon": "azure:devops",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050"
+    },
+    "azure_pipelines": {
+      "icon": "azure:pipelines",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050"
+    },
+    "azure_vm": {
+      "icon": "azure:azure",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050"
+    },
+    "azure_app_service": {
+      "icon": "azure:azure",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050",
+      "role": "service"
+    },
+    "azure_storage": {
+      "icon": "azure:azure",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050",
+      "role": "storage"
+    },
+    "azure_service_bus": {
+      "icon": "azure:azure",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050",
+      "role": "queue"
+    },
+    "azure_cosmos_db": {
+      "icon": "azure:azure",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050",
+      "role": "database",
+      "traits": {
+        "redundancy": "built_in"
+      }
+    },
+    "azure_key_vault": {
+      "icon": "azure:azure",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050"
+    },
+    "azure_front_door": {
+      "icon": "azure:azure",
+      "style": "fill:#eff6fc,stroke:#0078d4,color:#002050",
+      "role": "gateway"
+    }
+  }
+}

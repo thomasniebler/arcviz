@@ -1,0 +1,138 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 1,
+  "exported_at": "2026-10-06T00:00:00+00:00",
+  "diagram": {
+    "id": "c4-context",
+    "title": "Arcviz: system context (C4 level 1)",
+    "nodes": {
+      "architect": {
+        "id": "architect",
+        "name": "Architect or developer",
+        "kind": "person",
+        "parent": null,
+        "properties": {
+          "description": "Models a deployment architecture by chat, voice or direct edits in the browser"
+        }
+      },
+      "operator": {
+        "id": "operator",
+        "name": "Operator",
+        "kind": "person",
+        "parent": null,
+        "properties": {
+          "description": "Runs the container, sets the provider, store and kinds file through environment variables"
+        }
+      },
+      "arcviz": {
+        "id": "arcviz",
+        "name": "Arcviz agent",
+        "kind": "software_system",
+        "parent": null,
+        "properties": {
+          "description": "Turns chat messages into validated operations on a diagram model, versions it and renders it live",
+          "spec": "docs/spec/index.md"
+        }
+      },
+      "llm-api": {
+        "id": "llm-api",
+        "name": "LLM API (Anthropic or OpenAI-compatible)",
+        "kind": "external_system",
+        "parent": null,
+        "properties": {
+          "description": "Tool calling, reply streaming, summaries, review; Ollama or vLLM for local models",
+          "spec": "docs/spec/llm-layer.md"
+        }
+      },
+      "cosmos": {
+        "id": "cosmos",
+        "name": "Azure Cosmos DB (optional store)",
+        "kind": "external_system",
+        "parent": null,
+        "properties": {
+          "description": "ARCVIZ_STORE=cosmos; the only backend that is safe with several replicas",
+          "spec": "docs/spec/persistence.md"
+        }
+      },
+      "git-remote": {
+        "id": "git-remote",
+        "name": "Git remote (optional)",
+        "kind": "external_system",
+        "parent": null,
+        "properties": {
+          "description": "Receives pushes of the Git mirror of every version (ARCVIZ_GIT_PUSH=1)",
+          "spec": "docs/spec/persistence.md#git-mirror"
+        }
+      },
+      "auth-proxy": {
+        "id": "auth-proxy",
+        "name": "Identity-aware proxy (deployment)",
+        "kind": "external_system",
+        "parent": null,
+        "properties": {
+          "description": "Authentication in front of the app, e.g. Container Apps Easy Auth; the app has none (#82)",
+          "spec": "docs/deploy-azure.md"
+        }
+      }
+    },
+    "edges": [
+      {
+        "id": "e1",
+        "source": "architect",
+        "target": "auth-proxy",
+        "label": "edits diagrams, reads docs (HTTPS)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e2",
+        "source": "auth-proxy",
+        "target": "arcviz",
+        "label": "forwards authenticated requests (HTTP)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e3",
+        "source": "operator",
+        "target": "arcviz",
+        "label": "deploys and configures (env vars, volume)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e4",
+        "source": "arcviz",
+        "target": "llm-api",
+        "label": "tool-calling requests (HTTPS)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e5",
+        "source": "arcviz",
+        "target": "cosmos",
+        "label": "reads and writes diagrams (HTTPS)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      },
+      {
+        "id": "e6",
+        "source": "arcviz",
+        "target": "git-remote",
+        "label": "pushes version commits (git)",
+        "kind": "connection",
+        "direction": null,
+        "properties": {}
+      }
+    ],
+    "direction": "TB",
+    "created_at": "2026-10-06T00:00:00+00:00",
+    "updated_at": "2026-10-06T00:00:00+00:00"
+  }
+}

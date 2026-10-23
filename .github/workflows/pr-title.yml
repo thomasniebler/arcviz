@@ -1,0 +1,33 @@
+name: PR title
+
+# The CI job sets the commit status "PR title" on every push. Title edits do not start CI, so this
+# workflow re-checks the title on edits that change it and overwrites that status (the newest wins).
+# Body-only edits skip the job and cost nothing.
+
+# PAUSED together with ci.yml (2026-10-21, runners do not start): uncomment `pull_request` to resume. The job below
+# only acts on a title edit of a pull request, so a manual run does nothing.
+on:
+  # pull_request:
+  #   branches: [main]
+  #   types: [edited]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  conventional-title:
+    # Squash merges use the PR title as commit message; release-please derives versions from it.
+    name: Conventional Commits title
+    if: github.event.changes.title && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts
+      - run: python3 scripts/check_pr_title.py --status
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_TOKEN: ${{ github.token }}

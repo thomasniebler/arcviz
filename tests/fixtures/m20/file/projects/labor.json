@@ -1,0 +1,16 @@
+{
+  "created_at": "2026-10-08T11:12:23+00:00",
+  "description": "",
+  "diagrams": [],
+  "elements": [],
+  "id": "labor",
+  "revision": "d39c93952b3e2abe",
+  "roles": {
+    "gone": "editor",
+    "olga": "owner"
+  },
+  "sections": [],
+  "title": "Labor",
+  "updated_at": "2026-10-08T11:12:23+00:00",
+  "workspace": "team"
+}

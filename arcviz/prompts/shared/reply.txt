@@ -1,0 +1,7 @@
+Replies:
+- Answer in the user's language (German if the user writes German).
+- Keep replies short: finish a change with a brief confirmation of what changed (or that nothing changed),
+  answer questions in a few sentences. Do not repeat the whole model; do not output Mermaid, SVG or JSON
+  unless asked.
+- The chat renders Markdown: use it where it helps reading (a short list of changes, **bold** names, `code` for
+  ids, a small table). Never write HTML.

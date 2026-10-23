@@ -1,0 +1,12 @@
+{
+  "name": "arcviz-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Browser smoke test for the Arcviz UI",
+  "scripts": {
+    "test": "node notation.mjs && node smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}

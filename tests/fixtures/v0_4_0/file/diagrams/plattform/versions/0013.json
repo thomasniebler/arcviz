@@ -1,0 +1,80 @@
+{
+  "diagram": {
+    "created_at": "2026-10-11T11:09:06+00:00",
+    "direction": "TB",
+    "edges": [
+      {
+        "direction": null,
+        "id": "e1",
+        "kind": "connection",
+        "label": "Bestellung",
+        "properties": {
+          "port": "443",
+          "protocol": "HTTPS"
+        },
+        "source": "shop",
+        "target": "orders"
+      },
+      {
+        "direction": "both",
+        "id": "e2",
+        "kind": "connection",
+        "label": null,
+        "properties": {},
+        "source": "orders",
+        "target": "db"
+      }
+    ],
+    "id": "plattform",
+    "interaction": null,
+    "nodes": {
+      "cluster": {
+        "id": "cluster",
+        "kind": "cluster",
+        "name": "Cluster",
+        "parent": null,
+        "properties": {},
+        "ref": "cluster"
+      },
+      "db": {
+        "description": "PostgreSQL",
+        "id": "db",
+        "kind": "database",
+        "name": "Orders DB",
+        "parent": null,
+        "properties": {},
+        "ref": "orders-db"
+      },
+      "orders": {
+        "id": "orders",
+        "kind": "service",
+        "name": "Order Service",
+        "parent": "cluster",
+        "properties": {},
+        "ref": "order-service"
+      },
+      "shop": {
+        "id": "shop",
+        "kind": "service",
+        "name": "Shop",
+        "parent": "cluster",
+        "properties": {}
+      }
+    },
+    "title": "Plattform",
+    "type": "deployment",
+    "updated_at": "2026-10-11T11:09:07+00:00"
+  },
+  "meta": {
+    "author": "ada",
+    "author_name": "Ada",
+    "created_at": "2026-10-11T11:09:07+00:00",
+    "edge_count": 2,
+    "fingerprint": "cdde6b4c73340ec1",
+    "label": "Mit Element „Orders DB“ verknüpft",
+    "node_count": 4,
+    "restored_from": null,
+    "source": "auto",
+    "version": 13
+  }
+}

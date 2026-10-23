@@ -1,0 +1,375 @@
+[project]
+site_name = "Arcviz agent"
+site_description = "Chat-driven editing of a UML-style deployment model with live Mermaid rendering"
+site_author = "Thomas Niebler"
+copyright = "Copyright &copy; 2026 Thomas Niebler"
+
+repo_url = "https://github.com/thomasniebler/arcviz"
+repo_name = "thomasniebler/arcviz"
+edit_uri = "edit/main/docs/"
+
+docs_dir = "docs"
+site_dir = "site"
+
+nav = [
+  { "Home" = "index.md" },
+  { "Getting started" = [
+    { "Quick setup" = "getting-started/quick-setup.md" },
+    { "Troubleshooting" = "getting-started/troubleshooting.md" },
+    { "Upgrading" = "getting-started/upgrading.md" },
+    { "Deploy to Azure" = "deploy-azure.md" },
+  ] },
+  { "User guide" = [
+    { "Overview" = "guide/index.md" },
+    { "First steps" = "guide/first-steps.md" },
+    { "Diagrams" = "guide/diagrams.md" },
+    { "Projects and sections" = "guide/projects.md" },
+    { "Own and shared projects" = "guide/workspaces.md" },
+    { "Working together" = "guide/collaboration.md" },
+    { "Shared project model" = "guide/shared-model.md" },
+    { "Coding agents (MCP)" = "guide/agents.md" },
+    { "Architecture: drivers, scenarios, decisions" = "guide/architecture.md" },
+    { "Requirements" = "guide/requirements.md" },
+    { "Chat" = "guide/chat.md" },
+    { "Elements and edges" = "guide/elements.md" },
+    { "Activity diagrams" = "guide/activity-diagrams.md" },
+    { "State machine diagrams" = "guide/state-machine-diagrams.md" },
+    { "Class diagrams" = "guide/class-diagrams.md" },
+    { "Use case diagrams" = "guide/use-case-diagrams.md" },
+    { "Component diagrams" = "guide/component-diagrams.md" },
+    { "Sequence diagrams" = "guide/sequence-diagrams.md" },
+    { "Versions" = "guide/versions.md" },
+    { "Canvas" = "guide/canvas.md" },
+    { "Element inspector" = "guide/inspector.md" },
+    { "Voice input" = "guide/voice.md" },
+    { "Architecture review" = "guide/review.md" },
+  ] },
+  { "Reference" = [
+    { "Configuration" = "reference/configuration.md" },
+    { "HTTP API" = "reference/api.md" },
+  ] },
+  { "Technical specification" = [
+    { "Overview" = "spec/index.md" },
+    { "Domain model" = "spec/domain-model.md" },
+    { "Diagram types" = "spec/diagram-types.md" },
+    { "Operations" = "spec/operations.md" },
+    { "LLM layer" = "spec/llm-layer.md" },
+    { "Agent" = "spec/agent.md" },
+    { "Persistence" = "spec/persistence.md" },
+    { "Projects" = "spec/projects.md" },
+    { "Agent access" = "spec/agents.md" },
+    { "Requirements" = "spec/requirements.md" },
+    { "Rendering" = "spec/rendering.md" },
+    { "Architecture review" = "spec/review.md" },
+    { "Import and export" = "spec/exchange.md" },
+    { "HTTP server" = "spec/http-server.md" },
+    { "Frontend" = "spec/frontend.md" },
+    { "Build, CI and release" = "spec/build-and-release.md" },
+  ] },
+  { "Architecture" = [
+    { "Overview" = "architecture/index.md" },
+    { "Architecture documentation (arc42)" = [
+      { "Overview" = "architecture/arc42/index.md" },
+      { "1 Introduction and goals" = "architecture/arc42/01-introduction-and-goals.md" },
+      { "2 Constraints" = "architecture/arc42/02-constraints.md" },
+      { "3 Context and scope" = "architecture/arc42/03-context-and-scope.md" },
+      { "4 Solution strategy" = "architecture/arc42/04-solution-strategy.md" },
+      { "5 Building block view" = "architecture/arc42/05-building-block-view.md" },
+      { "6 Runtime view" = "architecture/arc42/06-runtime-view.md" },
+      { "7 Deployment view" = "architecture/arc42/07-deployment-view.md" },
+      { "8 Crosscutting concepts" = "architecture/arc42/08-crosscutting-concepts.md" },
+      { "9 Architecture decisions" = "architecture/arc42/09-architecture-decisions.md" },
+      { "10 Quality requirements" = "architecture/arc42/10-quality-requirements.md" },
+      { "11 Risks and technical debt" = "architecture/arc42/11-risks-and-technical-debt.md" },
+      { "12 Glossary" = "architecture/arc42/12-glossary.md" },
+    ] },
+    { "Design specs" = [
+      { "Persistence" = "architecture/specs/persistence.md" },
+      { "Chat compaction" = "architecture/specs/chat-compaction.md" },
+      { "Batch operation" = "architecture/specs/batch-operations.md" },
+      { "Redo" = "architecture/specs/redo.md" },
+      { "Edge direction and properties" = "architecture/specs/edge-attributes.md" },
+      { "Configurable kinds" = "architecture/specs/configurable-kinds.md" },
+      { "Starter templates" = "architecture/specs/starter-templates.md" },
+      { "Health and readiness probes" = "architecture/specs/health-probes.md" },
+      { "LLM call resilience" = "architecture/specs/llm-resilience.md" },
+      { "Reply streaming" = "architecture/specs/reply-streaming.md" },
+      { "Markdown in replies" = "architecture/specs/chat-markdown.md" },
+      { "Propose then confirm" = "architecture/specs/propose-confirm.md" },
+      { "Agent evals" = "architecture/specs/agent-evals.md" },
+      { "Layout direction" = "architecture/specs/layout-direction.md" },
+      { "Diagram exchange" = "architecture/specs/diagram-exchange.md" },
+      { "Version comparison" = "architecture/specs/version-comparison.md" },
+      { "Frontend modules" = "architecture/specs/frontend-modules.md" },
+      { "Property tests" = "architecture/specs/property-tests.md" },
+      { "Rule checks" = "architecture/specs/rule-checks.md" },
+      { "LLM review" = "architecture/specs/llm-review.md" },
+      { "Review suggestions" = "architecture/specs/review-suggestions.md" },
+      { "Renderer case study" = "architecture/specs/renderer-case-study.md" },
+      { "Diagram types" = "architecture/specs/diagram-types.md" },
+      { "Activity diagrams" = "architecture/specs/activity-diagrams.md" },
+      { "Sequence diagrams" = "architecture/specs/sequence-diagrams.md" },
+      { "More UML diagram types" = "architecture/specs/uml-graph-types.md" },
+      { "State machine diagrams" = "architecture/specs/state-machine-diagrams.md" },
+      { "Class diagrams" = "architecture/specs/class-diagrams.md" },
+      { "Use case diagrams" = "architecture/specs/use-case-diagrams.md" },
+      { "Component diagrams" = "architecture/specs/component-diagrams.md" },
+      { "Cloud icons" = "architecture/specs/cloud-icons.md" },
+      { "Architecture documentation" = "architecture/specs/architecture-documentation.md" },
+      { "Documentation in the app" = "architecture/specs/docs-in-app.md" },
+      { "UI skins" = "architecture/specs/ui-skins.md" },
+      { "App shell" = "architecture/specs/app-shell.md" },
+      { "Menu bar and personal settings" = "architecture/specs/personal-settings.md" },
+      { "Internationalization" = "architecture/specs/internationalization.md" },
+      { "Application services" = "architecture/specs/application-services.md" },
+      { "Projects" = "architecture/specs/projects.md" },
+      { "Project navigator" = "architecture/specs/project-navigator.md" },
+      { "Project exchange" = "architecture/specs/project-exchange.md" },
+      { "Project chat" = "architecture/specs/project-chat.md" },
+      { "Project review" = "architecture/specs/project-review.md" },
+      { "Shared project model" = "architecture/specs/shared-project-model.md" },
+      { "Shared model case study" = "architecture/specs/shared-project-model-case-study.md" },
+      { "Model relations" = "architecture/specs/model-relations.md" },
+      { "Architecture drivers" = "architecture/specs/architecture-drivers.md" },
+      { "Elements by default" = "architecture/specs/elements-by-default.md" },
+      { "Decision support" = "architecture/specs/decision-support.md" },
+      { "Deployment traits" = "architecture/specs/deployment-traits.md" },
+      { "Agent access" = "architecture/specs/agent-access.md" },
+      { "Agent authentication" = "architecture/specs/agent-authentication.md" },
+      { "Onboarding" = "architecture/specs/onboarding.md" },
+      { "Release highlights" = "architecture/specs/whats-new.md" },
+      { "Architecture objects over MCP" = "architecture/specs/architecture-objects-over-mcp.md" },
+      { "Requirements" = "architecture/specs/requirements.md" },
+      { "Requirements workshop" = "architecture/specs/requirements-workshop.md" },
+      { "Workspaces and sharing (M20)" = "architecture/specs/workspaces-and-sharing.md" },
+      { "Personal workspaces and sharing" = "architecture/specs/personal-workspaces.md" },
+      { "Collaboration" = "architecture/specs/collaboration.md" },
+      { "Operations" = "architecture/specs/operations.md" },
+      { "Scale and robustness (M22)" = "architecture/specs/scale-and-robustness.md" },
+      { "Hardening (M23)" = "architecture/specs/hardening.md" },
+      { "Follow-ups (M24)" = "architecture/specs/follow-ups.md" },
+      { "Store, mirror and runtime robustness (M26)" = "architecture/specs/robustness.md" },
+      { "Assistant prompts" = "architecture/specs/assistant-prompts.md" },
+      { "Topic scope" = "architecture/specs/topic-scope.md" },
+    ] },
+    { "Decisions (ADRs)" = [
+      { "Index" = "architecture/adr/index.md" },
+      { "0001 Record decisions" = "architecture/adr/0001-record-architecture-decisions.md" },
+      { "0002 Repository pattern" = "architecture/adr/0002-repository-pattern-for-persistence.md" },
+      { "0003 Snapshots not diffs" = "architecture/adr/0003-snapshots-not-diffs.md" },
+      { "0004 Cosmos DB first" = "architecture/adr/0004-cosmos-db-nosql-first-database-backend.md" },
+      { "0005 Chat compaction" = "architecture/adr/0005-chat-compaction-by-cumulative-summary.md" },
+      { "0006 CI minutes" = "architecture/adr/0006-ci-minutes-single-job-and-milestone-branches.md" },
+      { "0007 Atomic batch" = "architecture/adr/0007-atomic-batch-as-an-ordinary-operation.md" },
+      { "0008 Redo" = "architecture/adr/0008-redo-from-undo-redo-version-sources.md" },
+      { "0009 Edge direction" = "architecture/adr/0009-optional-edge-direction.md" },
+      { "0010 Configurable kinds" = "architecture/adr/0010-kinds-extended-from-a-json-file.md" },
+      { "0011 Starter templates" = "architecture/adr/0011-starter-templates-as-code.md" },
+      { "0012 SDK retries and timeouts" = "architecture/adr/0012-sdk-retries-and-timeouts.md" },
+      { "0013 Per-turn token budget" = "architecture/adr/0013-per-turn-token-budget.md" },
+      { "0014 Reply text deltas" = "architecture/adr/0014-reply-text-deltas.md" },
+      { "0015 Client-held proposals" = "architecture/adr/0015-client-held-proposals.md" },
+      { "0016 Evals outside CI" = "architecture/adr/0016-eval-set-outside-ci.md" },
+      { "0017 Layout direction, no ELK" = "architecture/adr/0017-layout-direction-on-the-diagram-elk-not-vendored.md" },
+      { "0018 Exchange formats" = "architecture/adr/0018-exchange-formats-json-and-plantuml-export.md" },
+      { "0019 Version comparison" = "architecture/adr/0019-compare-versions-as-one-merged-render.md" },
+      { "0020 Frontend ES modules" = "architecture/adr/0020-frontend-native-es-modules.md" },
+      { "0021 Hypothesis" = "architecture/adr/0021-hypothesis-property-tests.md" },
+      { "0022 Rule checks per diagram type" = "architecture/adr/0022-rule-checks-registered-per-diagram-type.md" },
+      { "0023 One finding schema" = "architecture/adr/0023-one-finding-schema.md" },
+      { "0024 LLM review tool call" = "architecture/adr/0024-llm-review-as-one-validated-tool-call.md" },
+      { "0025 Review highlights" = "architecture/adr/0025-review-highlights-on-the-rendered-svg.md" },
+      { "0026 Suggestions as proposals" = "architecture/adr/0026-suggestion-as-propose-turn-composed-in-the-browser.md" },
+      { "0030 UML 2.5.1 reference" = "architecture/adr/0030-uml-2-5-1-as-the-reference-for-diagram-types.md" },
+      { "0031 Diagram type field" = "architecture/adr/0031-diagram-type-field-with-per-type-tables.md" },
+      { "0032 Rendering in M13" = "architecture/adr/0032-rendering-of-diagram-types-in-m13.md" },
+      { "0033 Render payload" = "architecture/adr/0033-render-payload-names-its-renderer.md" },
+      { "0034 Activity operations" = "architecture/adr/0034-activity-diagrams-reuse-node-and-edge-operations.md" },
+      { "0035 Sequence model and SVG" = "architecture/adr/0035-sequence-diagrams-interaction-tree-and-server-side-svg.md" },
+      { "0036 CC0 icon packs" = "architecture/adr/0036-vendored-cc0-icon-subsets-as-mermaid-icon-packs.md" },
+      { "0037 Kinds deployment only" = "architecture/adr/0037-configurable-kinds-extend-deployment-only.md" },
+      { "0038 Renderer per diagram type" = "architecture/adr/0038-renderer-per-diagram-type.md" },
+      { "0040 Diagrams as Arcviz documents" = "architecture/adr/0040-architecture-diagrams-as-arcviz-documents.md" },
+      { "0041 arc42 as a linking layer" = "architecture/adr/0041-arc42-as-a-linking-layer.md" },
+      { "0042 Docs site in the package" = "architecture/adr/0042-docs-site-built-into-the-package.md" },
+      { "0043 Serving the docs under /docs" = "architecture/adr/0043-serving-the-documentation-under-docs.md" },
+      { "0049 UI skins" = "architecture/adr/0049-ui-skins-as-token-overrides-diagram-excluded.md" },
+      { "0050 Application services" = "architecture/adr/0050-application-services-over-repository-ports.md" },
+      { "0051 Projects as documents" = "architecture/adr/0051-projects-as-own-documents-diagrams-unchanged.md" },
+      { "0052 Membership repair" = "architecture/adr/0052-membership-ordered-writes-and-repair.md" },
+      { "0053 Default project" = "architecture/adr/0053-default-project-lazily-and-by-cli.md" },
+      { "0054 Section removal" = "architecture/adr/0054-section-removal-keeps-contents.md" },
+      { "0055 Navigator" = "architecture/adr/0055-navigator-column-and-layer.md" },
+      { "0056 Project bundle" = "architecture/adr/0056-project-bundle-embeds-diagram-documents.md" },
+      { "0057 Project transcript" = "architecture/adr/0057-project-transcript-next-to-the-project-document.md" },
+      { "0058 Active diagram per turn" = "architecture/adr/0058-active-diagram-per-turn-tools-follow-its-type.md" },
+      { "0059 Versions per diagram" = "architecture/adr/0059-multi-diagram-turn-versions-each-diagram.md" },
+      { "0060 Project propose mode" = "architecture/adr/0060-project-propose-mode-one-diagram.md" },
+      { "0061 Project chat scope" = "architecture/adr/0061-project-chat-as-a-chat-scope.md" },
+      { "0062 Project findings" = "architecture/adr/0062-project-findings-reference-diagrams.md" },
+      { "0063 Project rules" = "architecture/adr/0063-project-rules-and-overview-diagrams.md" },
+      { "0064 Project LLM review" = "architecture/adr/0064-project-llm-review-one-call-budgeted-digest.md" },
+      { "0065 Prompt building blocks" = "architecture/adr/0065-system-prompts-from-shared-blocks-and-expert-parts.md" },
+      { "0066 Topic scope in the prompt" = "architecture/adr/0066-topic-scope-in-the-prompt-without-classifier-or-switch.md" },
+      { "0070 Shared model elements" = "architecture/adr/0070-shared-model-elements-in-the-project-document.md" },
+      { "0071 Names propagated into views" = "architecture/adr/0071-names-propagated-into-views-drift-repaired.md" },
+      { "0072 Deleting from view or model" = "architecture/adr/0072-deletion-from-view-or-model-dangling-refs-tolerated.md" },
+      { "0073 Element kinds" = "architecture/adr/0073-element-kinds-and-view-compatibility.md" },
+      { "0074 Sections reference elements" = "architecture/adr/0074-sections-reference-subsystem-elements.md" },
+      { "0075 Consistency rules" = "architecture/adr/0075-cross-diagram-consistency-rules.md" },
+      { "0076 Shared elements in the chats" = "architecture/adr/0076-shared-elements-in-the-chats.md" },
+      { "0077 Bundles carry the model" = "architecture/adr/0077-project-bundles-carry-the-model.md" },
+      { "0078 No repartitioning" = "architecture/adr/0078-no-repartitioning-for-the-model.md" },
+      { "0079 Links dropped on leaving a project" = "architecture/adr/0079-links-dropped-when-a-diagram-leaves-its-project.md" },
+      { "0080 Identities from the proxy" = "architecture/adr/0080-identities-from-the-authenticating-proxy.md" },
+      { "0081 Workspaces with one owner" = "architecture/adr/0081-workspaces-are-teams-with-one-owner.md" },
+      { "0082 Keyed documents" = "architecture/adr/0082-workspaces-and-users-as-keyed-documents.md" },
+      { "0083 Project roles" = "architecture/adr/0083-project-roles-and-default-viewer.md" },
+      { "0084 Access policy in the services" = "architecture/adr/0084-access-policy-in-the-service-layer.md" },
+      { "0085 Role requirements" = "architecture/adr/0085-role-requirements-per-action.md" },
+      { "0086 Authors" = "architecture/adr/0086-authors-on-versions-and-transcripts.md" },
+      { "0087 Default workspace migration" = "architecture/adr/0087-default-workspace-migration.md" },
+      { "0088 Repair within workspaces" = "architecture/adr/0088-membership-repair-never-crosses-workspaces.md" },
+      { "0089 Taken ids" = "architecture/adr/0089-taken-ids-get-a-free-variant.md" },
+      { "0090 A turn losing its role" = "architecture/adr/0090-a-turn-that-loses-its-role.md" },
+      { "0091 Members by trusted e-mail" = "architecture/adr/0091-members-by-e-mail-only-when-trusted.md" },
+      { "0092 Notes as description" = "architecture/adr/0092-notes-as-optional-description.md" },
+      { "0093 Notes budgeted in the prompt" = "architecture/adr/0093-notes-in-the-prompt-are-budgeted.md" },
+      { "0094 ETag and If-Match" = "architecture/adr/0094-etag-and-if-match-on-the-latest-revision.md" },
+      { "0095 Live stream: bus plus poll" = "architecture/adr/0095-live-stream-bus-plus-poll.md" },
+      { "0096 Streams re-check access" = "architecture/adr/0096-streams-recheck-access.md" },
+      { "0097 Presence in memory" = "architecture/adr/0097-presence-in-process-memory.md" },
+      { "0098 Bounded streams" = "architecture/adr/0098-bounded-streams.md" },
+      { "0099 Inspector conflicts" = "architecture/adr/0099-inspector-conflicts.md" },
+      { "0100 One personal workspace per user" = "architecture/adr/0100-one-personal-workspace-per-user.md" },
+      { "0101 Direct sharing by the owner" = "architecture/adr/0101-direct-sharing-by-the-project-owner.md" },
+      { "0102 Migration keeps access explicit" = "architecture/adr/0102-migration-keeps-access-explicit.md" },
+      { "0103 No access outside personal workspaces" = "architecture/adr/0103-no-access-outside-personal-workspaces.md" },
+      { "0104 Presence across replicas" = "architecture/adr/0104-presence-across-replicas-in-cosmos.md" },
+      { "0105 Versioned watches" = "architecture/adr/0105-versioned-watches.md" },
+      { "0106 Configuration problems at start-up" = "architecture/adr/0106-configuration-problems-collected-at-start-up.md" },
+      { "0107 LLM SDKs as extras" = "architecture/adr/0107-llm-sdks-as-extras-checked-at-start-up.md" },
+      { "0108 Image with every extra" = "architecture/adr/0108-the-image-installs-every-runtime-extra.md" },
+      { "0109 uv.lock everywhere" = "architecture/adr/0109-uv-lock-for-every-python-install.md" },
+      { "0110 Base images by digest" = "architecture/adr/0110-base-images-pinned-by-digest.md" },
+      { "0111 JSON logs" = "architecture/adr/0111-json-logs-with-an-in-house-formatter.md" },
+      { "0112 Pseudonymous users in logs" = "architecture/adr/0112-logs-carry-pseudonymous-users-and-route-templates.md" },
+      { "0113 Request and trace ids" = "architecture/adr/0113-request-ids-and-trace-ids.md" },
+      { "0114 OpenTelemetry extra" = "architecture/adr/0114-opentelemetry-as-an-optional-extra.md" },
+      { "0115 Entra ID for Azure OpenAI" = "architecture/adr/0115-entra-id-tokens-for-azure-openai.md" },
+      { "0116 Documentation only in the project" = "architecture/adr/0116-documentation-only-in-the-project.md" },
+      { "0120 Diagram locator" = "architecture/adr/0120-diagram-locator-as-a-re-validated-hint.md" },
+      { "0121 Project reads per request" = "architecture/adr/0121-project-reads-cached-per-request.md" },
+      { "0122 Revision-only read" = "architecture/adr/0122-revision-only-read.md" },
+      { "0123 Conditional deletes" = "architecture/adr/0123-conditional-deletes.md" },
+      { "0124 Pruning listing entries" = "architecture/adr/0124-stamped-listing-entries-pruned-after-a-grace.md" },
+      { "0125 No derived markup" = "architecture/adr/0125-no-derived-markup-in-the-frontend.md" },
+      { "0126 Server closes a turn" = "architecture/adr/0126-the-server-closes-a-turn-in-a-worker-thread.md" },
+      { "0127 Transcript writes bound to a generation" = "architecture/adr/0127-transcript-writes-bound-to-a-generation.md" },
+      { "0128 Kind changes and links verify" = "architecture/adr/0128-kind-changes-and-links-verify-after-writing.md" },
+      { "0129 Version metadata read once" = "architecture/adr/0129-version-metadata-read-once-and-paged.md" },
+      { "0130 Opt-in version retention" = "architecture/adr/0130-opt-in-version-retention.md" },
+      { "0131 Server-generated ids" = "architecture/adr/0131-server-generated-ids.md" },
+      { "0132 Mermaid output through the SVG allow-list" = "architecture/adr/0132-mermaid-output-through-the-svg-allow-list.md" },
+      { "0133 Pending tokens settled on proof" = "architecture/adr/0133-pending-tokens-settled-on-proof.md" },
+      { "0134 Own spans and metrics by allow-list" = "architecture/adr/0134-own-spans-and-metrics-by-allow-list.md" },
+      { "0135 Relations in the project document" = "architecture/adr/0135-relations-in-the-project-document.md" },
+      { "0136 Relation kinds and containment" = "architecture/adr/0136-relation-kinds-and-containment.md" },
+      { "0137 Open world, completeness, hidden relations" = "architecture/adr/0137-open-world-completeness-and-hidden-relations.md" },
+      { "0138 Views primary, findings resolved by people" = "architecture/adr/0138-views-primary-findings-resolved-by-people.md" },
+      { "0139 View connections link to relations" = "architecture/adr/0139-view-connections-link-to-relations.md" },
+      { "0140 Agent links relations, proposes missing ones" = "architecture/adr/0140-agent-links-relations-and-proposes-missing-ones.md" },
+      { "0141 Correspondence rules" = "architecture/adr/0141-correspondence-rules.md" },
+      { "0150 Generated id suffixes are replaced" = "architecture/adr/0150-generated-id-suffixes-are-replaced.md" },
+      { "0151 Git pushes on a background worker" = "architecture/adr/0151-git-pushes-on-a-background-worker.md" },
+      { "0152 Summary cuts edges, then leaves" = "architecture/adr/0152-the-summary-cuts-edges-then-leaves.md" },
+      { "0153 Element texts bounded on write" = "architecture/adr/0153-element-texts-bounded-on-write-not-by-integrity.md" },
+      { "0154 Cosmos DB request units metric" = "architecture/adr/0154-cosmos-request-units-as-a-metric.md" },
+      { "0155 Damaged version files are reported" = "architecture/adr/0155-damaged-version-files-are-reported.md" },
+    ] },
+  ] },
+  { "Product" = [
+    { "Direction" = "product/index.md" },
+    { "Alternatives and build vs. buy" = "product/alternatives.md" },
+    { "Roadmap" = "product/roadmap.md" },
+    { "Ideas parking lot" = "product/ideas.md" },
+  ] },
+  { "Contributing" = "contributing.md" },
+  { "Changelog" = "changelog.md" },
+]
+
+[project.theme]
+language = "en"
+features = [
+  "announce.dismiss",
+  "content.action.edit",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "toc.follow",
+]
+
+[project.theme.icon]
+logo = "lucide/network"
+repo = "fontawesome/brands/github"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "indigo"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "indigo"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/thomasniebler/arcviz"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+tables = {}
+toc.permalink = true
+pymdownx.betterem = {}
+pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.magiclink = {}
+# Snippets resolve relative to the repository root so that docs can include CHANGELOG.md.
+pymdownx.snippets.base_path = ["."]
+pymdownx.snippets.check_paths = true
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+pymdownx.tasklist.custom_checkbox = true

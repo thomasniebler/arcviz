@@ -1,0 +1,232 @@
+{
+  "format": "arcviz-diagram",
+  "schema_version": 2,
+  "exported_at": "2026-10-11T00:00:00+00:00",
+  "diagram": {
+    "id": "runtime-project-chat-turn",
+    "title": "Runtime: project chat turn",
+    "type": "sequence",
+    "nodes": {},
+    "edges": [],
+    "direction": "TB",
+    "created_at": "2026-10-11T00:00:00+00:00",
+    "updated_at": "2026-10-11T00:00:00+00:00",
+    "interaction": {
+      "lifelines": [
+        {
+          "id": "web-ui",
+          "name": "Web UI (chat.js, project scope)",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "server",
+          "name": "server.py",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "project-agent",
+          "name": "ProjectAgent",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "llm",
+          "name": "LLMProvider.run_turn",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "services:diagrams",
+          "name": "DiagramService",
+          "type": null,
+          "actor": false
+        },
+        {
+          "id": "services:projects",
+          "name": "ProjectService",
+          "type": null,
+          "actor": false
+        }
+      ],
+      "fragments": [
+        {
+          "element": "message",
+          "id": "m1",
+          "name": "POST /api/projects/{pid}/chat {message, active, mode}",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "web-ui",
+          "receiver": "server"
+        },
+        {
+          "element": "message",
+          "id": "m2",
+          "name": "get(pid) (404 if unknown)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "services:projects"
+        },
+        {
+          "element": "message",
+          "id": "m3",
+          "name": "200 text/event-stream",
+          "sort": "reply",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "web-ui"
+        },
+        {
+          "element": "message",
+          "id": "m4",
+          "name": "chat() on a worker thread",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "server",
+          "receiver": "project-agent"
+        },
+        {
+          "element": "message",
+          "id": "m5",
+          "name": "load_members(pid), chat(pid) (history)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "project-agent",
+          "receiver": "services:projects"
+        },
+        {
+          "element": "message",
+          "id": "m6",
+          "name": "run_turn(project prompt, history, project tools + the active type's tools per round)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "project-agent",
+          "receiver": "llm"
+        },
+        {
+          "element": "combined_fragment",
+          "id": "cf-calls",
+          "operator": "loop",
+          "covered": [
+            "web-ui",
+            "server",
+            "project-agent",
+            "llm",
+            "services:diagrams",
+            "services:projects"
+          ],
+          "operands": [
+            {
+              "id": "op3",
+              "guard": "tool calls",
+              "fragments": [
+                {
+                  "element": "combined_fragment",
+                  "id": "cf-switch",
+                  "operator": "alt",
+                  "covered": [
+                    "web-ui",
+                    "server",
+                    "project-agent",
+                    "llm",
+                    "services:diagrams",
+                    "services:projects"
+                  ],
+                  "operands": [
+                    {
+                      "id": "op1",
+                      "guard": "open_diagram / create_diagram",
+                      "fragments": [
+                        {
+                          "element": "message",
+                          "id": "m7",
+                          "name": "read(id) / import_new(…, project, section)",
+                          "sort": "synchCall",
+                          "kind": "complete",
+                          "sender": "project-agent",
+                          "receiver": "services:diagrams"
+                        },
+                        {
+                          "element": "message",
+                          "id": "m8",
+                          "name": "tool_result {diagram_id, diagram, rendering} (SSE)",
+                          "sort": "asynchSignal",
+                          "kind": "complete",
+                          "sender": "project-agent",
+                          "receiver": "web-ui"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "op2",
+                      "guard": "editing call on the active diagram",
+                      "fragments": [
+                        {
+                          "element": "message",
+                          "id": "m9",
+                          "name": "write_through(id, diagram, revision, operations.apply)",
+                          "sort": "synchCall",
+                          "kind": "complete",
+                          "sender": "project-agent",
+                          "receiver": "services:diagrams"
+                        },
+                        {
+                          "element": "message",
+                          "id": "m10",
+                          "name": "tool_result {diagram_id, diagram, rendering with highlights} (SSE)",
+                          "sort": "asynchSignal",
+                          "kind": "complete",
+                          "sender": "project-agent",
+                          "receiver": "web-ui"
+                        }
+                      ]
+                    }
+                  ],
+                  "messages": []
+                }
+              ]
+            }
+          ],
+          "messages": []
+        },
+        {
+          "element": "message",
+          "id": "m11",
+          "name": "finally: commit_turn per changed diagram (conditional)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "project-agent",
+          "receiver": "services:diagrams"
+        },
+        {
+          "element": "message",
+          "id": "m12",
+          "name": "append_chat(pid, entries)",
+          "sort": "synchCall",
+          "kind": "complete",
+          "sender": "project-agent",
+          "receiver": "services:projects"
+        },
+        {
+          "element": "message",
+          "id": "m13",
+          "name": "final {reply, active, diagrams: [{id, version, created}], proposal} (SSE)",
+          "sort": "asynchSignal",
+          "kind": "complete",
+          "sender": "project-agent",
+          "receiver": "web-ui"
+        }
+      ],
+      "executions": [
+        {
+          "id": "ex-agent",
+          "lifeline": "project-agent",
+          "start": "m4",
+          "finish": "m13"
+        }
+      ]
+    }
+  }
+}

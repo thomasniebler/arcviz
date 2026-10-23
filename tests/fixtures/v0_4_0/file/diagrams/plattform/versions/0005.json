@@ -1,0 +1,55 @@
+{
+  "diagram": {
+    "created_at": "2026-10-11T11:09:06+00:00",
+    "direction": "TB",
+    "edges": [],
+    "id": "plattform",
+    "interaction": null,
+    "nodes": {
+      "cluster": {
+        "id": "cluster",
+        "kind": "cluster",
+        "name": "Cluster",
+        "parent": null,
+        "properties": {}
+      },
+      "db": {
+        "description": "PostgreSQL",
+        "id": "db",
+        "kind": "database",
+        "name": "Orders DB",
+        "parent": null,
+        "properties": {}
+      },
+      "orders": {
+        "id": "orders",
+        "kind": "service",
+        "name": "Order Service",
+        "parent": "cluster",
+        "properties": {}
+      },
+      "shop": {
+        "id": "shop",
+        "kind": "service",
+        "name": "Shop",
+        "parent": "cluster",
+        "properties": {}
+      }
+    },
+    "title": "Plattform",
+    "type": "deployment",
+    "updated_at": "2026-10-11T11:09:06+00:00"
+  },
+  "meta": {
+    "author": "ada",
+    "author_name": "Ada",
+    "created_at": "2026-10-11T11:09:06+00:00",
+    "edge_count": 0,
+    "fingerprint": "9a6b860d9064b885",
+    "label": "DB",
+    "node_count": 4,
+    "restored_from": null,
+    "source": "auto",
+    "version": 5
+  }
+}
