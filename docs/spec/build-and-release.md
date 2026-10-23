@@ -157,8 +157,18 @@ the workflow then:
   hashes (`arcviz-agent-<version>-requirements.txt`) and attaches `dist/*` to the release;
 - checks the wheel with `scripts/check_wheel_docs.py` (the build hook already refuses one without the site).
 
-There is no separate documentation publishing (no GitHub Pages, ADR-0116): every artifact carries the site of its
-version, served under `/docs`. The `gh-pages` branch of earlier releases is no longer updated.
+Every artifact carries the site of its version, served under `/docs` (ADR-0116). The public Pages copy of `main` is
+published separately (next section); the `gh-pages` branch of earlier releases is no longer updated.
+
+## Documentation on GitHub Pages (`docs-pages.yml`)
+
+[ADR-0201](../architecture/adr/0201-documentation-on-github-pages.md). One job `Publish docs` on pushes to `main` that
+touch `docs/**`, `zensical.toml`, `CHANGELOG.md` or `CONTRIBUTING.md`, and on `workflow_dispatch`: `uv sync --locked
+--only-group docs --no-install-project`, `zensical build --clean --strict` (published configuration, `site_url`
+`https://thomasniebler.github.io/arcviz/`), then `actions/configure-pages`, `upload-pages-artifact` (directory `site`)
+and `deploy-pages` in the environment `github-pages` (permissions `pages: write`, `id-token: write`). The repository
+setting Pages → Source must be "GitHub Actions". The site is one version, the state of `main`; the release workflow
+does not publish docs.
 
 Before merging the release PR, add the entry of the new version to `arcviz/whatsnew.json` (curated highlights shown as a
 banner in the app, [spec](../architecture/specs/whats-new.md)); `tests/test_whatsnew.py` checks the file.

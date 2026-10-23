@@ -12,7 +12,7 @@ edge stays intact, and the diagram on the right updates after each applied opera
 ## Documentation
 
 User documentation (quick setup, user guide, configuration reference, technical specification) lives
-under [`docs/`](docs/) in this repository and is built into the app: a running Arcviz serves the documentation of
+under [`docs/`](docs/) in this repository, is published at <https://thomasniebler.github.io/arcviz/> and is built into the app: a running Arcviz serves the documentation of
 its own version under `/docs/` (menu **Hilfe**), offline. The Docker image, the release wheel and the sdist always
 contain it; `make run` builds it on the first start of a development checkout (or `make docs-bundle`). Build the
 plain site with `make docs`, preview it with `make docs-serve`. The

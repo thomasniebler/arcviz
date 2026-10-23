@@ -36,8 +36,9 @@ instead of failing.
 - Making the documentation a runtime dependency: building it needs Zensical, which stays a
   documentation-only tool (the `docs` dependency group, ADR-0109), not a dependency of the package.
 
-Since M9 (ADR-0116) the bundled site is the only copy: the GitHub Pages site with its mike version selector is
-gone, and a wheel or sdist build without the site fails (`hatch_build.py`).
+Since M9 (ADR-0116) the bundled site is the copy of a version: the Pages site with its mike version selector is
+gone, and a wheel or sdist build without the site fails (`hatch_build.py`). Since ADR-0201 the current `main` is
+also published on GitHub Pages as one unversioned site.
 
 ## Design
 
@@ -49,7 +50,7 @@ The script reads `zensical.toml`, derives an offline configuration from `[projec
 | Setting | Published (`make docs`) | Bundle |
 |---|---|---|
 | `site_dir` | `site` | `arcviz/docs_site` (or `--out`, which must be inside the repository) |
-| `site_url` | none since M9 (it was the GitHub Pages URL) | unset (the bundle is served under any prefix) |
+| `site_url` | `https://thomasniebler.github.io/arcviz/` (ADR-0201) | removed (the bundle is served under any prefix) |
 | `extra.version` | none since M9 (it was the mike version selector) | removed (one version) |
 | `repo_url`, `repo_name`, `edit_uri` | GitHub repository, edit links | removed (the theme would query `api.github.com` on every page; edit links make no sense in a deployment) |
 | `theme.font` | Google Fonts (Inter, JetBrains Mono) | `false` (system fonts, no network) |

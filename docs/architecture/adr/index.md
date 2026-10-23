@@ -187,3 +187,4 @@ Create a new ADR by copying `0000-template.md` to the next free number. Status v
 | [0198](0198-graded-deletion-retire-before-delete.md) | Graded deletion: requirements delete directly, drivers, scenarios and decisions are retired first | Accepted |
 | [0199](0199-german-source-text-as-message-key.md) | The German source text is the message key; English lives in catalogs beside it | Accepted |
 | [0200](0200-deployment-lives-in-a-separate-repository.md) | Deployment lives in a separate repository that pulls the published image | Accepted |
+| [0201](0201-documentation-on-github-pages.md) | The documentation is also published on GitHub Pages | Accepted |

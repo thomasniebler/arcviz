@@ -4,6 +4,7 @@ site_description = "Chat-driven editing of a UML-style deployment model with liv
 site_author = "Thomas Niebler"
 copyright = "Copyright &copy; 2026 Thomas Niebler"
 
+site_url = "https://thomasniebler.github.io/arcviz/"
 repo_url = "https://github.com/thomasniebler/arcviz"
 repo_name = "thomasniebler/arcviz"
 edit_uri = "edit/main/docs/"
