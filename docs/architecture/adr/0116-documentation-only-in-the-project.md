@@ -1,6 +1,6 @@
 # ADR-0116: The documentation is built into every artifact; no GitHub Pages
 
-- Status: Accepted
+- Status: Accepted; the "no GitHub Pages" part is superseded by [ADR-0201](0201-documentation-on-github-pages.md)
 - Date: 2026-10-08
 - Spec: `docs/architecture/specs/operations.md` §6 (#188); supersedes the publishing part of
   [ADR-0042](0042-docs-site-built-into-the-package.md) and [ADR-0043](0043-serving-the-documentation-under-docs.md)

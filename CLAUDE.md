@@ -669,7 +669,7 @@ code, implementation along the module table, verification, then `docs/spec/` and
   (ADR-0006). A new check is a new step in that job, not a new job. The Dockerfile
   copies only `arcviz/`, `pyproject.toml`, `uv.lock`, `README.md`, `LICENSE`, `hatch_build.py` (plus the docs site its
   `docs` stage builds into `arcviz/docs_site/`, ADR-0042), so new runtime files must live under `arcviz/`. Every
-  image, wheel and sdist contains the documentation site; there is no GitHub Pages (ADR-0116): `hatch_build.py`
+  image, wheel and sdist contains the documentation site; `main` is also published on GitHub Pages by `docs-pages.yml` (ADR-0201): `hatch_build.py`
   refuses a non-editable build without it, `scripts/check_wheel_docs.py` checks a wheel, `make run` builds it.
 - The app serves its documentation under `/docs` (spec `docs/architecture/specs/docs-in-app.md`, ADR-0043);
   FastAPI's Swagger UI is at `/api/docs`. Without a built site `/docs` answers 404 with build instructions.

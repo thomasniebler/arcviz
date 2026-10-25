@@ -1,4 +1,4 @@
-"""The documentation is built into every artifact; no GitHub Pages (#188; operations.md §6, ADR-0116)."""
+"""The documentation is built into every artifact and `main` is published on GitHub Pages (#188; ADR-0116, ADR-0201)."""
 
 from __future__ import annotations
 
@@ -6,8 +6,6 @@ import importlib.util
 import tomllib
 import zipfile
 from pathlib import Path
-
-import pytest
 
 ROOT = Path(__file__).parent.parent
 
@@ -63,16 +61,30 @@ def test_ci_and_the_release_verify_the_wheel():
         assert "scripts/check_wheel_docs.py" in workflow and "build_docs_bundle.py" in workflow
 
 
-@pytest.mark.parametrize("path", [".github/workflows/docs.yml"])
-def test_no_pages_publishing(path):
-    assert not (ROOT / path).exists()
+def test_pages_publishing_is_one_job_outside_the_release():
+    """ADR-0201: the site of `main` goes to GitHub Pages from its own workflow, not from the release or mike."""
+    pages = (ROOT / ".github/workflows/docs-pages.yml").read_text(encoding="utf-8")
+    for needle in (
+        "actions/configure-pages@",
+        "actions/upload-pages-artifact@",
+        "actions/deploy-pages@",
+        "pages: write",
+    ):
+        assert needle in pages
+    assert "--strict" in pages and pages.count("\n  docs:") == 1 and "pull_request" not in pages
     release = (ROOT / ".github/workflows/release-please.yml").read_text(encoding="utf-8")
-    assert "docs.yml" not in release and "pages" not in release.lower()
+    assert "docs-pages" not in release and "pages" not in release.lower()
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert "docs-publish" not in pyproject["dependency-groups"] and "uv" not in pyproject.get("tool", {})
     zensical = (ROOT / "zensical.toml").read_text(encoding="utf-8")
-    assert "site_url" not in zensical and "mike" not in zensical
-    assert "github.io" not in (ROOT / "README.md").read_text(encoding="utf-8")
+    assert 'site_url = "https://thomasniebler.github.io/arcviz/"' in zensical and "mike" not in zensical
+    assert not (ROOT / ".github/workflows/docs.yml").exists()
+
+
+def test_the_bundle_ignores_the_published_site_url():
+    bundle = load("scripts/build_docs_bundle.py", "build_docs_bundle")
+    project = tomllib.loads((ROOT / "zensical.toml").read_text(encoding="utf-8"))["project"]
+    assert "site_url" in project and "site_url" not in bundle.bundle_config(project, ROOT / "arcviz" / "docs_site")
 
 
 def test_make_run_builds_the_site_when_missing():
