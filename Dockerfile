@@ -2,7 +2,7 @@
 
 # Reproducible builds (ADR-0109, ADR-0110): every image is pinned by version and digest, every Python package comes
 # from uv.lock. Update the pins with the steps in docs/spec/build-and-release.md (*Updating dependencies*).
-FROM ghcr.io/astral-sh/uv:0.12.24@sha256:3af4716e991d6956a41e573eab705d0ee08500cd829ed30293eb8472f372c65a AS uv
+FROM ghcr.io/astral-sh/uv:0.13.5@sha256:32a7bb39b496babbd997b0a39a4d66c126bdaf5661b302bf6f06abda8deca6ff AS uv
 
 # Stage 1: the documentation site the app serves under /docs (ADR-0042, ADR-0116), from the `docs` dependency group.
 FROM python:3.14.7-slim-trixie@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d AS docs
