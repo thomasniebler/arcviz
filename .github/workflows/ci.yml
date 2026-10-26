@@ -7,16 +7,12 @@ name: CI
 
 # No `push` trigger: a merge to main carries the content its PR already tested. The weekly run (and
 # workflow_dispatch, e.g. before merging a release PR) runs everything, including the full matrix.
-# PAUSED (2026-10-21): GitHub-hosted runners do not start on this repository (every job ends after about
-# 3 seconds with runner_id 0 and no steps), so each automatic run is a false red and nothing is tested. The
-# checks run locally instead (CLAUDE.md, Commands). To resume, uncomment the two triggers below once
-# Actions works again (docs/spec/build-and-release.md, "CI"). `workflow_dispatch` still starts a run by hand.
 on:
-  # pull_request:
-  #   branches: [main]
-  #   types: [opened, synchronize, reopened, ready_for_review]
-  # schedule:
-  #   - cron: "17 4 * * 1" # Mondays 04:17 UTC
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: "17 4 * * 1" # Mondays 04:17 UTC
   workflow_dispatch:
 
 concurrency:

@@ -41,10 +41,9 @@ under `docs/` (Zensical site, English); the UI is German.
 
 ## CI minutes
 
-**CI is paused** (2026-10-21): the hosted runners do not start, so the triggers of `ci.yml` and `pr-title.yml` are
-commented out (see `docs/spec/build-and-release.md`, "CI"). Run the full checks locally (`make lint typecheck test
-test-js e2e docs`, and `ARCVIZ_E2E_REAL_IDS=1 make e2e` for frontend changes) and merge on those results; the rules
-below apply again when the triggers are restored.
+CI runs again (it was paused 2026-10-21 to 2026-10-26 while the hosted runners did not start; the repository is public again). Still run
+the full checks locally first (`make lint typecheck test test-js e2e docs`, and `ARCVIZ_E2E_REAL_IDS=1 make e2e` for frontend changes): CI is a
+final gate, not a test runner.
 
 GitHub Actions bills every job rounded **up** to a full minute, so a 7-second job costs as much as a
 59-second one, and every push to an open PR into `main` starts a new run. Treat each run as expensive:
