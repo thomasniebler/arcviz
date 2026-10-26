@@ -438,5 +438,7 @@
   "Anwendungsfalldiagramm": "Use case diagram",
   "Komponentendiagramm": "Component diagram",
   "Für {type} noch nicht verfügbar": "Not yet available for {type}",
-  "Start fehlgeschlagen: {message}": "Start failed: {message}"
+  "Start fehlgeschlagen: {message}": "Start failed: {message}",
+  "Architektur: Vision": "Architecture: vision",
+  "Architektur: Dokumentation": "Architecture: documentation"
 }

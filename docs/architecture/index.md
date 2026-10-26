@@ -81,6 +81,7 @@ not listed is a boundary violation and needs a spec change first.
 | `arcviz/mcp_server.py` | MCP endpoint for agents ([agent access](specs/agent-access.md)): registers the tools on the SDK's server, POST only, stateless | `agent_tools`, `services`, `telemetry` |
 | `arcviz/agent_tools.py` | What an agent may ask and do: bounded read tools, code links, proposals; never applies a proposal | `services`, `project_review`, `agent`, `project_model` |
 | `arcviz/agentauth.py`, `arcviz/oidc.py` | Credentials of agents on the MCP path ([agent authentication](specs/agent-authentication.md)): `AgentGate`, personal access tokens, OIDC access tokens | `auth`, `limits`, `services` |
+| `arcviz/arc42.py`, `arcviz/arc42_export.py`, `arcviz/arc42_html.py` | [arc42 export](specs/arc42-export.md): the pure section tree built from a project snapshot; the Markdown, AsciiDoc, zip and docx writers; the live HTML page | `project_review`, `projects`, `project_model`, `decision_model`, `requirement_model`, `quality_model`, `model`, `render`, `i18n` |
 | `arcviz/tokens.py`, `arcviz/proposals.py` | Domain types of personal access tokens and stored proposals (shape, bounds, retention, the proposal diff) | `workspaces`, `model` |
 | `arcviz/agent_types.py` | Tools of the diagram types other than deployment | `model`, `operations`, `sequence`, `llm` |
 | `arcviz/prompts/` | System prompt texts (shared blocks, one expert part per diagram type) and their composition | nothing (pure text) |

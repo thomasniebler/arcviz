@@ -29,9 +29,11 @@ from .decision_model import Decision, DecisionOption, Scenario, Stakeholder
 from .model import now_iso, single_line, slugify
 from .operations import OperationError, PropertyValue, validate_arguments
 from .project_model import (
+    ARC42_SECTIONS,
     DRIVER_KINDS,
     DRIVER_LEVELS,
     ELEMENT_KINDS,
+    MAX_ARC42_NOTE,
     MAX_CODE_REFS,
     MAX_DRIVER_DESCRIPTION,
     MAX_DRIVER_TITLE,
@@ -121,6 +123,9 @@ class Project(BaseModel):
     decision_seq: int = 0
     # The product vision (spec: project-vision.md, ADR-0203), omitted from dumps while unset.
     vision: Vision | None = None
+    # Text of the arc42 sections the model does not cover (spec: arc42-export.md, ADR-0208): section id "01".."12" ->
+    # plain text, blank lines separate paragraphs; omitted from dumps while empty.
+    arc42_notes: dict[str, str] = Field(default_factory=dict)
     created_at: str = Field(default_factory=now_iso)
     updated_at: str = Field(default_factory=now_iso)
     # The workspace the project belongs to (spec: workspaces-and-sharing.md); None only for data written before
@@ -143,6 +148,8 @@ class Project(BaseModel):
             del data["roles"]
         if data.get("incarnation", "") is None:
             del data["incarnation"]
+        if data.get("arc42_notes", None) == {}:
+            del data["arc42_notes"]  # projects written before the arc42 export dump unchanged
         if data.get("vision", "") is None:
             del data["vision"]  # projects written before the vision dump unchanged
         if data.get("relations", None) == []:
@@ -539,6 +546,25 @@ def set_vision(
         raise ProjectError(" ".join(problems))
     project.vision = None if vision.is_empty() else vision
     return {"vision": project.vision.model_dump() if project.vision else None}
+
+
+def set_arc42_note(project: Project, section: str, text: str = "") -> dict[str, Any]:
+    """Set (or, with empty text, clear) the note of one arc42 section (spec: arc42-export.md, ADR-0208)."""
+    key = section.strip()
+    if key.isdigit() and len(key) == 1:
+        key = f"0{key}"
+    if key not in ARC42_SECTIONS:
+        raise ProjectError(f"Unknown arc42 section '{section}'. Use one of: {', '.join(ARC42_SECTIONS)}.")
+    body = "\n".join(line.rstrip() for line in text.strip().splitlines())
+    if len(body) > MAX_ARC42_NOTE:
+        raise ProjectError(f"An arc42 note has at most {MAX_ARC42_NOTE} characters ({len(body)} given).")
+    if any(ord(c) < 32 and c not in "\n\t" for c in body):
+        raise ProjectError("An arc42 note must not contain control characters.")
+    if body:
+        project.arc42_notes[key] = body
+    else:
+        project.arc42_notes.pop(key, None)
+    return {"section": key, "note": body}
 
 
 def add_section(
@@ -1635,6 +1661,7 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "rename_project": rename_project,
     "set_description": set_description,
     "set_vision": set_vision,
+    "set_arc42_note": set_arc42_note,
     "add_section": add_section,
     "rename_section": rename_section,
     "move_section": move_section,
@@ -1670,7 +1697,7 @@ DECISION_SUPPORT_OPERATIONS = tuple(
     name for name in OPERATIONS if name.split("_", 1)[1] in ("stakeholder", "scenario", "decision")
 )
 DRIVER_OPERATIONS = ("add_driver", "update_driver", "move_driver", "remove_driver")  # public: one document
-VISION_OPERATIONS = ("set_vision",)  # public: one document; agents may only propose it (ADR-0203)
+VISION_OPERATIONS = ("set_vision", "set_arc42_note")  # public: one document; agents may only propose it (ADR-0203)
 CODE_REF_OPERATIONS = ("add_code_ref", "remove_code_ref")  # public: they touch only the project document
 # Membership is ProjectService's invariant, the model ModelService's (renames and deletes reach the diagrams).
 ELEMENT_OPERATIONS = (

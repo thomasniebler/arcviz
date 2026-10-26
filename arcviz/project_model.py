@@ -744,6 +744,12 @@ def vision_lines(vision: Vision | None) -> str | None:
     return "\n".join(lines)
 
 
+# ---- arc42 notes (spec: docs/architecture/specs/arc42-export.md, ADR-0208) -------------------------------------------
+
+ARC42_SECTIONS = tuple(f"{n:02d}" for n in range(1, 13))
+MAX_ARC42_NOTE = 8000
+
+
 # ---- architecture drivers (spec: docs/architecture/specs/architecture-drivers.md, ADR-0163) ----------------------
 
 DRIVER_KINDS = ("quality_goal", "constraint", "requirement", "risk")

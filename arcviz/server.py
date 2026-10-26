@@ -15,7 +15,7 @@ from contextlib import asynccontextmanager, closing, contextmanager, nullcontext
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Annotated, Any, Literal, NoReturn, TypeVar
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, quote
 
 import anyio
 from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request
@@ -36,6 +36,9 @@ from starlette.routing import Route
 from . import (
     __version__,
     agentauth,
+    arc42,
+    arc42_export,
+    arc42_html,
     auth,
     diff,
     exchange,
@@ -77,6 +80,7 @@ from .oidc import OidcValidator
 from .ports import MAX_VERSIONS_PAGE, ConflictError, RepositoryPort, RevisionMismatch, StoreError, check_id
 from .project_agent import ProjectAgent
 from .project_model import (
+    ARC42_SECTIONS,
     DRIVER_KINDS,
     DRIVER_LEVELS,
     ELEMENT_KINDS,
@@ -2082,6 +2086,94 @@ def create_app(
             if not svc.projects.append_chat(project_id, [note]):
                 raise HTTPException(404, f"Project '{project_id}' not found.")
             return {"chat": svc.projects.chat(project_id)}
+
+    # ---- arc42 documentation (spec: docs/architecture/specs/arc42-export.md, ADR-0207) ---------------------------
+
+    def arc42_document(svc: Services, project_id: str) -> arc42.Document:
+        """The twelve sections of a project as the caller (viewer) may read them: the same snapshot as the review,
+        its deterministic findings, no model call."""
+        snapshot = project_snapshot(svc, project_id)
+        return arc42.build(snapshot, project_review.run_project_checks(snapshot), snapshot.requirements)
+
+    def arc42_figure_link(project_id: str) -> Callable[[str], str]:
+        return lambda diagram_id: f"/api/projects/{quote(project_id, safe='')}/arc42/figures/{diagram_id}.svg"
+
+    def arc42_attachment(content: bytes, media: str, project_id: str, extension: str) -> Response:
+        return Response(
+            content,
+            media_type=media,
+            headers={
+                "Content-Disposition": f'attachment; filename="arc42-{project_id}.{extension}"',
+                "Cache-Control": "no-store",
+            },
+        )
+
+    @app.get("/project/{project_id}/arc42", response_class=HTMLResponse)
+    @app.get("/project/{project_id}/arc42/{section}", response_class=HTMLResponse)
+    def arc42_page(svc: Svc, project_id: str, section: str | None = None) -> HTMLResponse:
+        """The live arc42 page of a project (viewer): the model assembled into the twelve sections, rendered on the
+        server; `section` (01..12) shows only that one."""
+        if section is not None and section not in ARC42_SECTIONS:
+            raise HTTPException(404, f"Unknown arc42 section '{section}'. Use one of: {', '.join(ARC42_SECTIONS)}.")
+        doc = arc42_document(svc, project_id)
+        base = f"/api/projects/{quote(project_id, safe='')}"
+        html = arc42_html.page(
+            doc,
+            figure_url=f"{base}/arc42/figures",
+            lang=i18n.language(),
+            downloads={
+                "Markdown": f"{base}/arc42.md",
+                "AsciiDoc (zip)": f"{base}/arc42.zip?format=asciidoc",
+                "Markdown (zip)": f"{base}/arc42.zip?format=markdown",
+                "Word (docx)": f"{base}/arc42.docx",
+            },
+            only=section,
+        )
+        return HTMLResponse(html, headers={"Content-Security-Policy": arc42_html.CSP, "Cache-Control": "no-store"})
+
+    @app.get("/api/projects/{project_id}/arc42")
+    def arc42_json(svc: Svc, project_id: str) -> dict[str, Any]:
+        """The arc42 sections of a project: per section its Markdown, its gaps and the diagrams it shows."""
+        return arc42_export.to_json(arc42_document(svc, project_id), arc42_figure_link(project_id))
+
+    @app.get("/api/projects/{project_id}/arc42.md")
+    def arc42_markdown(svc: Svc, project_id: str) -> Response:
+        doc = arc42_document(svc, project_id)
+        text = arc42_export.to_markdown(doc, lambda d: f"figures/{d}.svg")
+        return arc42_attachment(text.encode(), "text/markdown; charset=utf-8", project_id, "md")
+
+    @app.get("/api/projects/{project_id}/arc42.zip")
+    def arc42_zip(svc: Svc, project_id: str, format: Literal["asciidoc", "markdown"] = "asciidoc") -> Response:
+        """The arc42 documentation as a zip: `index.adoc` or `index.md`, and `figures/` for SVG diagrams."""
+        doc = arc42_document(svc, project_id)
+        return arc42_attachment(arc42_export.to_zip(doc, format), "application/zip", project_id, "zip")
+
+    @app.get("/api/projects/{project_id}/arc42.docx")
+    def arc42_docx(svc: Svc, project_id: str) -> Response:
+        """The arc42 documentation as a Word file; 501 naming the `docx` extra when python-docx is not installed."""
+        doc = arc42_document(svc, project_id)
+        try:
+            content = arc42_export.to_docx(doc)
+        except RuntimeError as exc:
+            raise HTTPException(501, str(exc)) from exc
+        media = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        return arc42_attachment(content, media, project_id, "docx")
+
+    @app.get("/api/projects/{project_id}/arc42/figures/{diagram_id}.svg")
+    def arc42_figure(svc: Svc, project_id: str, diagram_id: str) -> Response:
+        """The SVG rendering of a diagram shown in the arc42 page (viewer); sandboxed so it can never run script."""
+        doc = arc42_document(svc, project_id)
+        diagram = doc.diagrams.get(diagram_id)
+        if diagram is None:
+            raise HTTPException(404, f"Project '{project_id}' has no diagram '{diagram_id}'.")
+        kind, source = arc42_export.figure_of(diagram)
+        if kind != "svg":
+            raise HTTPException(400, f"Diagram '{diagram_id}' is drawn by Mermaid, not as an SVG file.")
+        return Response(
+            source,
+            media_type="image/svg+xml",
+            headers={"Content-Security-Policy": "sandbox; default-src 'none'; style-src 'unsafe-inline'"},
+        )
 
     # ---- architecture review ---------------------------------------------------
 

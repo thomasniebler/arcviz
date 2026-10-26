@@ -95,7 +95,7 @@ test("every control the registry clicks exists in index.html", () => {
 });
 
 test("routes are location hashes of the shell", () => {
-  for (const c of COMMANDS.filter((x) => "route" in x)) assert.match(c.route, /^(#\/(requirements|architecture\/(drivers|scenarios|decisions|stakeholders)))?$/, c.id);
+  for (const c of COMMANDS.filter((x) => "route" in x)) assert.match(c.route, /^(#\/(requirements|architecture\/(drivers|scenarios|decisions|stakeholders|vision|documentation)))?$/, c.id);
 });
 
 test("the palette finds the areas and the common actions by their obvious words", () => {

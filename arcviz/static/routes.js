@@ -2,7 +2,7 @@
 // hash selects. Pure: the DOM-facing router is archview.js.
 
 /** The tabs of the Architektur page, in display order; the first is the default. */
-export const ARCH_TABS = ["drivers", "scenarios", "decisions", "stakeholders", "vision"];
+export const ARCH_TABS = ["drivers", "scenarios", "decisions", "stakeholders", "vision", "documentation"];
 
 /** `{view: "diagram"}`, `{view: "requirements"}` or `{view: "architecture", tab}` for a location hash. */
 export function parseRoute(hash) {

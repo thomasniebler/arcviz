@@ -102,3 +102,17 @@ The **Vision** page (in the navigation under *Architektur*) holds what the produ
 (goals, one per line) and what it deliberately is not (non-goals). The assistants take it into account when they design
 or propose something and name the goal a larger change serves. Only you can change the vision; an assistant may at most
 propose a change. The project review points out a project with diagrams or drivers but no vision.
+
+## arc42 documentation
+
+Under *Architektur → Dokumentation* the project is assembled into the twelve sections of
+[arc42](https://arc42.org): introduction and goals (vision, quality goals, stakeholders), constraints, context, solution
+strategy, building blocks, runtime, deployment, cross-cutting concepts, decisions, quality requirements, risks and a
+glossary. It is built live from the project model, so it is always current, and nothing in it is written by an assistant.
+Open **arc42-Seite öffnen** for the page (`/project/<id>/arc42`, shareable with everyone who may read the project), or
+download it as Markdown, as an AsciiDoc zip or as a Word file. A section the model cannot fill says so; for those you
+write a short **note** on the same page (a blank line separates paragraphs). The project review lists the sections that
+are still empty.
+
+The Word export needs the optional `docx` extra (`pip install "arcviz-agent[docx]"`, included in the Docker image);
+without it the download answers 501 with that hint. Diagrams drawn by Mermaid appear in the downloads as their source.

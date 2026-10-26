@@ -38,7 +38,7 @@ COPY --from=uv /uv /usr/local/bin/uv
 WORKDIR /app
 # Every runtime extra (ADR-0108): both LLM SDKs, Entra ID for Azure OpenAI, the Cosmos DB store and the telemetry export,
 # so one image runs every configuration. Build with --build-arg ARCVIZ_EXTRAS=anthropic for a slimmer image.
-ARG ARCVIZ_EXTRAS="anthropic,openai,azure-openai,cosmos,telemetry,mcp"
+ARG ARCVIZ_EXTRAS="anthropic,openai,azure-openai,cosmos,telemetry,mcp,docx"
 COPY pyproject.toml uv.lock README.md LICENSE hatch_build.py ./
 # The locked dependencies first (a layer that survives code changes), then the project itself (not editable).
 RUN uv sync --locked --no-dev --no-install-project --no-cache $(printf -- '--extra %s ' $(echo "$ARCVIZ_EXTRAS" | tr ',' ' '))

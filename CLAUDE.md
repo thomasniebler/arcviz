@@ -336,6 +336,13 @@ while unset) is replaced by the public operation `set_vision`, `PUT /api/project
 propose it, `PROPOSABLE_OPERATIONS`). `prompts.architecture_part(…, vision=)` puts it first (`prompts/shared/vision.txt`, goals as `[g1]…`);
 rule `vision-missing`; bundles `schema_version` 9. UI: tab **Vision** (`visionpanel.js`, pure `vision.js`).
 
+**arc42 export** (spec `docs/architecture/specs/arc42-export.md`, ADR-0207, ADR-0208): `arc42.build(snapshot, findings, requirements)` (pure) turns the
+review's `ProjectSnapshot` into twelve `Section`s of plain-text blocks (`Paragraph`, `Bullets`, `Heading`, `Table`, `Figure`) with `gaps` for what
+the model does not say; `Project.arc42_notes` + `set_arc42_note` fill the rest (agents may only propose). `arc42_export` writes Markdown, AsciiDoc
+(character references for specials), the zip and docx (extra `docx`, lazy import, 501 without), `arc42_html` the live page
+`GET /project/{pid}/arc42` (everything through `html.escape`, no inline script, strict CSP; Mermaid figures by the vendored Mermaid via
+`static/arc42/page.js`, SVG figures as `<img>` of the sandboxed figure route). No model call anywhere. UI: tab **Dokumentation** (`documentationpanel.js`).
+
 **ISO 25010 qualities** (spec `docs/architecture/specs/iso25010-qualities.md`, ADR-0202): `Scenario.qualities` holds one or at most two of the nine
 characteristics of `quality_model.QUALITY_CHARACTERISTICS` (omitted while empty; operations refuse anything else); a driver's are computed
 (`driver_qualities`), never stored. `quality_suggestion.suggest` (one `complete_tool` call, `POST …/scenarios/qualities`, rate class `review`) only

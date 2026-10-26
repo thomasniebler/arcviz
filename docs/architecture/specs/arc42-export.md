@@ -1,7 +1,7 @@
 # arc42 export
 
-- Status: Accepted (design agreed, not implemented)
-- Issue: none yet
+- Status: Implemented
+- Issue: #9
 - ADRs: [0207 arc42 is assembled deterministically and rendered on the server](../adr/0207-arc42-assembled-deterministically-and-rendered-on-the-server.md),
   [0208 Prose for the sections the model does not cover](../adr/0208-arc42-prose-for-unmodelled-sections.md)
 - Related: [Architecture documentation](architecture-documentation.md), [Project vision](project-vision.md),
@@ -55,12 +55,14 @@ Retired drivers/scenarios are excluded (`project_model.active`), rejected/draft 
 module docstring. A section whose source is empty carries a `gap` (`"arcviz: kein Inhalt"` text on the page, a comment in
 Markdown/AsciiDoc), never filler text. Ordering is deterministic so two builds of one project state are byte-identical.
 
-### Service (`services/arc42.py`, `svc.arc42`)
+### Document assembly (no service of its own)
 
-`Arc42Service.document(project_id) -> Document` takes the **viewer** guard, loads the snapshot once (members and
-architecture objects, via the same bounded reads the review uses; no per-request store listing) and calls `arc42.build`.
-Size is bounded by the project's own bounds; the writers stream. A new service method calls `self.require(...)` before it reads
-(CLAUDE.md), and its routes are in `tests/test_access_matrix.py` and the list of service methods in `tests/test_access.py`.
+The routes build the document in `server.arc42_document`: the same `project_snapshot` as the review (`load_members` and the
+requirements box, under the viewer guard of those service methods), the review's deterministic findings
+(`project_review.run_project_checks`) and `arc42.build`. There is no `Arc42Service`: it would only repeat
+what `ProjectService.load_members` and `RequirementService.box` already guard, and `tests/test_layering.py` keeps services
+below `project_review`. Every route takes `svc: Svc` and is in `tests/test_access_matrix.py`. Size is bounded by the project's own
+bounds and by `arc42.MAX_ROWS` per table.
 
 ### Routes
 
@@ -68,38 +70,39 @@ Size is bounded by the project's own bounds; the writers stream. A new service m
 |---|---|
 | `GET /project/{id}/arc42` | HTML page (full document, anchors per section), the live view |
 | `GET /project/{id}/arc42/{section}` | one section (`01`…`12`), same page chrome |
-| `GET /api/projects/{id}/arc42` | JSON: `{sections: [{id, title, markdown, gaps}], figures: […]}` |
-| `GET /api/projects/{id}/arc42.md` | Markdown, figures as relative `figures/<diagram>.svg` references |
-| `GET /api/projects/{id}/arc42.zip?format=asciidoc\|markdown` | zip: `index.adoc` or `index.md`, one file per section, `figures/` |
+| `GET /api/projects/{id}/arc42` | JSON: per section `id`, `title`, `markdown`, `gaps`, `figures` |
+| `GET /api/projects/{id}/arc42.md` | Markdown, SVG figures as `figures/<diagram>.svg` references |
+| `GET /api/projects/{id}/arc42.zip?format=asciidoc\|markdown` | zip: `arc42/index.adoc` or `arc42/index.md`, `arc42/figures/` |
 | `GET /api/projects/{id}/arc42.docx` | docx (extra `docx`); 501 with the install hint if the extra is missing |
+| `GET /api/projects/{id}/arc42/figures/{diagram}.svg` | the SVG rendering of an SVG-drawn diagram, `Content-Security-Policy: sandbox`; 400 for a Mermaid diagram |
 
-HTML pages are not under `/api`, so they answer 401/404 like the SPA's pages do under proxy auth (`auth.AuthMiddleware`
-treats them like any non-public path; token mode redirects to `/login`). Ids are checked with `check_id`; an unknown or
-unreadable project is 404 with the store's message (existing guard behaviour).
+HTML pages are not under `/api`, so they answer like any other non-public path of `auth.AuthMiddleware` (401, or in token mode a
+redirect to `/login`). An unknown or unreadable project is 404 with the store's message. Responses are never cached
+(`Cache-Control: no-store`): a diagram change does not change the project revision, so there is no `ETag`.
 
 ### Rendering (ADR-0207)
 
-The section's Markdown goes through one renderer in `arcviz/arc42_html.py` using **markdown-it-py** with `html=False`
-(raw HTML in model text is escaped, never passed), `linkify` off, links limited to `http(s)`, `mailto` and in-page anchors, and
-tables enabled. The page template is a small Jinja-free string template with the app's own CSS tokens (`static/arc42.css`) and,
-for figures, the vendored Mermaid (`static/vendor/mermaid.min.js`, no CDN) for `renderer: mermaid` diagrams and the inline
-sanitised SVG for the SVG renderers (`svgsafe` rules mirrored server-side by `render` output being escaped at the source). Every
-user or model text reaches the page through the Markdown renderer or `escape()`; `tests/test_arc42_html.py` renders hostile names
-and descriptions and asserts that no tag or attribute survives. A strict `Content-Security-Policy` (no inline script except the
-vendored Mermaid initialiser, loaded as a file) is set on these responses.
+The section tree holds plain text only, so the page needs no Markdown library: `arc42_html.page` writes every block with
+`html.escape` (paragraph, list with depth classes, table, figure). **Deviation from the first design:** `markdown-it-py` is not
+a dependency; escaping structured blocks is strictly safer than disabling raw HTML in a Markdown renderer and adds nothing the
+tree does not already have. The page loads only files of the app: `static/arc42/page.css`, the vendored Mermaid and
+`static/arc42/page.js` (no inline script); a Mermaid figure is `<pre class="mermaid">` with the escaped source, an SVG
+figure an `<img>` of the sandboxed figure route, so a defect in a rendering can never run in the page. The response carries
+`Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; base-uri 'none';
+form-action 'none'; frame-ancestors 'none'` (Mermaid sets inline styles). `tests/test_arc42.py` renders hostile names,
+descriptions, visions and notes and asserts that no tag or script survives.
 
 ### Writers (`arc42_export.py`)
 
-- **Markdown/zip:** the section Markdown, figures as `.svg` for SVG renderers and as ```` ```mermaid ```` blocks for
-  Mermaid renderers (so Zensical/GitHub/MkDocs render them without conversion).
-- **AsciiDoc:** a small writer over the same blocks (`= `, `|===` tables, `[source,mermaid]` blocks, `image::` for SVG);
-  escaping through one helper (like `plantuml_text`), property-tested for round-safe text.
-- **docx:** `python-docx` behind the `docx` extra, lazy import with a clear error; headings, tables, text; Mermaid
-  figures as their source in a code style (open question 2).
+- **Markdown/zip:** the section Markdown (`md()` escapes the special characters, also in table cells), figures as `.svg` files for
+  SVG renderers and as fenced `mermaid` blocks for Mermaid renderers (the fence outgrows any run in the source).
+- **AsciiDoc:** a small writer over the same blocks (`= `, `|===` tables, `[source,mermaid]` blocks, `image::` for SVG); every
+  special character is written as a character reference (`adoc()`), which is safe in text and in table cells.
+- **docx:** `python-docx` behind the `docx` extra, lazy import, 501 with the install hint without it; headings, tables, text;
+  Mermaid figures as their source in a monospaced paragraph.
 
-Dependencies (CLAUDE.md rule 5): `markdown-it-py` (pure Python; required by the page, no further runtime dependencies besides
-`mdurl`) is a **core** dependency, because the page is the main surface; `python-docx` is the extra `docx`, installed in the image
-via `ARCVIZ_EXTRAS` like the others. The reasons go into the PR body.
+Dependencies (CLAUDE.md rule 5): none in the core. `python-docx` is the optional extra `docx` (also in `dev` and in the
+image's `ARCVIZ_EXTRAS`). Notes are plain text (ADR-0208): blank lines separate paragraphs, no markup.
 
 ### Completeness and the steward
 
@@ -109,9 +112,8 @@ item, verified and confirmed like any other). The export itself never calls a mo
 
 ### UI
 
-A **arc42** entry in the project menu and the command palette (one registry entry for an existing control id, `palette.js`)
-opens `/project/<id>/arc42` in a new tab; the **Architektur** dialog gets a **Dokumentation** tab with the notes editor
-(ADR-0208) and the download links. The page's header offers the downloads and a "stand: <revision, time>" line.
+The **Architektur** page gets a **Dokumentation** tab (`documentationpanel.js`) with the link that opens `/project/<id>/arc42` in a
+new tab, the download links and the notes editor (ADR-0208); the navigation and the command palette have an entry for it. The page's header offers the downloads and a "stand: <revision, time>" line.
 
 ## Testing
 
@@ -119,7 +121,7 @@ opens `/project/<id>/arc42` in a new tab; the **Architektur** dialog gets a **Do
   determinism (two builds byte-equal), property test: any project produced by the existing strategies builds without error.
 - HTML: hostile text escaping (as above), links limited, anchors stable.
 - Writers: AsciiDoc and Markdown goldens; docx opens with `python-docx` and has the expected headings; missing extra → 501.
-- Server: every route, viewer allowed, other user 404, `If-None-Match`/`ETag` from the project revision (304), large project.
+- Server: every route, viewer allowed, other user 404, `no-store`, the figure route (SVG 200, Mermaid 400, unknown 404).
 - Access matrix and `test_access.py` entries; layering test for the new modules; i18n catalog entries.
 - e2e: open the page from the menu, see §9 with a created decision; download the zip.
 
@@ -129,8 +131,7 @@ New routes and a new optional project field (ADR-0208). No data migration.
 
 ## Open questions
 
-1. **Caching:** build per request (simple, bounded) or cache by project revision? Proposed: per request first, `ETag` from the
-   revision handles repeat views.
+1. **Caching:** resolved: built per request, `no-store`; no `ETag` (a diagram change does not change the project revision).
 2. **Figures in docx/AsciiDoc:** Mermaid diagrams cannot be rendered server-side without a browser. Options: ship the Mermaid
    source (proposed for v1), or add an optional headless rendering step later. Which is acceptable for your docx use?
 3. **Language:** the page follows `Accept-Language` for the headings (German source text is the key, ADR-0199); user content is
@@ -141,5 +142,5 @@ New routes and a new optional project field (ADR-0208). No data migration.
 - Live page at `/project/<id>/arc42`, rendered **server-side** from Markdown (user decision; ADR-0207).
 - Markdown + AsciiDoc zip first; docx behind an optional extra (user decision).
 - The export never calls a model (ADR-0207).
-- Open questions resolved as proposed: build per request with `ETag`, Mermaid source in docx and AsciiDoc in v1, language
-  from `Accept-Language` (user: "things are fine").
+- Open questions resolved as proposed: build per request without `ETag`, Mermaid source in docx and AsciiDoc in v1, language
+  from `Accept-Language` (user: "things are fine"). The Markdown library of the first design was dropped during implementation (ADR-0207, amendment).

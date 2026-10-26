@@ -19,7 +19,7 @@ const LAYERS = {
   "canvas.js": 2, "mdpane.js": 2, "chatlog.js": 2, "ui.js": 2, "requirementpicker.js": 2,
   "diagram.js": 3,
   "navigator.js": 4,
-  "appearance.js": 5, "decisionpanel.js": 5, "driverpanel.js": 5, "scenariopanel.js": 5, "stakeholderpanel.js": 5, "visionpanel.js": 5, "export.js": 5, "inspector.js": 5, "live.js": 5, "modelpanel.js": 5, "proposalpanel.js": 5, "requirementview.js": 5, "tokenpanel.js": 5, "review.js": 5, "settings.js": 5, "splitter.js": 5, "topbar.js": 5, "versions.js": 5, "voice.js": 5, "releasebanner.js": 5, "welcome.js": 5, "workspaces.js": 5,
+  "appearance.js": 5, "decisionpanel.js": 5, "driverpanel.js": 5, "documentationpanel.js": 5, "scenariopanel.js": 5, "stakeholderpanel.js": 5, "visionpanel.js": 5, "export.js": 5, "inspector.js": 5, "live.js": 5, "modelpanel.js": 5, "proposalpanel.js": 5, "requirementview.js": 5, "tokenpanel.js": 5, "review.js": 5, "settings.js": 5, "splitter.js": 5, "topbar.js": 5, "versions.js": 5, "voice.js": 5, "releasebanner.js": 5, "welcome.js": 5, "workspaces.js": 5,
   "chat.js": 6, "archview.js": 6, "paletteview.js": 6,
   "shell.js": 7,
   [ENTRY]: 8,

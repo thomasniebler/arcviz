@@ -151,5 +151,11 @@
   "Pro:": "Pros:",
   "Contra:": "Cons:",
   "Das Projekt hat keine Vision: ohne sie fehlt die Richtung für Vorschläge und Dokumentation.": "The project has no vision: without it, proposals and documentation lack a direction.",
-  "Projekt ohne Vision": "Project without a vision"
+  "Projekt ohne Vision": "Project without a vision",
+  "3 Kontextabgrenzung": "3 Context and scope",
+  "4 Lösungsstrategie": "4 Solution strategy",
+  "8 Querschnittliche Konzepte": "8 Cross-cutting concepts",
+  "12 Glossar": "12 Glossary",
+  "In der arc42-Dokumentation fehlt Inhalt: {sections}. Eine Notiz im Reiter Dokumentation ergänzt ihn.": "The arc42 documentation lacks content: {sections}. A note on the Documentation tab adds it.",
+  "arc42-Abschnitt ohne Inhalt": "arc42 section without content"
 }

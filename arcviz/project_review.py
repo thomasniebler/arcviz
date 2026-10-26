@@ -1385,6 +1385,34 @@ def vision_missing(snapshot: ProjectSnapshot) -> Iterator[ProjectFinding]:
         )
 
 
+def arc42_section_empty(snapshot: ProjectSnapshot) -> Iterator[ProjectFinding]:
+    """Sections of the arc42 documentation the model cannot fill (3, 4, 8, 12) and that have no note (ADR-0208)."""
+    project = snapshot.project
+    if not (project.diagrams or project.drivers):
+        return
+    notes = project.arc42_notes
+    empty = []
+    if not notes.get("03") and not any(is_overview(d) for _m, d in snapshot.members):
+        empty.append(_("3 Kontextabgrenzung"))
+    if not notes.get("04") and not any(d.status == "accepted" for d in project.decisions):
+        empty.append(_("4 Lösungsstrategie"))
+    if not notes.get("08"):
+        empty.append(_("8 Querschnittliche Konzepte"))
+    if not notes.get("12") and not any(e.description.strip() for e in project.elements):
+        empty.append(_("12 Glossar"))
+    if empty:
+        yield _finding(
+            "arc42-section-empty",
+            "all",
+            "suggestion",
+            "low",
+            _(
+                "In der arc42-Dokumentation fehlt Inhalt: {sections}. Eine Notiz im Reiter Dokumentation ergänzt ihn.",
+                sections=", ".join(empty),
+            ),
+        )
+
+
 PROJECT_RULES: list[ProjectRule] = [
     ProjectRule("empty-section", N_("Abschnitt ohne Diagramme"), "suggestion", empty_section),
     ProjectRule(
@@ -1488,6 +1516,7 @@ PROJECT_RULES: list[ProjectRule] = [
         stakeholder_no_requirement,
     ),
     ProjectRule("vision-missing", N_("Projekt ohne Vision"), "suggestion", vision_missing),
+    ProjectRule("arc42-section-empty", N_("arc42-Abschnitt ohne Inhalt"), "suggestion", arc42_section_empty),
 ]
 
 

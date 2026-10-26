@@ -547,6 +547,8 @@ def _items(raw: Any) -> list[ProposalItem]:
                 f"Item '{key}': use link_requirements to add requirements; update_* would replace the existing trace."
             )
         title = arguments.get("title") or arguments.get("name") or arguments.get("target") or ""
+        if op == "set_arc42_note":
+            title = f"arc42 {arguments.get('section', '')}"
         if op == "set_vision":
             title = arguments.get("statement") or "Vision"
         if op == "link_requirements":

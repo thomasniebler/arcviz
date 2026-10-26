@@ -1423,6 +1423,16 @@ try {
   await page.click("#arch-tab-stakeholders");
   await page.click("#arch-tab-vision");
   check("the vision is stored and shown again", (await page.inputValue("#vision-goals")) === "Schnell einsteigen\nImmer aktuell" && (await page.inputValue("#vision-statement")).startsWith("Teams dokumentieren"));
+  await page.click("#arch-tab-documentation");
+  await page.waitForFunction(() => document.querySelectorAll("#documentation-section option").length === 12, null, { timeout: 10000 });
+  await page.selectOption("#documentation-section", "08");
+  await page.fill("#documentation-note", "Logging ist strukturiert.");
+  await page.click("#documentation-save");
+  await page.waitForFunction(() => document.getElementById("documentation-status").textContent === "Gespeichert.", null, { timeout: 10000 });
+  const arc42Href = await page.getAttribute("#arc42-open", "href");
+  const arc42Page = await page.evaluate(async (href) => { const r = await fetch(href); return { status: r.status, csp: r.headers.get("content-security-policy"), text: await r.text() }; }, arc42Href);
+  check("the arc42 page shows the note and the vision under a strict policy", arc42Page.status === 200 && arc42Page.text.includes("Logging ist strukturiert.") && arc42Page.text.includes("Immer aktuell") && arc42Page.csp.includes("script-src 'self'"));
+  await page.click("#arch-tab-stakeholders");
   await page.click("#arch-tab-stakeholders");
   await page.click("#nav-tree .nav-open >> nth=0");
   await page.waitForSelector("#diagram svg", { timeout: 10000 });

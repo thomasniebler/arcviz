@@ -239,5 +239,15 @@
   "z. B. Kein Ersatz für ein Ticketsystem.": "e.g. Not a replacement for a ticket system.",
   "Die Aussage darf höchstens {n} Zeichen haben.": "The statement may have at most {n} characters.",
   "Höchstens {n} Einträge je Liste.": "At most {n} entries per list.",
-  "Ein Eintrag darf höchstens {n} Zeichen haben.": "An entry may have at most {n} characters."
+  "Ein Eintrag darf höchstens {n} Zeichen haben.": "An entry may have at most {n} characters.",
+  "Dokumentation": "Documentation",
+  "arc42-Dokumentation des Projekts: live ansehen, herunterladen, Notizen ergänzen": "The project's arc42 documentation: view it live, download it, add notes",
+  "Das Projekt als arc42-Dokumentation: live aus dem Modell zusammengestellt, ohne dass ein Assistent etwas dazu erfindet. Was das Modell nicht hergibt, ergänzt du als Notiz.": "The project as arc42 documentation: assembled live from the model, nothing invented by an assistant. What the model does not provide, you add as a note.",
+  "arc42-Seite öffnen": "Open the arc42 page",
+  "Markdown": "Markdown",
+  "AsciiDoc (zip)": "AsciiDoc (zip)",
+  "Word (docx)": "Word (docx)",
+  "Abschnitt": "Section",
+  "Notiz (Leerzeile trennt Absätze)": "Note (a blank line separates paragraphs)",
+  "Eine Notiz darf höchstens {n} Zeichen haben.": "A note may have at most {n} characters."
 }

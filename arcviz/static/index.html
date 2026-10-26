@@ -129,6 +129,7 @@
         <button id="nav-arch-decisions" type="button" class="nav-entry" data-route="#/architecture/decisions" title="Architekturentscheidungen (ADRs)" data-i18n-title data-i18n>Entscheidungen</button>
         <button id="nav-arch-stakeholders" type="button" class="nav-entry" data-route="#/architecture/stakeholders" title="Stakeholder und ihre Anliegen" data-i18n-title data-i18n>Stakeholder</button>
         <button id="nav-arch-vision" type="button" class="nav-entry" data-route="#/architecture/vision" title="Vision: wofür das Produkt da ist und woran man Erfolg erkennt" data-i18n-title data-i18n>Vision</button>
+        <button id="nav-arch-documentation" type="button" class="nav-entry" data-route="#/architecture/documentation" title="arc42-Dokumentation des Projekts: live ansehen, herunterladen, Notizen ergänzen" data-i18n-title data-i18n>Dokumentation</button>
         <button id="btn-model" type="button" class="nav-entry" title="Gemeinsames Projektmodell: Elemente, die mehrere Diagramme zeigen" data-i18n-title data-i18n>Modell</button>
       </div>
       <div class="nav-section" role="group" aria-label="Prüfen und Assistent" data-i18n-aria-label>
@@ -322,6 +323,7 @@
         <button type="button" role="tab" id="arch-tab-decisions" data-tab="decisions" data-route="#/architecture/decisions" aria-controls="arch-panel-decisions" aria-selected="false" data-i18n>Entscheidungen</button>
         <button type="button" role="tab" id="arch-tab-stakeholders" data-tab="stakeholders" data-route="#/architecture/stakeholders" aria-controls="arch-panel-stakeholders" aria-selected="false" data-i18n>Stakeholder</button>
         <button type="button" role="tab" id="arch-tab-vision" data-tab="vision" data-route="#/architecture/vision" aria-controls="arch-panel-vision" aria-selected="false" data-i18n>Vision</button>
+        <button type="button" role="tab" id="arch-tab-documentation" data-tab="documentation" data-route="#/architecture/documentation" aria-controls="arch-panel-documentation" aria-selected="false" data-i18n>Dokumentation</button>
       </div>
       <section id="arch-panel-drivers" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-drivers">
         <div class="md-toolbar">
@@ -504,6 +506,25 @@
           </footer>
         </form>
         <p id="vision-status" class="md-status muted" role="status"></p>
+      </section>
+      <section id="arch-panel-documentation" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-documentation" hidden>
+        <p class="md-intro muted" data-i18n>Das Projekt als arc42-Dokumentation: live aus dem Modell zusammengestellt, ohne dass ein Assistent etwas dazu erfindet. Was das Modell nicht hergibt, ergänzt du als Notiz.</p>
+        <p class="md-links">
+          <a id="arc42-open" href="#" target="_blank" rel="noopener" data-i18n>arc42-Seite öffnen</a>
+          <a id="arc42-markdown" href="#" download data-i18n>Markdown</a>
+          <a id="arc42-asciidoc" href="#" download data-i18n>AsciiDoc (zip)</a>
+          <a id="arc42-docx" href="#" download data-i18n>Word (docx)</a>
+        </p>
+        <form id="documentation-form" class="md-detail card" data-edit-zone>
+          <label class="field-col"><span data-i18n>Abschnitt</span><select id="documentation-section"></select></label>
+          <p id="documentation-gaps" class="muted"></p>
+          <label class="field-col"><span data-i18n>Notiz (Leerzeile trennt Absätze)</span><textarea id="documentation-note" rows="8" maxlength="8000"></textarea></label>
+          <footer class="md-actions">
+            <button id="documentation-save" type="submit" class="btn primary" data-edit data-i18n>Speichern</button>
+            <button id="documentation-cancel" type="button" class="btn" data-i18n>Zurücksetzen</button>
+          </footer>
+        </form>
+        <p id="documentation-status" class="md-status muted" role="status"></p>
       </section>
     </section>
 
