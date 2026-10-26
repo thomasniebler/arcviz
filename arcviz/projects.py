@@ -1277,12 +1277,14 @@ def link_requirements(project: Project, target_kind: str, target: str, requireme
 
 
 def target_of(project: Project, op: str, args: dict[str, Any]) -> BaseModel | None:
-    """The driver, scenario or decision an `update_*` (or `link_requirements`) names, or None when it is not one of
+    """The driver, scenario, decision, element or relation an `update_*` (or `link_requirements`) names, or None when it is not one of
     those or does not exist (the operation reports that)."""
     refs = {
         "update_driver": (_driver, args.get("driver")),
         "update_scenario": (_scenario, args.get("scenario")),
         "update_decision": (_decision, args.get("decision")),
+        "update_element": (_element, args.get("element")),
+        "update_relation": (_relation, args.get("relation")),
     }
     if op == "link_requirements":
         finder = {"driver": _driver, "scenario": _scenario, "decision": _decision}.get(str(args.get("target_kind")))

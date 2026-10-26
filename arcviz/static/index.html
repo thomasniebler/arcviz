@@ -316,6 +316,11 @@
       <header class="page-header">
         <h2 id="arch-heading" data-i18n>Architektur</h2>
         <p class="muted" data-i18n>Treiber, Qualitätsszenarien, Entscheidungen und Stakeholder des Projekts. Der Assistent richtet sich danach.</p>
+        <div id="steward-bar" class="steward-bar hidden">
+          <label class="steward-switch" title="Der Steward prüft das Projekt nach Änderungen im Hintergrund und legt Vorschläge in die Vorschlagsliste; angewendet wird nichts von selbst." data-i18n-title><input id="steward-enabled" type="checkbox" data-edit> <span data-i18n>Steward</span></label>
+          <span id="steward-line" class="muted" role="status"></span>
+          <button id="steward-run" type="button" class="small" data-edit data-i18n>Jetzt prüfen</button>
+        </div>
       </header>
       <div id="arch-tabs" class="arch-tabs" role="tablist" aria-label="Bereiche" data-i18n-aria-label>
         <button type="button" role="tab" id="arch-tab-drivers" data-tab="drivers" data-route="#/architecture/drivers" aria-controls="arch-panel-drivers" aria-selected="true" data-i18n>Treiber</button>

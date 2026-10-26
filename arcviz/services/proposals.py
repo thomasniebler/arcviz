@@ -9,9 +9,10 @@ through `proposal.apply_proposal` (the same base check, preview check and adopti
 from __future__ import annotations
 
 import json
+import logging
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
-from typing import Any, TypeVar
+from typing import Any, Protocol, TypeVar
 
 from pydantic import ValidationError
 
@@ -36,9 +37,12 @@ from ..proposals import (
     DEFAULT_RETENTION_DAYS,
     DISCARDED_NOTE,
     DOCUMENT,
+    ITEM_GROUPS,
     KEY_RE,
     LIVE,
     MAX_BYTES,
+    MAX_CITES,
+    MAX_ITEM_RATIONALE,
     MAX_ITEMS,
     MAX_OPERATIONS,
     MAX_PENDING,
@@ -46,6 +50,7 @@ from ..proposals import (
     MAX_PROJECT_PROPOSAL_BYTES,
     MAX_RATIONALE,
     MAX_TITLE,
+    MODEL_OPERATIONS,
     PROPOSABLE_OPERATIONS,
     STATUSES,
     ProposalBox,
@@ -57,14 +62,25 @@ from ..proposals import (
     resolve,
     sweep,
 )
+from ..steward_model import CLIENT
 from ..workspaces import Identity
 from .adoption import adopting
 from .diagrams import DiagramService
-from .model import ModelService
+from .model import UNSET, ModelService
 from .projects import ProjectService
 from .requirements import RequirementService
 
 T = TypeVar("T")
+
+
+logger = logging.getLogger(__name__)
+LINKABLE_KINDS = ("driver", "scenario", "decision")  # what `link_requirements` can target
+
+
+class DismissalSink(Protocol):
+    """What the steward keeps from a person's discard: the findings of the discarded items never come back."""
+
+    def dismiss(self, project_id: str, findings: list[str]) -> None: ...
 
 
 class ProposalError(OperationError):
@@ -82,7 +98,9 @@ class ProposalService:
         actor: Identity | None = None,
         retention_days: int = DEFAULT_RETENTION_DAYS,
         requirements: RequirementService | None = None,
+        dismissals: DismissalSink | None = None,
     ):
+        self._dismissals = dismissals  # told which findings a person discarded from a steward proposal (ADR-0204)
         self._requirements = requirements  # to check the requirement ids an item names; None: not checked
         self._docs = documents
         self._projects = projects
@@ -244,7 +262,7 @@ class ProposalService:
                 item.base = project_ops.object_fingerprint(target) if target is not None else None
             try:
                 out = project_ops.apply(copy, item.op, args)
-                if item.derived_from and item.op.startswith("update_"):
+                if item.derived_from and item.op.split("_", 1)[1] in LINKABLE_KINDS and item.op.startswith("update_"):
                     target = project_ops.target_of(copy, item.op, args)
                     if target is not None:
                         project_ops.apply(
@@ -326,7 +344,7 @@ class ProposalService:
             project = self._projects.fresh(project_id)
             origin = f"{proposal.id}/{item.key}"
             if item.op.startswith("add_"):
-                existing = _with_origin(project, item.op, origin)
+                existing = _existing(project, item.op, args, origin)
                 if existing is not None:  # an earlier, interrupted application created it
                     out.state, out.created = "applied", existing
                     created[item.key] = existing
@@ -336,13 +354,29 @@ class ProposalService:
                 out.state = "stale"
                 out.error = "the target no longer exists" if target is None else "the target changed since the proposal"
                 continue
+            if item.op in MODEL_OPERATIONS:  # the shared model has its own cross-document writes (ModelService)
+                try:
+                    made = self._apply_model(project_id, item.op, args)
+                except (OperationError, StoreError) as exc:
+                    out.state, out.error = "failed", str(exc)[:300]
+                    continue
+                out.state = "applied"
+                if made is not None:
+                    out.created = made
+                    created[item.key] = made
+                continue
             steps: list[tuple[str, dict[str, Any]]]
             if item.op.startswith("add_"):
                 linked = list(dict.fromkeys([*(args.get("requirements") or []), *item.derived_from]))
                 steps = [(item.op, {**args, "origin": origin, **({"requirements": linked} if linked else {})})]
             else:
                 steps = [(item.op, args)]
-                if item.derived_from and item.op.startswith("update_") and target is not None:
+                if (
+                    item.derived_from
+                    and item.op.startswith("update_")
+                    and item.op.split("_", 1)[1] in LINKABLE_KINDS
+                    and target is not None
+                ):
                     steps.append(
                         (
                             "link_requirements",
@@ -394,11 +428,56 @@ class ProposalService:
                     item.state = "discarded"
                     wanted.add(item.key)
             _settle_project(stored, actor.id if actor else "system")
+            if stored.client == CLIENT and self._dismissals is not None:
+                dropped.extend(i.finding for i in stored.items if i.state == "discarded" and i.finding)
             return stored
 
-        return self._update(project_id, discard)
+        dropped: list[str] = []
+        result = self._update(project_id, discard)
+        if dropped and actor is not None and actor.id != CLIENT:  # only a person's decision is remembered
+            try:
+                assert self._dismissals is not None
+                self._dismissals.dismiss(project_id, dropped)
+            except (StoreError, ConflictError):
+                logger.warning("Remembering discarded steward findings failed")
+        return result
 
     # ---- internals -------------------------------------------------------------------------------------------
+
+    def _apply_model(self, project_id: str, op: str, args: dict[str, Any]) -> str | None:
+        """One shared-model item through ModelService (the views follow a rename, the links of a changed relation are
+        cleared); the id of what an `add_*` created."""
+        if op == "add_element":
+            return self._models.add_element(
+                project_id,
+                args.get("name", ""),
+                args.get("kind", "component"),
+                args.get("description", ""),
+                args.get("parent"),
+            ).id
+        if op == "update_element":
+            parent: Any = args.get("parent", UNSET)
+            self._models.update_element(
+                project_id, args.get("element", ""), args.get("name"), args.get("description"), args.get("kind"), parent
+            )
+            return None
+        if op == "add_relation":
+            return self._models.add_relation(
+                project_id,
+                args.get("kind", ""),
+                args.get("source", ""),
+                args.get("target", ""),
+                args.get("properties"),
+                args.get("description", ""),
+            ).id
+        if op == "update_relation":
+            known = {"kind", "source", "target", "properties", "remove_properties", "description"}
+            self._models.update_relation(
+                project_id, args.get("relation", ""), **{k: v for k, v in args.items() if k in known}
+            )
+            return None
+        self._models.remove_relation(project_id, args.get("relation", ""))
+        return None
 
     def _open(self, project_id: str, proposal_id: str) -> StoredProposal:
         """The proposal if it can still be decided (pending, stale, or claimed by a process that is gone)."""
@@ -549,10 +628,21 @@ def _items(raw: Any) -> list[ProposalItem]:
         title = arguments.get("title") or arguments.get("name") or arguments.get("target") or ""
         if op == "set_arc42_note":
             title = f"arc42 {arguments.get('section', '')}"
+        if op in ("add_relation", "update_relation", "remove_relation"):
+            ends = " → ".join(str(arguments[k]) for k in ("source", "target") if arguments.get(k))
+            title = f"{arguments.get('kind') or arguments.get('relation') or ''} {ends}".strip()
+        if op == "update_element":
+            title = arguments.get("name") or arguments.get("element") or ""
         if op == "set_vision":
             title = arguments.get("statement") or "Vision"
         if op == "link_requirements":
             title = f"{arguments.get('target', '')} ← {', '.join(arguments.get('requirements') or [])}"
+        group = item.get("group", "")
+        if group and group not in ITEM_GROUPS:
+            raise ProposalError(f"Item '{key}': group must be one of {', '.join(ITEM_GROUPS)}.")
+        cites = item.get("cites", [])
+        if not isinstance(cites, list) or not all(isinstance(c, str) for c in cites):
+            raise ProposalError(f"cites of item '{key}' must be a list of ids.")
         out.append(
             ProposalItem(
                 key=key,
@@ -560,6 +650,10 @@ def _items(raw: Any) -> list[ProposalItem]:
                 arguments=arguments,
                 title=" ".join(single_line(str(title)).split())[:MAX_TITLE],
                 derived_from=list(dict.fromkeys(derived)),
+                finding=str(item.get("finding") or "")[:60],
+                group=group or "",
+                rationale=" ".join(single_line(str(item.get("rationale") or "")).split())[:MAX_ITEM_RATIONALE],
+                cites=list(dict.fromkeys(cites))[:MAX_CITES],
             )
         )
     return out
@@ -590,6 +684,18 @@ def _with_origin(project: Any, op: str, origin: str) -> str | None:
     """The id of the object an earlier application of the item created (its `origin`), if there is one."""
     items = {"add_driver": project.drivers, "add_scenario": project.scenarios, "add_decision": project.decisions}[op]
     return next((i.id for i in items if i.origin == origin), None)
+
+
+def _existing(project: Any, op: str, args: dict[str, Any], origin: str) -> str | None:
+    """`_with_origin` for the objects that carry an origin; elements and relations carry none, so an interrupted
+    application is recognised by what it would create (an element's name is unique, a relation's kind and ends)."""
+    if op == "add_element":
+        name = str(args.get("name", "")).strip().casefold()
+        return next((e.id for e in project.elements if e.name.casefold() == name), None)
+    if op == "add_relation":
+        key = (args.get("kind"), args.get("source"), args.get("target"))
+        return next((r.id for r in project.relations if (r.kind, r.source, r.target) == key), None)
+    return _with_origin(project, op, origin)
 
 
 def _settle_project(stored: StoredProposal, who: str) -> None:

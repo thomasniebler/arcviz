@@ -8,7 +8,7 @@ on domain types and `arcviz.ports`.
 from ..projects import ProjectStateError
 from .access import AccessPolicy, DiagramNotFound, Forbidden, Guard, WorkspaceNotFound
 from .bundles import ProjectExchangeService
-from .context import ServiceRoot, Services
+from .context import ServiceRoot, Services, SystemServices
 from .diagrams import DiagramService, DiagramState, LiveWrite
 from .live import LiveService, UnknownSession
 from .model import (
@@ -99,6 +99,7 @@ __all__ = [
     "ReconcileReport",
     "ServiceRoot",
     "Services",
+    "SystemServices",
     "SyncReport",
     "Usage",
     "Heartbeat",

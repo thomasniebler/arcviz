@@ -6,7 +6,7 @@ import { showDiagram } from "./diagram.js";
 import { $ } from "./dom.js";
 import { currentProject, onProjectShown, refreshDiagramListLabel } from "./navigator.js";
 import {
-  canApply, canDecide, describeDiff, describeItem, isProjectProposal, itemOpLabel, itemStateLabel, pendingCount, pendingItems,
+  canApply, canDecide, describeDiff, describeItem, isProjectProposal, itemOpLabel, itemSections, itemStateLabel, pendingCount, pendingItems,
   selectionClosure, statusLabel, storedHeading,
 } from "./proposal.js";
 import { focusQuery, state } from "./state.js";
@@ -83,6 +83,18 @@ function itemRow(item) {
     err.textContent = item.error;
     li.appendChild(err);
   }
+  if (item.rationale) {
+    const why = document.createElement("p");
+    why.className = "proposal-item-why";
+    why.textContent = item.rationale;
+    li.appendChild(why);
+  }
+  if (item.cites?.length) {
+    const cites = document.createElement("p");
+    cites.className = "proposal-item-cites muted";
+    cites.textContent = t("Bezieht sich auf: {ids}", { ids: item.cites.join(", ") });
+    li.appendChild(cites);
+  }
   const details = describeItem(item);
   if (details.length) {
     const dl = document.createElement("ul");
@@ -156,7 +168,16 @@ function card(proposal) {
   if (isProjectProposal(proposal)) {
     const list = document.createElement("ul");
     list.className = "proposal-items";
-    list.replaceChildren(...proposal.items.map(itemRow));
+    list.replaceChildren(
+      ...itemSections(proposal.items).flatMap((section) => {
+        const rows = section.items.map(itemRow);
+        if (!section.label) return rows;
+        const heading = document.createElement("li");
+        heading.className = "proposal-group";
+        heading.textContent = section.label;
+        return [heading, ...rows];
+      }),
+    );
     li.appendChild(list);
     if (canDecide(proposal)) li.appendChild(projectActions(proposal, li));
     return li;

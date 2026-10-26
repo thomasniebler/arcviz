@@ -61,6 +61,7 @@ from . import (
     rules,
     scenario_analysis,
     sequence,
+    steward,
     telemetry,
     tokens,
     whatsnew,
@@ -117,6 +118,7 @@ from .services import (
     WriterConfig,
 )
 from .services.diagrams import UNTITLED, untitled
+from .steward_model import StewardConfig, verifier_environ
 from .store import create_store
 from .templates import TEMPLATE_TYPES, TEMPLATES, create_from_template, templates_of
 from .workspaces import SHARE_ROLES, Identity, personal_workspace_id
@@ -196,6 +198,10 @@ class VisionRequest(BaseModel):
     statement: str = ""
     goals: list[str] = Field(default_factory=list)
     non_goals: list[str] = Field(default_factory=list)
+
+
+class StewardSwitchRequest(BaseModel):
+    enabled: bool
 
 
 class CreateSectionRequest(BaseModel):
@@ -659,6 +665,13 @@ def create_app(
     writer_config = startup.read(WriterConfig.from_env, WriterConfig())  # writer heartbeat (#189, ADR-0133)
     proposal_config = startup.read(ProposalConfig.from_env, ProposalConfig())  # stored proposals (ADR-0172)
     agent_config = startup.read(AgentAuthConfig.from_env, AgentAuthConfig())  # MCP endpoint and credentials (ADR-0173)
+    steward_config = startup.read(StewardConfig.from_env, StewardConfig())  # the background check (ADR-0204)
+    verifier_provider_config: ProviderConfig | None = None
+    if steward_config.enabled and steward_config.verifier_configured:
+        verifier_provider_config = startup.read(lambda: ProviderConfig.from_env(verifier_environ(steward_config)), None)
+        if verifier_provider_config is not None:
+            startup.add(check_provider(verifier_provider_config))
+            startup.add(steward.verifier_problems(verifier_provider_config, provider))
     if agent_config.enabled:
         startup.add([m for m in (mcp_server.sdk_missing(), agentauth.oauth_missing(agent_config)) if m])
     if provider is None:  # the provider is still created lazily; its configuration and SDK are checked now (ADR-0107)
@@ -671,7 +684,7 @@ def create_app(
     hub = live.LiveHub(live_config, limit_config.max_streams, limit_config.max_streams_per_user)
     telemetry.observe_live_streams(hub)  # the `arcviz.live.streams` gauge (#187); nothing while telemetry is off
     store = store or create_store()
-    root = ServiceRoot(store, hub, auth_config.admin, proposal_config)
+    root = ServiceRoot(store, hub, auth_config.admin, proposal_config, steward_config)
     # Data of v0.1.8 and M20 moves into personal workspaces (ADR-0102); idempotent, every start. Best effort: a
     # failure (a busy Cosmos DB, a replica starting at the same time) is logged and never stops the start; the
     # migration is repeated at the next start and by `arcviz-migrate --workspaces`. Until then nobody sees the
@@ -736,6 +749,8 @@ def create_app(
         hub.open()  # a new lifespan after an earlier shutdown
         undo = close_on_shutdown_signals(hub.close)
         await run_in_threadpool(heartbeat.start)  # store writes stay off the event loop
+        if steward_worker is not None:
+            steward_worker.start()
         await run_in_threadpool(root.start_mirror)  # pushes what a previous process left unpushed (#113)
         try:
             async with mcp_endpoint.lifespan() if mcp_endpoint is not None else nullcontext():
@@ -743,6 +758,8 @@ def create_app(
         finally:
             hub.close()
             undo()
+            if steward_worker is not None:
+                await run_in_threadpool(steward_worker.close)
             await run_in_threadpool(heartbeat.close)  # "stopped" once no placement is in flight
             await run_in_threadpool(root.drain_mirror)  # a pending Git push, bounded (#113)
 
@@ -801,6 +818,30 @@ def create_app(
                 app.state.provider_error = str(exc)
                 raise HTTPException(503, f"LLM provider not available: {exc}") from exc
         return app.state.provider
+
+    verifier_cache: list[LLMProvider | None] = []
+
+    def get_verifier() -> LLMProvider | None:
+        """The verifier's provider (a different model than the chat's, ADR-0205), created once; None without one or when
+        it cannot be created (the steward then proposes only what the rules settle)."""
+        if not verifier_cache:
+            made: LLMProvider | None = None
+            if verifier_provider_config is not None:
+                try:
+                    made = create_provider(verifier_provider_config)
+                except Exception as exc:
+                    logger.warning("The steward's verifier is not available (%s)", type(exc).__name__)
+            verifier_cache.append(made)
+        return verifier_cache[0]
+
+    def steward_provider() -> LLMProvider:
+        if app.state.provider is None:
+            app.state.provider = create_provider()
+        return app.state.provider
+
+    steward_runner = steward.Steward(root, steward_config, steward_provider, get_verifier)
+    steward_worker = steward.StewardWorker(steward_runner, hub) if steward_config.enabled else None
+    app.state.steward = steward_runner
 
     def get_agent(svc: Services) -> DiagramAgent:
         """The diagram agent working on the caller's services (one shared agent, bound per request)."""
@@ -2086,6 +2127,32 @@ def create_app(
             if not svc.projects.append_chat(project_id, [note]):
                 raise HTTPException(404, f"Project '{project_id}' not found.")
             return {"chat": svc.projects.chat(project_id)}
+
+    # ---- the steward (spec: docs/architecture/specs/project-steward.md, ADR-0204) -------------------------------------
+
+    @app.get("/api/projects/{project_id}/steward")
+    def steward_status(svc: Svc, project_id: str) -> dict[str, Any]:
+        """The steward's state for the project (viewer): switched on for it, the verifier, the last run, the day's runs."""
+        with project_errors():
+            return svc.steward.status(project_id)
+
+    @app.put("/api/projects/{project_id}/steward")
+    def steward_switch(svc: Svc, project_id: str, req: StewardSwitchRequest) -> dict[str, Any]:
+        """Opt the project in or out of the background check (owner)."""
+        with project_errors():
+            return svc.steward.set_enabled(project_id, req.enabled)
+
+    @app.post("/api/projects/{project_id}/steward/run")
+    def steward_run(svc: Svc, project_id: str) -> dict[str, Any]:
+        """Check the project now (editor; rate class `review`): the report of the run, which stores at most one pending
+        project proposal and changes nothing else. 409 while the steward is switched off for the installation."""
+        with project_errors():
+            svc.steward.require_run(project_id)
+        if not steward_config.enabled:
+            raise HTTPException(409, "The steward is switched off (ARCVIZ_STEWARD).")
+        with project_errors():
+            report = steward_runner.run(project_id, manual=True)
+            return {"project": project_id, **report, **svc.steward.status(project_id)}
 
     # ---- arc42 documentation (spec: docs/architecture/specs/arc42-export.md, ADR-0207) ---------------------------
 

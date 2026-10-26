@@ -2,5 +2,7 @@
   "Arcviz – Anmelden": "Arcviz – Sign in",
   "Zugangstoken": "Access token",
   "Anmelden": "Sign in",
-  "Ungültiges Token.": "Invalid token."
+  "Ungültiges Token.": "Invalid token.",
+  "Steward: {fixes} Korrekturen aus den Prüfregeln.": "Steward: {fixes} fixes from the review rules.",
+  "Steward: {fixes} Korrekturen, {steps} nächste Schritte, von einem zweiten Modell geprüft.": "Steward: {fixes} fixes, {steps} next steps, verified by a second model."
 }

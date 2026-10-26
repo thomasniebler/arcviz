@@ -49,7 +49,14 @@ PROPOSABLE_OPERATIONS = (
     "link_requirements",
     "set_vision",
     "set_arc42_note",
+    # the shared model (ADR-0206): applied through ModelService, never `remove_element` (deleting stays a person's act)
+    "add_element",
+    "update_element",
+    "add_relation",
+    "update_relation",
+    "remove_relation",
 )
+MODEL_OPERATIONS = ("add_element", "update_element", "add_relation", "update_relation", "remove_relation")
 # What a proposal (made by an agent or by the derivation) may not set: only a person decides a decision's fate.
 AGENT_REFUSED_FIELDS = {
     "add_decision": ("status", "superseded_by"),
@@ -57,6 +64,9 @@ AGENT_REFUSED_FIELDS = {
 }
 KEY_RE = re.compile(r"^[a-z0-9_]{1,24}$")
 MAX_TITLE = 160
+MAX_ITEM_RATIONALE = 600  # why an item is proposed (a steward item), with the verifier's remark
+MAX_CITES = 12
+ITEM_GROUPS = ("fix", "next_step")  # what a steward item is: a fix of a current finding or a next step
 
 
 class ProposalItem(BaseModel):
@@ -71,6 +81,21 @@ class ProposalItem(BaseModel):
     state: str = "pending"  # ITEM_STATES
     created: str | None = None  # the id an applied add_* produced
     error: str | None = None  # why a failed or stale item was not applied
+    # What the steward says about its items (spec: project-steward.md); each is omitted from dumps while empty.
+    finding: str = ""  # stable key of the finding behind it: a person's discard keeps it from coming back
+    group: str = ""  # ITEM_GROUPS
+    rationale: str = ""  # ≤ MAX_ITEM_RATIONALE
+    cites: list[str] = Field(default_factory=list)  # ids of the model objects it is about (≤ MAX_CITES)
+
+    @model_serializer(mode="wrap")
+    def _omit_empty_steward_fields(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = handler(self)
+        for key in ("finding", "group", "rationale"):
+            if not data.get(key):
+                data.pop(key, None)
+        if not data.get("cites"):
+            data.pop("cites", None)
+        return data
 
 
 def references(value: Any) -> set[str]:

@@ -10,6 +10,7 @@ import { initDocumentationPanel, isDocumentationDirty, loadDocumentation } from 
 import { confirmDiscard } from "./mdpane.js";
 import { currentProject, onProjectShown } from "./navigator.js";
 import { ARCH_TABS, formatRoute } from "./routes.js";
+import { initStewardPanel, loadSteward } from "./stewardpanel.js";
 import { initScenarioPanel, isScenarioDirty, loadScenarios } from "./scenariopanel.js";
 import { initStakeholderPanel, isStakeholderDirty, loadStakeholders } from "./stakeholderpanel.js";
 import { initVisionPanel, isVisionDirty, loadVision } from "./visionpanel.js";
@@ -50,7 +51,10 @@ export async function showArchitectureView(on, tab) {
   shown = on;
   $("architecture-view").classList.toggle("hidden", !on);
   document.querySelector(".layout")?.classList.toggle("architecture-mode", on);
-  if (on && currentProject()) await show(ARCH_TABS.includes(tab) ? tab : current);
+  if (on && currentProject()) {
+    loadSteward(); // the status line loads beside the tab, never blocks it
+    await show(ARCH_TABS.includes(tab) ? tab : current);
+  }
 }
 
 /** `onApply(text)` sends an analysis option's instruction as a preview chat turn (and leaves the page first). */
@@ -59,6 +63,7 @@ export function initArchView({ onApply }) {
   initDecisionPanel();
   initStakeholderPanel();
   initVisionPanel();
+  initStewardPanel();
   initDocumentationPanel();
   initScenarioPanel({
     onDecided: async (decisionId) => {

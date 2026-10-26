@@ -343,6 +343,15 @@ the model does not say; `Project.arc42_notes` + `set_arc42_note` fill the rest (
 `GET /project/{pid}/arc42` (everything through `html.escape`, no inline script, strict CSP; Mermaid figures by the vendored Mermaid via
 `static/arc42/page.js`, SVG figures as `<img>` of the sandboxed figure route). No model call anywhere. UI: tab **Dokumentation** (`documentationpanel.js`).
 
+**Project steward** (spec `docs/architecture/specs/project-steward.md`, ADR-0204..0206): with `ARCVIZ_STEWARD=1` a `steward.StewardWorker` (one thread, started by the
+lifespan; `LiveHub.add_listener` hints, debounce, sweep, per-project lease in the keyed document `steward`) re-checks opted-in projects (`steward_model.StewardBox.enabled`,
+owner via `PUT /api/projects/{pid}/steward`) and `Steward.run` stores **one** pending project proposal of the client `steward`: rule findings with exactly one model-level fix
+(`rule_candidates`) plus the candidates of one `complete_tool` call that a **different model** (`ARCVIZ_VERIFIER_PROVIDER`/`_MODEL`, must not equal the chat model; without it rule
+items only) confirmed. It runs in the system context (`ServiceRoot.system_services()`, identity `steward`) and may only read, replace its own proposal and write its document
+(`tests/test_steward.py` forbids `apply`); a model never proposes a deletion (`LLM_OPERATIONS`), every candidate must cite existing ids. `ProposalItem` has `finding`/`group`/
+`rationale`/`cites`; the element and relation operations of an item apply through `ModelService`; a person's discard feeds `StewardBox.dismissed`. UI: `stewardpanel.js` on the
+**Architektur** page, groups in `proposalpanel.js`.
+
 **ISO 25010 qualities** (spec `docs/architecture/specs/iso25010-qualities.md`, ADR-0202): `Scenario.qualities` holds one or at most two of the nine
 characteristics of `quality_model.QUALITY_CHARACTERISTICS` (omitted while empty; operations refuse anything else); a driver's are computed
 (`driver_qualities`), never stored. `quality_suggestion.suggest` (one `complete_tool` call, `POST …/scenarios/qualities`, rate class `review`) only

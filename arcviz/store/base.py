@@ -65,7 +65,8 @@ DOCUMENT_KINDS = (
     "token",
     "requirements",
     "reqchat",
-)  # kinds of keyed documents (ADR-0082, ADR-0088, ADR-0120, ADR-0133, ADR-0172, ADR-0173, ADR-0188, ADR-0193)
+    "steward",
+)  # kinds of keyed documents (ADR-0082, ADR-0088, ADR-0120, ADR-0133, ADR-0172, ADR-0173, ADR-0188, ADR-0193, ADR-0204)
 PING_ID = "readiness-probe"  # read by ping(); whether it exists does not matter
 LEGACY_REVISION = "0"  # the revision of a latest state stored before revisions existed
 T = TypeVar("T")

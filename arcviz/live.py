@@ -191,6 +191,7 @@ class LiveHub:
         self._left: dict[tuple[str, str], Subscription] = {}  # ended streams, lingering in presence
         self._by_project: dict[str, set[tuple[str, str]]] = {}  # project -> keys of its streams (open or lingering)
         self._pruned = float("-inf")
+        self._listeners: list[Callable[[dict[str, Any]], None]] = []  # in-process observers of the bus (the steward)
         # Reads shared by the re-checks of all streams (one read per change, fanned out): key -> _Shared, bounded
         self._shared: OrderedDict[tuple[str, str], _Shared] = OrderedDict()
         self._generations: dict[tuple[str, str], int] = {}  # only for slots in `_shared` (evicted together)
@@ -219,10 +220,27 @@ class LiveHub:
             with self._lock:
                 self._invalidate(event)
                 targets = [s for s in self._subs.values() if s.matches(event)]
+                listeners = list(self._listeners)
             for sub in targets:
                 _call(sub, sub.deliver, dict(event))
+            for listener in listeners:
+                try:
+                    listener(dict(event))
+                except Exception:  # an observer never fails a write
+                    logger.exception("A live event listener failed")
         except Exception:  # a hint lost is never worth failing a write
             logger.exception("Publishing a live event failed")
+
+    def add_listener(self, listener: Callable[[dict[str, Any]], None]) -> None:
+        """Call `listener(event)` for every published event, on the publishing thread: it must be quick and never block."""
+        with self._lock:
+            if listener not in self._listeners:
+                self._listeners.append(listener)
+
+    def remove_listener(self, listener: Callable[[dict[str, Any]], None]) -> None:
+        with self._lock:
+            if listener in self._listeners:
+                self._listeners.remove(listener)
 
     def _poke(self, watches: list[Watch], relay: bool = True) -> None:
         """Tell the streams of the projects of `watches` (a diagram's viewers are in its project) that presence

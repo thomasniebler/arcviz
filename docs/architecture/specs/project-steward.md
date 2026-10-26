@@ -1,7 +1,7 @@
 # Project steward
 
-- Status: Accepted (design agreed, not implemented)
-- Issue: none yet
+- Status: Implemented (with the deviations listed under *As implemented*)
+- Issue: #8
 - ADRs: [0204 The steward runs in process, on change, with a lease](../adr/0204-steward-runs-on-change-with-a-lease.md),
   [0205 A different model verifies what the steward proposes](../adr/0205-independent-verifier-model.md),
   [0206 Project proposals carry the operations that fix findings](../adr/0206-project-proposals-carry-fix-operations.md)
@@ -41,6 +41,7 @@ model** has confirmed it against the cited model objects (ADR-0205).
 |---|---|---|
 | `ARCVIZ_STEWARD` | `0` | Master switch. Off: no worker, routes answer 404-like "disabled" (409) |
 | `ARCVIZ_STEWARD_DEBOUNCE_SECONDS` | `300` | A project is checked this long after its last change |
+| `ARCVIZ_STEWARD_SWEEP_SECONDS` | `3600` | Every enabled project is checked at the latest this long after its last check (what other replicas changed, a lost hint) |
 | `ARCVIZ_STEWARD_MAX_RUNS_PER_DAY` | `4` | Per project, UTC day; manual runs count |
 | `ARCVIZ_STEWARD_MAX_ITEMS` | `15` | Items per run (hard cap `MAX_ITEMS` 60 of a proposal) |
 | `ARCVIZ_VERIFIER_PROVIDER` | unset | Provider of the verifier (`anthropic`, `openai`); with `ARCVIZ_VERIFIER_MODEL` |
@@ -61,7 +62,6 @@ StewardBox:
   runs: {day: count}         # last 7 days only
   dismissed: list[str]       # origin keys of discarded items, ≤ 500 (oldest dropped)
   lease: {holder, until}     # ADR-0204
-  dirty_at: str | None       # first change not yet checked
 ```
 
 Stores need no new primitive: it is a keyed document of kind `steward` (file `steward/`, sqlite `documents`, Cosmos
@@ -70,16 +70,16 @@ partition `steward:<project>`). Writes are conditional on its revision.
 ### Trigger and placement (ADR-0204)
 
 `StewardWorker` (own thread, started by the lifespan next to `Heartbeat`, off unless `ARCVIZ_STEWARD=1`) subscribes to the
-`LiveHub` project and diagram events (the services already publish after every write). A hint sets `dirty_at` (in memory
-first, persisted on the next tick); a project is due when `now − dirty_at ≥ debounce`, it is enabled, its day count is
+`LiveHub` project and diagram events (the services already publish after every write). A hint marks the project dirty (in memory; a restart forgets it,
+the sweep finds it again); a project is due when `now − last change ≥ debounce`, it is enabled, its day count is
 below the cap, and the worker holds its lease. Lease: conditional write of `lease` (`holder = <boot>.<random>` as in
 `locations.Writer`, `until = now + 2 × run timeout`), renewed during a run; an expired lease is taken over, so several
 replicas (Cosmos) never run the same project at once and a crashed replica blocks nothing for long. A change that arrives
-during a run only sets `dirty_at` again. The steward's own writes (proposal, box) publish no change hint for the project
+during a run only marks it dirty again. The steward's own writes (proposal, box) publish no change hint for the project
 document, so it never triggers itself; applying one of its proposals does (that is a change).
 
 `POST /api/projects/{pid}/steward/run` (editor or owner, rate class `review`) runs immediately, ignoring the debounce but
-not the day cap, and answers 202 with the status; `GET /api/projects/{pid}/steward` returns the status (`enabled`,
+not the day cap, and answers 200 with the report of the run (it runs in the request, on a worker thread) and the status; `GET /api/projects/{pid}/steward` returns the status (`enabled`,
 `last_run`, `runs_today`, `verifier: configured|missing`); `PUT …/steward` sets `enabled` (owner only).
 
 ### Identity and authorization
@@ -169,13 +169,42 @@ Spans `arcviz.steward.run` (attributes: outcome only), metrics `arcviz.steward.r
 - Lease: two workers over one store, one run; expired lease taken over; debounce; day cap; self-trigger absent.
 - Safety: recording double, only the three allowed calls; layering test for `steward.py`; access matrix for the three routes.
 - Config: verifier equal to the main model stops the start with a message.
-- Evals: `tests/evals/cases.json` gets `"scope": "steward"` cases (never in CI) to measure how often the verifier rejects.
+- Evals (`"scope": "steward"`, how often the verifier rejects) are a follow-up: the harness has no steward scope yet.
 - e2e: enable, run now, see the badge, apply one item, discard another.
 
 ## Migration / compatibility
 
 New keyed document kind and new optional route family; stores need no migration. Proposals gain no field: `client` already
 exists (`"steward"` is a new value), the `StoredProposal` shape is unchanged, so old data and clients are unaffected.
+
+## As implemented
+
+Where the code differs from the design above (all deliberate):
+
+- **Modules:** `steward_model.py` (pure: `StewardConfig`, `StewardBox`, `finding_key`), `steward.py` (prompts, candidate parsing,
+  rule items, selection, `Steward.run`, `StewardWorker`), `services/steward.py` (`StewardStore`: the document, the lease,
+  `dismiss`; `StewardService`: the guarded face of the routes) and `ServiceRoot.system_services()` (`SystemServices`: unguarded
+  `projects`, `requirements`, `proposals` and `steward_store` bound to the identity `steward`). `LiveHub.add_listener` is the
+  only change to the hub.
+- **`ProposalItem`** gained four optional fields, omitted from dumps while empty: `finding` (the key a discard remembers), `group`
+  (`fix` | `next_step`), `rationale` (≤ 600 characters, with the verifier's remark after "Prüfung:") and `cites` (≤ 12 ids).
+  `ProposalService` takes a `DismissalSink` (the steward's store): a **person's** discard of items of a `steward` proposal
+  remembers their `finding` keys; the steward's own withdrawal of its previous proposal does not.
+- **Model items:** `add_element`, `update_element`, `add_relation`, `update_relation` and `remove_relation` apply through
+  `ModelService` (`ProposalService._apply_model`); an interrupted `add_*` is recognised by what it would create (an element's name,
+  a relation's kind and ends), since these carry no `origin`. `remove_relation` is proposable by a person's tools, but
+  `steward.LLM_OPERATIONS` leaves it out: a model never proposes a deletion.
+- **Deterministic stage:** an item only for a finding with exactly one model-level resolution among `create_relation`,
+  `update_relation` and `move_element`; never `remove_relation`, never a choice between alternatives. Most findings keep their
+  buttons.
+- **Run budget:** `steward_model.MAX_TOKENS_PER_RUN` (200 000 tokens of main and verifier calls); candidates beyond it are dropped.
+  `capped` and `disabled` runs write nothing.
+- **Verifier at start-up:** `ARCVIZ_VERIFIER_PROVIDER`/`_MODEL` are read as a `ProviderConfig` (the verifier's variables on top
+  of the usual ones, `steward_model.verifier_environ`); equal to the chat's provider and model stops the start
+  (`steward.verifier_problems`), the SDK is checked like the chat provider's.
+- **UI:** a status line (switch, last run, **Jetzt prüfen**) under the heading of the **Architektur** page (`stewardpanel.js`, pure
+  `steward.js`), hidden while `ARCVIZ_STEWARD` is off; the proposal panel groups steward items under **Korrekturen** and
+  **Nächste Schritte** and shows each item's rationale and cited ids.
 
 ## Open questions
 
