@@ -74,6 +74,7 @@ STORE_DOCUMENTS = frozenset(
         "token",
         "requirements",
         "reqchat",
+        "steward",
         "any",  # a query across partitions
         "other",  # anything else (never the partition key itself)
     }
