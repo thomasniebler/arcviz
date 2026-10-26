@@ -349,7 +349,7 @@ drivers a trade-off serves or hurts, never to break a constraint silently, and t
 | `update_driver(driver, title?, kind?, importance?, risk?, description?, elements?)` | `update_driver`; result `{driver}` |
 | `remove_driver(driver)` | `remove_driver`; result `{driver}`; refused unless the user retired the driver (ADR-0198). `status` is no argument of the tools: a call that passes it is refused (retiring and reactivating are the user's) |
 | `list_scenarios`, `list_decisions`, `list_stakeholders` | the project's lists in full (decisions also drafts); read-only, also in propose mode (`READ_MODEL_TOOLS`) |
-| `create_scenario(title, kind, stimulus, source?, environment?, artifact?, response?, response_measure?, driver?, core?, elements?)` | `ModelService.driver_operation(pid, "add_scenario", …)`; only on request; result `{scenario}` |
+| `create_scenario(title, kind, stimulus, source?, environment?, artifact?, response?, response_measure?, driver?, core?, qualities?, elements?)` | `ModelService.driver_operation(pid, "add_scenario", …)`; only on request; result `{scenario}` |
 
 They are project-level tools (`PROJECT_LEVEL_TOOLS`): offered in the diagram chat and in the project chat, also without
 an active diagram, recorded in `applied` without changing a diagram. Every tool but `list_drivers` is refused in propose

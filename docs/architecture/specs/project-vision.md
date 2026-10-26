@@ -2,7 +2,7 @@
 
 - Status: Accepted (design agreed, not implemented)
 - Issue: none yet
-- ADR: [0202 The vision is a structured object of the project document](../adr/0202-vision-is-a-structured-project-object.md)
+- ADR: [0203 The vision is a structured object of the project document](../adr/0203-vision-is-a-structured-project-object.md)
 - Related: [Architecture drivers](architecture-drivers.md), [Project steward](project-steward.md),
   [arc42 export](arc42-export.md), [Projects](projects.md)
 
@@ -86,6 +86,6 @@ None: the field is optional and omitted while unset. Bundles: a vision is a bund
 
 ## Decisions
 
-- Structured object, not a driver kind, not free text in `description` (ADR-0202).
-- Agents may propose, never set (ADR-0202).
+- Structured object, not a driver kind, not free text in `description` (ADR-0203).
+- Agents may propose, never set (ADR-0203).
 - The vision is a bundle field only when present (open question resolved as proposed).

@@ -1,4 +1,4 @@
-# ADR-0203: The steward runs in process, on change, with a lease, in the system context
+# ADR-0204: The steward runs in process, on change, with a lease, in the system context
 
 - Status: Accepted
 - Date: 2026-10-26

@@ -1,4 +1,4 @@
-# ADR-0206: arc42 is assembled deterministically and rendered on the server
+# ADR-0207: arc42 is assembled deterministically and rendered on the server
 
 - Status: Accepted
 - Date: 2026-10-26

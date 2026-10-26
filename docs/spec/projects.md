@@ -418,6 +418,7 @@ and drops it from stakeholders and decisions (`unassigned_scenarios`), `remove_e
 decisions, `remove_scenario` clears the decisions' `scenario`, `remove_decision` turns a decision it superseded into
 rejected. Bundles carry the lists and counters as `schema_version` 5 (`DRIVERS_PROJECT_SCHEMA_VERSION` 4 with drivers
 only); `ProjectBundle.decision_support` passes them to `create_with_sections(…, decision_support=)`.
+ISO/IEC 25010 ([design](../architecture/specs/iso25010-qualities.md), ADR-0202): `Scenario.qualities` (one, at most two of the nine characteristics of `quality_model.QUALITY_CHARACTERISTICS`, omitted from dumps while empty) is set by `add_scenario|update_scenario(qualities=)` (replaces; `[]` clears; unknown, repeated or more than two raise a `ProjectError`); a driver's characteristics are computed (`quality_model.driver_qualities`, not stored); the review rule `scenario-no-quality` flags active scenarios without one; a bundle that uses the field is `schema_version` 8.
 Graded deletion ([design](../architecture/specs/graded-deletion.md), ADR-0198): `Driver.status` and `Scenario.status` are
 `active` (default, omitted from dumps) or `retired` (`project_model.OBJECT_STATUSES`, set by `update_driver|update_scenario(
 status=)`; helpers `is_retired`, `active`). `remove_driver` and `remove_scenario` refuse an object that is not retired, and

@@ -1,4 +1,4 @@
-# ADR-0207: Prose for the sections the model does not cover
+# ADR-0208: Prose for the sections the model does not cover
 
 - Status: Accepted
 - Date: 2026-10-26

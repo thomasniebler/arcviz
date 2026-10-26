@@ -1382,10 +1382,18 @@ try {
   await page.check("#scenario-core");
   await page.fill("#scenario-part-stimulus", "Region A fällt vollständig aus");
   await page.fill("#scenario-part-response_measure", "< 5 min Ausfall");
+  await page.click("#scenario-qualities-suggest");
+  await page.waitForFunction(() => document.getElementById("scenario-qualities-note").textContent.includes("Vorschlag übernommen"), null, { timeout: 10000 });
+  const ticked = () => page.$$eval("#scenario-qualities input:checked", (boxes) => boxes.map((b) => b.value));
+  check("the suggested ISO 25010 quality is pre-ticked and gibberish never reaches the boxes", JSON.stringify(await ticked()) === '["reliability"]' && (await page.locator("#scenario-qualities input").count()) === 9);
+  await page.check('#scenario-qualities input[value="security"]');
+  check("two characteristics are the maximum: the other boxes are disabled", (await page.locator("#scenario-qualities input:disabled").count()) === 7);
+  await page.uncheck('#scenario-qualities input[value="security"]');
   await page.click("#scenario-save");
   const scenarioItem = page.locator(".scenario-item", { hasText: "Region fällt aus" });
   await scenarioItem.waitFor({ timeout: 10000 });
   check("a core scenario is listed under its driver with a star", (await scenarioItem.locator(".scenario-star").textContent()) === "★" && (await page.locator(".scenario-group h5").first().textContent()) === "Treiber: Verfügbarkeit 99,9 %");
+  check("the card of the scenario shows its characteristic", (await scenarioItem.locator(".md-chips").textContent()).includes("Zuverlässigkeit"));
   check("a created scenario is selected in its editor", (await page.inputValue("#scenario-title")) === "Region fällt aus" && !(await page.isHidden("#scenario-analyse")));
   await page.click("#scenario-analyse");
   const analysis = page.locator("#scenario-analysis");

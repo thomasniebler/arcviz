@@ -1,4 +1,4 @@
-# ADR-0202: The vision is a structured object of the project document
+# ADR-0203: The vision is a structured object of the project document
 
 - Status: Accepted
 - Date: 2026-10-26

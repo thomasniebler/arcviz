@@ -1,4 +1,4 @@
-# ADR-0205: Project proposals carry the operations that fix findings
+# ADR-0206: Project proposals carry the operations that fix findings
 
 - Status: Accepted
 - Date: 2026-10-26

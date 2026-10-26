@@ -2,8 +2,8 @@
 
 - Status: Accepted (design agreed, not implemented)
 - Issue: none yet
-- ADRs: [0206 arc42 is assembled deterministically and rendered on the server](../adr/0206-arc42-assembled-deterministically-and-rendered-on-the-server.md),
-  [0207 Prose for the sections the model does not cover](../adr/0207-arc42-prose-for-unmodelled-sections.md)
+- ADRs: [0207 arc42 is assembled deterministically and rendered on the server](../adr/0207-arc42-assembled-deterministically-and-rendered-on-the-server.md),
+  [0208 Prose for the sections the model does not cover](../adr/0208-arc42-prose-for-unmodelled-sections.md)
 - Related: [Architecture documentation](architecture-documentation.md), [Project vision](project-vision.md),
   [Project steward](project-steward.md), [Decision support](decision-support.md), [Docs in app](docs-in-app.md)
 
@@ -26,7 +26,7 @@ at `/project/<id>/arc42`, always current, plus downloads: Markdown (with figures
 - Round-tripping (importing arc42 text back into the model).
 - Replacing the hand-written arc42 of Arcviz itself (`docs/architecture/arc42/`).
 - Server-side rasterised diagrams (see open question 2).
-- Editing arc42 text on the page (only the notes of ADR-0207 in the existing dialog).
+- Editing arc42 text on the page (only the notes of ADR-0208 in the existing dialog).
 
 ## Design
 
@@ -40,12 +40,12 @@ unit-testable without a store. Mapping:
 |---|---|
 | 1 Introduction and goals | `Project.title/description`, **vision** (statement, goals), top quality goals (drivers of kind `quality_goal` by priority), stakeholders table |
 | 2 Constraints | drivers of kind `constraint`; requirements of kind constraint |
-| 3 Context and scope | note (ADR-0207) + diagrams in sections titled like a context/overview (`project_review` already finds them by title) |
+| 3 Context and scope | note (ADR-0208) + diagrams in sections titled like a context/overview (`project_review` already finds them by title) |
 | 4 Solution strategy | accepted decisions' summary lines + the note |
 | 5 Building block view | element tree with kinds and descriptions; component and deployment-structure figures; relations table |
 | 6 Runtime view | sequence diagrams (figures) with their notes; core scenarios |
 | 7 Deployment view | deployment diagrams; `deployed_on` relations as a table |
-| 8 Crosscutting concepts | note (ADR-0207); accepted decisions tagged crosscutting are listed (follow-up: tags) |
+| 8 Crosscutting concepts | note (ADR-0208); accepted decisions tagged crosscutting are listed (follow-up: tags) |
 | 9 Architecture decisions | `decision_model.decision_markdown` per decision (accepted first, superseded marked) |
 | 10 Quality requirements | quality tree from drivers, scenarios table (ATAM parts, importance × risk) |
 | 11 Risks and technical debt | risk drivers, open review findings of high/medium severity (deterministic rules only; no LLM call) |
@@ -77,7 +77,7 @@ HTML pages are not under `/api`, so they answer 401/404 like the SPA's pages do 
 treats them like any non-public path; token mode redirects to `/login`). Ids are checked with `check_id`; an unknown or
 unreadable project is 404 with the store's message (existing guard behaviour).
 
-### Rendering (ADR-0206)
+### Rendering (ADR-0207)
 
 The section's Markdown goes through one renderer in `arcviz/arc42_html.py` using **markdown-it-py** with `html=False`
 (raw HTML in model text is escaped, never passed), `linkify` off, links limited to `http(s)`, `mailto` and in-page anchors, and
@@ -111,7 +111,7 @@ item, verified and confirmed like any other). The export itself never calls a mo
 
 A **arc42** entry in the project menu and the command palette (one registry entry for an existing control id, `palette.js`)
 opens `/project/<id>/arc42` in a new tab; the **Architektur** dialog gets a **Dokumentation** tab with the notes editor
-(ADR-0207) and the download links. The page's header offers the downloads and a "stand: <revision, time>" line.
+(ADR-0208) and the download links. The page's header offers the downloads and a "stand: <revision, time>" line.
 
 ## Testing
 
@@ -125,7 +125,7 @@ opens `/project/<id>/arc42` in a new tab; the **Architektur** dialog gets a **Do
 
 ## Migration / compatibility
 
-New routes and a new optional project field (ADR-0207). No data migration.
+New routes and a new optional project field (ADR-0208). No data migration.
 
 ## Open questions
 
@@ -138,8 +138,8 @@ New routes and a new optional project field (ADR-0207). No data migration.
 
 ## Decisions
 
-- Live page at `/project/<id>/arc42`, rendered **server-side** from Markdown (user decision; ADR-0206).
+- Live page at `/project/<id>/arc42`, rendered **server-side** from Markdown (user decision; ADR-0207).
 - Markdown + AsciiDoc zip first; docx behind an optional extra (user decision).
-- The export never calls a model (ADR-0206).
+- The export never calls a model (ADR-0207).
 - Open questions resolved as proposed: build per request with `ETag`, Mermaid source in docx and AsciiDoc in v1, language
   from `Accept-Language` (user: "things are fine").

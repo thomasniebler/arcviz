@@ -211,5 +211,22 @@
   "Wird nach dem laufenden Durchgang beendet …": "Will stop after the current pass …",
   "(nicht mehr vorhanden)": "(no longer exists)",
   "Anforderungen, denen das Objekt dient (Strg/⌘ für mehrere)": "Requirements this object serves (Ctrl/⌘ for several)",
-  "Anforderungen": "Requirements"
+  "Anforderungen": "Requirements",
+  "ISO-25010-Qualität (eine, höchstens zwei)": "ISO 25010 quality (one, at most two)",
+  "Vorschlagen": "Suggest",
+  "Schlägt die Qualität aus dem Text des Szenarios vor (ein Modellaufruf, nichts wird gespeichert); die Auswahl bleibt Ihre": "Suggests the quality from the scenario text (one model call, nothing is stored); the choice stays yours",
+  "Erst Titel oder einen Teil des Szenarios eintragen.": "Enter a title or part of the scenario first.",
+  "Schlage vor … (ein Modellaufruf, nichts wird gespeichert)": "Suggesting … (one model call, nothing is stored)",
+  "Kein brauchbarer Vorschlag: bitte selbst wählen.": "No usable suggestion: please choose yourself.",
+  "Vorschlag übernommen – bitte prüfen.": "Suggestion applied – please check it.",
+  "Kein Vorschlag: {error}": "No suggestion: {error}",
+  "Funktionale Eignung": "Functional suitability",
+  "Leistungseffizienz": "Performance efficiency",
+  "Kompatibilität": "Compatibility",
+  "Interaktionsfähigkeit": "Interaction capability",
+  "Zuverlässigkeit": "Reliability",
+  "Informationssicherheit": "Security",
+  "Wartbarkeit": "Maintainability",
+  "Flexibilität": "Flexibility",
+  "Funktionssicherheit": "Safety"
 }

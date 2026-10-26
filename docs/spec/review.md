@@ -264,6 +264,7 @@ run only when the project has relations.
 | `requirement-conflict-open` | risk / medium | an unresolved `conflict` issue on a requirement that is not rejected or a duplicate (one finding per issue) |
 | `requirement-duplicate-open` | suggestion / low | an unresolved `duplicate` issue, or two refined statements whose word sets are at least 70 % alike (one finding per pair) |
 | `scenario-no-requirement` | suggestion / low | scenarios that name no requirement while the project has refined ones |
+| `scenario-no-quality` | suggestion / low | active scenarios without an ISO 25010 characteristic ([spec](../architecture/specs/iso25010-qualities.md)) |
 | `decision-no-basis` | risk / medium | an accepted decision that names neither a driver nor a requirement (one finding per decision) |
 | `stakeholder-no-requirement` | suggestion / low | stakeholders of influence `high` that no requirement names, while requirements exist |
 

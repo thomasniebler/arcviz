@@ -1,4 +1,4 @@
-# ADR-0204: A different model verifies what the steward proposes
+# ADR-0205: A different model verifies what the steward proposes
 
 - Status: Accepted
 - Date: 2026-10-26

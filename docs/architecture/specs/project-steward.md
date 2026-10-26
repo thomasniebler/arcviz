@@ -2,9 +2,9 @@
 
 - Status: Accepted (design agreed, not implemented)
 - Issue: none yet
-- ADRs: [0203 The steward runs in process, on change, with a lease](../adr/0203-steward-runs-on-change-with-a-lease.md),
-  [0204 A different model verifies what the steward proposes](../adr/0204-independent-verifier-model.md),
-  [0205 Project proposals carry the operations that fix findings](../adr/0205-project-proposals-carry-fix-operations.md)
+- ADRs: [0204 The steward runs in process, on change, with a lease](../adr/0204-steward-runs-on-change-with-a-lease.md),
+  [0205 A different model verifies what the steward proposes](../adr/0205-independent-verifier-model.md),
+  [0206 Project proposals carry the operations that fix findings](../adr/0206-project-proposals-carry-fix-operations.md)
 - Related: [Project review](project-review.md), [Project vision](project-vision.md), [arc42 export](arc42-export.md),
   [Agent access](agent-access.md), [Requirements workshop](requirements-workshop.md)
 
@@ -16,7 +16,7 @@ finds into the existing proposal panel: **fixes** for current findings, and **ne
 project proposal and its own bookkeeping document. A person applies, in part or whole, or discards.
 
 Because an LLM can be confidently wrong, nothing the model authors reaches the panel unless a **second, different
-model** has confirmed it against the cited model objects (ADR-0204).
+model** has confirmed it against the cited model objects (ADR-0205).
 
 ## Goals
 
@@ -60,14 +60,14 @@ StewardBox:
   last_run: {at, outcome, items, tokens, verified, dropped}
   runs: {day: count}         # last 7 days only
   dismissed: list[str]       # origin keys of discarded items, ≤ 500 (oldest dropped)
-  lease: {holder, until}     # ADR-0203
+  lease: {holder, until}     # ADR-0204
   dirty_at: str | None       # first change not yet checked
 ```
 
 Stores need no new primitive: it is a keyed document of kind `steward` (file `steward/`, sqlite `documents`, Cosmos
 partition `steward:<project>`). Writes are conditional on its revision.
 
-### Trigger and placement (ADR-0203)
+### Trigger and placement (ADR-0204)
 
 `StewardWorker` (own thread, started by the lifespan next to `Heartbeat`, off unless `ARCVIZ_STEWARD=1`) subscribes to the
 `LiveHub` project and diagram events (the services already publish after every write). A hint sets `dirty_at` (in memory
@@ -95,7 +95,7 @@ a recording service double and fails on any other call, like `tests/test_agent_t
 1. Load the snapshot (`ProjectService.load_members`) and fingerprint it; equal to `last_fingerprint` and no manual run:
    stop (`outcome: unchanged`).
 2. **Deterministic stage** (always): `project_review.run_project_checks`. Each finding whose resolutions map to a
-   proposable operation (ADR-0205) becomes an item with `derived_from=[]`, `title` = the finding message, rationale
+   proposable operation (ADR-0206) becomes an item with `derived_from=[]`, `title` = the finding message, rationale
    = the rule id and message, `origin` key `rule:<rule>:<sorted element/diagram ids>`. These need no verification: a rule is
    reproducible evidence.
 3. **LLM stage** (only if a verifier is configured and the token budget allows): one `complete_tool` call on the main
@@ -107,7 +107,7 @@ a recording service double and fails on any other call, like `tests/test_agent_t
    Each candidate must name `cites` (ids that exist in the snapshot; unknown ids drop the candidate) and carry the
    operation items that would realise it (only `PROPOSABLE_OPERATIONS`; validated with `validate_arguments`). A next step
    with no `serves` is dropped: "follow the vision" must be demonstrable.
-4. **Verification** (ADR-0204): for every candidate one `complete_tool` call on the verifier offering `submit_verdict`
+4. **Verification** (ADR-0205): for every candidate one `complete_tool` call on the verifier offering `submit_verdict`
    (`supported | unsupported | unclear`, `reason` ≤ 300), given the candidate, the cited objects dumped in full, the vision
    and the digest, **not** the main model's reasoning. Only `supported` passes; the reason is appended to the item's
    rationale prefixed "Prüfung:". Calls run with bounded concurrency and a per-run token budget; failures count as
@@ -126,7 +126,7 @@ a recording service double and fails on any other call, like `tests/test_agent_t
 `ProposalService.discard` for a proposal with `client == "steward"` and a person as actor adds the discarded items'
 origin keys to `StewardBox.dismissed`. An applied item changes the project, so it vanishes from findings on its own.
 
-### Proposable operations (ADR-0205) {#proposable-operations}
+### Proposable operations (ADR-0206) {#proposable-operations}
 
 `PROPOSABLE_OPERATIONS` grows by the operations that fix model-level findings and by the vision:
 `set_vision`, `add_element`, `update_element`, `add_relation`, `update_relation`, `remove_relation` (not
@@ -188,8 +188,8 @@ exists (`"steward"` is a new value), the `StoredProposal` shape is unchanged, so
 ## Decisions
 
 - Same proposal panel, steward items marked (user, session decision).
-- Different model verifies (user, ADR-0204).
-- Opt-in per project; on change with debounce, not on a clock (ADR-0203).
-- System context with exactly three permitted calls (ADR-0203).
+- Different model verifies (user, ADR-0205).
+- Opt-in per project; on change with debounce, not on a clock (ADR-0204).
+- System context with exactly three permitted calls (ADR-0204).
 - Open questions 1 to 3 resolved as proposed: no LLM-written diagram edits in v1, counters in telemetry only, and no
   self-verification without a configured verifier (user: "things are fine").

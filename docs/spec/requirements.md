@@ -135,6 +135,8 @@ drivers, scenarios and decisions; it prints one line per repaired project and is
 
 ## Bundles
 
+(A bundle whose scenarios carry ISO 25010 characteristics is `schema_version` 8, see [ISO 25010](../architecture/specs/iso25010-qualities.md).)
+
 A project bundle is `schema_version` 7 whenever it holds a `project.requirements` list (with `requirement_seq`) or any
 `requirements`/`stakeholders` link on a driver, scenario or decision; otherwise it keeps its earlier version, so an older
 version refuses what it would silently drop. The import validates everything first, renumbers the requirements `req1…` in
