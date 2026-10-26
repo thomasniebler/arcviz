@@ -1,6 +1,6 @@
 # arc42 export
 
-- Status: Proposed (design, not implemented)
+- Status: Accepted (design agreed, not implemented)
 - Issue: none yet
 - ADRs: [0206 arc42 is assembled deterministically and rendered on the server](../adr/0206-arc42-assembled-deterministically-and-rendered-on-the-server.md),
   [0207 Prose for the sections the model does not cover](../adr/0207-arc42-prose-for-unmodelled-sections.md)
@@ -141,3 +141,5 @@ New routes and a new optional project field (ADR-0207). No data migration.
 - Live page at `/project/<id>/arc42`, rendered **server-side** from Markdown (user decision; ADR-0206).
 - Markdown + AsciiDoc zip first; docx behind an optional extra (user decision).
 - The export never calls a model (ADR-0206).
+- Open questions resolved as proposed: build per request with `ETag`, Mermaid source in docx and AsciiDoc in v1, language
+  from `Accept-Language` (user: "things are fine").

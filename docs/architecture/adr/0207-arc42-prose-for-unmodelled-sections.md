@@ -1,6 +1,6 @@
 # ADR-0207: Prose for the sections the model does not cover
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-10-26
 - Spec: `docs/architecture/specs/arc42-export.md`
 

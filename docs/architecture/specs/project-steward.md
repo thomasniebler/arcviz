@@ -1,6 +1,6 @@
 # Project steward
 
-- Status: Proposed (design, not implemented)
+- Status: Accepted (design agreed, not implemented)
 - Issue: none yet
 - ADRs: [0203 The steward runs in process, on change, with a lease](../adr/0203-steward-runs-on-change-with-a-lease.md),
   [0204 A different model verifies what the steward proposes](../adr/0204-independent-verifier-model.md),
@@ -191,3 +191,5 @@ exists (`"steward"` is a new value), the `StoredProposal` shape is unchanged, so
 - Different model verifies (user, ADR-0204).
 - Opt-in per project; on change with debounce, not on a clock (ADR-0203).
 - System context with exactly three permitted calls (ADR-0203).
+- Open questions 1 to 3 resolved as proposed: no LLM-written diagram edits in v1, counters in telemetry only, and no
+  self-verification without a configured verifier (user: "things are fine").

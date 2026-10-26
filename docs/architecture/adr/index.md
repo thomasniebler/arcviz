@@ -189,8 +189,8 @@ Create a new ADR by copying `0000-template.md` to the next free number. Status v
 | [0200](0200-deployment-lives-in-a-separate-repository.md) | Deployment lives in a separate repository that pulls the published image | Accepted |
 | [0201](0201-documentation-on-github-pages.md) | The documentation is also published on GitHub Pages | Accepted |
 | [0202](0202-vision-is-a-structured-project-object.md) | The vision is a structured object of the project document | Accepted |
-| [0203](0203-steward-runs-on-change-with-a-lease.md) | The steward runs in process, on change, with a lease, in the system context | Proposed |
+| [0203](0203-steward-runs-on-change-with-a-lease.md) | The steward runs in process, on change, with a lease, in the system context | Accepted |
 | [0204](0204-independent-verifier-model.md) | A different model verifies what the steward proposes | Accepted |
-| [0205](0205-project-proposals-carry-fix-operations.md) | Project proposals carry the operations that fix findings | Proposed |
+| [0205](0205-project-proposals-carry-fix-operations.md) | Project proposals carry the operations that fix findings | Accepted |
 | [0206](0206-arc42-assembled-deterministically-and-rendered-on-the-server.md) | arc42 is assembled deterministically and rendered on the server | Accepted |
-| [0207](0207-arc42-prose-for-unmodelled-sections.md) | Prose for the sections the model does not cover | Proposed |
+| [0207](0207-arc42-prose-for-unmodelled-sections.md) | Prose for the sections the model does not cover | Accepted |

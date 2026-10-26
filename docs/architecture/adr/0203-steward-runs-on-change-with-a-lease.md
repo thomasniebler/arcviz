@@ -1,6 +1,6 @@
 # ADR-0203: The steward runs in process, on change, with a lease, in the system context
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-10-26
 - Spec: `docs/architecture/specs/project-steward.md`
 

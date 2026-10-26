@@ -1,6 +1,6 @@
 # ADR-0205: Project proposals carry the operations that fix findings
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-10-26
 - Spec: `docs/architecture/specs/project-steward.md`
 
