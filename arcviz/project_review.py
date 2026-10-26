@@ -1401,7 +1401,6 @@ PROJECT_RULES: list[ProjectRule] = [
     ),
     ProjectRule("duplicate-title", N_("Gleiche oder fast gleiche Diagrammtitel"), "risk", duplicate_title),
     ProjectRule("empty-diagram", N_("Leeres Diagramm"), "suggestion", empty_diagram),
-    ProjectRule("vision-missing", N_("Projekt ohne Vision"), "suggestion", vision_missing),
     ProjectRule("dangling-element-ref", N_("Verweis auf ein fehlendes Projektelement"), "risk", dangling_element_ref),
     ProjectRule("element-name-drift", N_("Verknüpftes Element mit abweichendem Namen"), "risk", element_name_drift),
     ProjectRule(
@@ -1488,6 +1487,7 @@ PROJECT_RULES: list[ProjectRule] = [
         "suggestion",
         stakeholder_no_requirement,
     ),
+    ProjectRule("vision-missing", N_("Projekt ohne Vision"), "suggestion", vision_missing),
 ]
 
 
