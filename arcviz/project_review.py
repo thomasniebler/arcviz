@@ -1373,6 +1373,18 @@ def stakeholder_no_requirement(snapshot: ProjectSnapshot) -> Iterator[ProjectFin
         )
 
 
+def vision_missing(snapshot: ProjectSnapshot) -> Iterator[ProjectFinding]:
+    project = snapshot.project
+    if (project.vision is None or project.vision.is_empty()) and (project.diagrams or project.drivers):
+        yield _finding(
+            "vision-missing",
+            "all",
+            "suggestion",
+            "low",
+            _("Das Projekt hat keine Vision: ohne sie fehlt die Richtung für Vorschläge und Dokumentation."),
+        )
+
+
 PROJECT_RULES: list[ProjectRule] = [
     ProjectRule("empty-section", N_("Abschnitt ohne Diagramme"), "suggestion", empty_section),
     ProjectRule(
@@ -1389,6 +1401,7 @@ PROJECT_RULES: list[ProjectRule] = [
     ),
     ProjectRule("duplicate-title", N_("Gleiche oder fast gleiche Diagrammtitel"), "risk", duplicate_title),
     ProjectRule("empty-diagram", N_("Leeres Diagramm"), "suggestion", empty_diagram),
+    ProjectRule("vision-missing", N_("Projekt ohne Vision"), "suggestion", vision_missing),
     ProjectRule("dangling-element-ref", N_("Verweis auf ein fehlendes Projektelement"), "risk", dangling_element_ref),
     ProjectRule("element-name-drift", N_("Verknüpftes Element mit abweichendem Namen"), "risk", element_name_drift),
     ProjectRule(

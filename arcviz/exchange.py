@@ -44,6 +44,7 @@ from .project_model import (
     Driver,
     Element,
     Relation,
+    Vision,
     driver_number,
     duplicate_element_names,
     linkable_kinds,
@@ -54,6 +55,7 @@ from .project_model import (
     shown_relation_kinds,
     view_connections,
     view_elements,
+    vision_problems,
 )
 from .projects import Project, Section
 from .requirement_model import RequirementBox
@@ -64,9 +66,12 @@ SCHEMA_VERSION = 2  # the newest version this Arcviz reads and writes
 # need version 2 (it added `type`), which older versions refuse instead of importing an empty diagram.
 DEPLOYMENT_SCHEMA_VERSION = 1
 PROJECT_FORMAT = "arcviz-project"
-PROJECT_SCHEMA_VERSION = 8  # the newest project bundle version this Arcviz reads and writes
+PROJECT_SCHEMA_VERSION = 9  # the newest project bundle version this Arcviz reads and writes
 REQUIREMENTS_PROJECT_SCHEMA_VERSION = (
     7  # requirements, or links to them / to stakeholders on drivers, scenarios, decisions
+)
+VISION_PROJECT_SCHEMA_VERSION = (
+    9  # a project vision (ADR-0203): older versions refuse the bundle instead of dropping it
 )
 QUALITIES_PROJECT_SCHEMA_VERSION = 8  # scenarios with ISO 25010 characteristics (ADR-0202)
 CODE_REFS_PROJECT_SCHEMA_VERSION = 6  # elements with code links (spec: agent-access.md); 5 added decision support
@@ -323,6 +328,7 @@ class ProjectBundle:
     relation_seq: int = 0  # the highest generated relation number in use (ADR-0135)
     drivers: list[Driver] = field(default_factory=list)  # spec: architecture-drivers.md
     driver_seq: int = 0
+    vision: Vision | None = None  # spec: project-vision.md
     decision_support: dict[str, Any] = field(default_factory=dict)  # stakeholders, scenarios, decisions and counters
     requirements: RequirementBox | None = None  # spec: requirements.md; ids renumbered, links follow
     warnings: list[str] = field(default_factory=list)  # what the import changed, e.g. shortened element texts (#212)
@@ -378,6 +384,9 @@ def export_project(
         schema_version = REQUIREMENTS_PROJECT_SCHEMA_VERSION
     if any(s.qualities for s in project.scenarios):  # ISO 25010 characteristics (ADR-0202): older versions refuse it
         schema_version = QUALITIES_PROJECT_SCHEMA_VERSION
+    if project.vision is not None and not project.vision.is_empty():  # ADR-0203
+        model["vision"] = project.vision.model_dump(mode="json")
+        schema_version = VISION_PROJECT_SCHEMA_VERSION
     return {
         "format": PROJECT_FORMAT,
         "schema_version": schema_version,
@@ -453,6 +462,7 @@ def parse_project(bundle: Any) -> ProjectBundle:
                 "relation_seq": raw_project.get("relation_seq") or 0,
                 "drivers": raw_project.get("drivers") or [],
                 "driver_seq": raw_project.get("driver_seq") or 0,
+                "vision": raw_project.get("vision"),
                 **{key: raw_project.get(key) or [] for key in DECISION_SUPPORT_FIELDS},
                 **{f"{key[:-1]}_seq": raw_project.get(f"{key[:-1]}_seq") or 0 for key in DECISION_SUPPORT_FIELDS},
             }
@@ -478,6 +488,11 @@ def parse_project(bundle: Any) -> ProjectBundle:
     if project.driver_seq < 0:
         errors.append("project.driver_seq must not be negative")
     errors.extend(f"project: {e}" for e in _driver_bound_errors(project.drivers))
+    if project.vision is not None:
+        errors.extend(
+            f"project: {e}"
+            for e in vision_problems(project.vision.statement, project.vision.goals, project.vision.non_goals)
+        )
     requirements, requirement_warnings = _parse_requirements(raw_project, project, errors)
     if len(project.elements) > MAX_ELEMENTS:
         errors.append(f"project: at most {MAX_ELEMENTS} model elements, got {len(project.elements)}")
@@ -513,6 +528,7 @@ def parse_project(bundle: Any) -> ProjectBundle:
         ),
         drivers=project.drivers,
         driver_seq=max([project.driver_seq, *(driver_number(d.id) or 0 for d in project.drivers)]),
+        vision=project.vision,
         decision_support=_decision_support(project),
         requirements=requirements,
         warnings=[*([shortened] if shortened else []), *requirement_warnings],

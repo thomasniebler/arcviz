@@ -1415,6 +1415,15 @@ try {
   await page.click("#stakeholder-save");
   await page.waitForSelector("#stakeholders-list li .md-title", { timeout: 10000 });
   check("a stakeholder is recorded and selected", (await page.textContent("#stakeholders-list li .md-title")) === "Betrieb" && (await page.inputValue("#stakeholder-role")) === "SRE" && (await page.textContent("#stakeholder-form-heading")).startsWith("Stakeholder bearbeiten"));
+  await page.click("#arch-tab-vision");
+  await page.fill("#vision-statement", "Teams dokumentieren Architektur im Gespräch.");
+  await page.fill("#vision-goals", "Schnell einsteigen\nImmer aktuell");
+  await page.click("#vision-save");
+  await page.waitForFunction(() => document.getElementById("vision-status").textContent === "Gespeichert.", null, { timeout: 10000 });
+  await page.click("#arch-tab-stakeholders");
+  await page.click("#arch-tab-vision");
+  check("the vision is stored and shown again", (await page.inputValue("#vision-goals")) === "Schnell einsteigen\nImmer aktuell" && (await page.inputValue("#vision-statement")).startsWith("Teams dokumentieren"));
+  await page.click("#arch-tab-stakeholders");
   await page.click("#nav-tree .nav-open >> nth=0");
   await page.waitForSelector("#diagram svg", { timeout: 10000 });
   check("opening a diagram from the tree leaves the Architektur page", (await page.isHidden("#architecture-view")) && (await page.evaluate(() => location.hash)) === "");

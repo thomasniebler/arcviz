@@ -1,6 +1,6 @@
 # Project vision
 
-- Status: Accepted (design agreed, not implemented)
+- Status: Implemented
 - Issue: none yet
 - ADR: [0203 The vision is a structured object of the project document](../adr/0203-vision-is-a-structured-project-object.md)
 - Related: [Architecture drivers](architecture-drivers.md), [Project steward](project-steward.md),
@@ -50,7 +50,7 @@ credentials, the steward) cannot call it directly. It is however in `PROPOSABLE_
 ### HTTP
 
 `GET /api/projects/{pid}` already returns the project: it gains `vision` (absent while unset).
-`PUT /api/projects/{pid}/vision` (body = the three fields; editor or owner; `If-Match` honoured) calls the operation
+`PUT /api/projects/{pid}/vision` (body = the three fields; editor or owner; the write is a conditional read-modify-write, `If-Match` is not offered) calls the operation
 through `ProjectService.apply`. Both go into `docs/reference/api.md` and the access matrix.
 
 ### Where it is used
@@ -60,7 +60,7 @@ through `ProjectService.apply`. Both go into `docs/reference/api.md` and the acc
 - **Review:** a new deterministic project rule `vision-missing` (low suggestion) fires for a project with at least one
   diagram or driver and no vision; `project_review.review_input` hands the vision to the LLM review as context.
 - **Steward and arc42:** see their specs.
-- **UI:** a **Vision** tab in the **Architektur** dialog (`static/visionpanel.js`, view layer, one editor form with the
+- **UI:** a **Vision** tab in the **Architektur** dialog (`static/visionpanel.js`, view layer, the last tab, one editor form with the
   statement and two list fields, pure helpers in `static/vision.js`).
 
 ### Internationalization
@@ -71,14 +71,14 @@ All new UI texts and the rule message get English catalog entries (`tests/test_i
 
 - Unit: bounds, omission from dumps, `set_vision` round trip, clear, agent refusal, proposable.
 - Compatibility: a project JSON without `vision` loads and dumps unchanged (`tests/test_compat_*` pattern).
-- Server: `PUT …/vision` (viewer 404/403 per the matrix, editor 200, `If-Match` 412), access matrix entry.
+- Server: `PUT …/vision` (viewer 404/403 per the matrix, editor 200), access matrix entry.
 - Prompt: block present only with a vision.
 - JS: pure `vision.js` tests; e2e: edit the vision in the dialog.
 
 ## Migration / compatibility
 
 None: the field is optional and omitted while unset. Bundles: a vision is a bundle field, so a bundle carrying one is
-`schema_version` 8 (a bundle without stays at its current version, like drivers and requirements before).
+`schema_version` 9 (8 is taken by ISO 25010; a bundle without stays at its current version, like drivers and requirements before).
 
 ## Open questions
 

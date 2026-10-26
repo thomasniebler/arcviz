@@ -149,5 +149,7 @@
   "- Elemente: {names}": "- Elements: {names}",
   " (gewählt)": " (chosen)",
   "Pro:": "Pros:",
-  "Contra:": "Cons:"
+  "Contra:": "Cons:",
+  "Das Projekt hat keine Vision: ohne sie fehlt die Richtung für Vorschläge und Dokumentation.": "The project has no vision: without it, proposals and documentation lack a direction.",
+  "Projekt ohne Vision": "Project without a vision"
 }

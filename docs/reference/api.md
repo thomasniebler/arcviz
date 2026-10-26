@@ -407,7 +407,7 @@ whose diagram exists, in membership order, with the fields of `GET /api/diagrams
 A project with a shared model exports `project.elements` (and `sections[].element`) as `schema_version` 2,
 and with relations also `project.relations` (and `project.relation_seq`, the highest generated `r<n>`, so ids are never
 issued again after an import) as `schema_version` 3, and with architecture drivers also `project.drivers` and
-`project.driver_seq` as `schema_version` 4 (5 with decision support, 6 when an element has code links, 7 with requirements or links to them and to stakeholders, 8 with ISO 25010 characteristics on scenarios); without a model the bundle stays version 1. The import creates the elements with their ids, so the links inside
+`project.driver_seq` as `schema_version` 4 (5 with decision support, 6 when an element has code links, 7 with requirements or links to them and to stakeholders, 8 with ISO 25010 characteristics on scenarios, 9 with a project vision); without a model the bundle stays version 1. The import creates the elements with their ids, so the links inside
 the diagram documents stay valid.
 
 ## Decision support: stakeholders, scenarios, decisions
@@ -457,6 +457,7 @@ sequence lifelines link to them through `ref`. Writes are rate-limited in the `o
 | `POST /api/projects/{pid}/relations` | Body `{"kind", "source", "target", "properties"?, "description"?, "id"?}`: a relation between two elements ([model relations](../architecture/specs/model-relations.md)) | 201 `{"relation", "model"}`, 400 unknown kind or element, a kind rule, a property, a duplicate, limit reached, 404 |
 | `PATCH /api/projects/{pid}/relations/{rid}` | Body `{"kind"?, "source"?, "target"?, "properties"?, "remove_properties"?, "description"?}` | 200 `{"relation", "unlinked", "failed", "model"}`, 400, 404 |
 | `DELETE /api/projects/{pid}/relations/{rid}` | Remove the relation | 200 `{"relation", "unlinked", "failed", "model"}`, 400 unknown relation, 404 |
+| `PUT /api/projects/{pid}/vision` | Replace the product vision ([design](../architecture/specs/project-vision.md)): body `{"statement"?, "goals"?, "non_goals"?}` (statement ≤ 2000 characters, ≤ 10 entries of ≤ 200 characters per list); all empty clears it. Editor or owner | 200 `{"project" (with `vision`), "tree", "diagrams", "role", "revision"}`, 400, 403, 404 |
 | `GET /api/projects/{pid}/drivers` | `{"project", "drivers"}`: the architecture drivers ([design](../architecture/specs/architecture-drivers.md)) in list order, each with `id`, `title`, `kind`, `importance`, `risk`, `description`, `elements` and `rank` (1 = highest priority: importance, then risk, then list order) | 200, 404 |
 | `POST /api/projects/{pid}/drivers` | Body `{"title", "kind"?, "importance"?, "risk"?, "description"?, "elements"?, "position"?, "requirements"?}`; kinds `quality_goal`, `constraint`, `requirement`, `risk`; levels `high`, `medium`, `low`; `elements` ids or names of project elements | 201 `{"driver", "project", "drivers"}`, 400 empty, too long (title 120, description 1000) or duplicate title, unknown kind, level or element, more than 100 drivers, 403, 404 |
 | `PATCH /api/projects/{pid}/drivers/{did}` | Body: any of the fields above; `position` moves it in the list. One write: a 400 changes nothing | 200 `{"driver", "project", "drivers"}`, 400 (also an unknown driver), 403, 404 |

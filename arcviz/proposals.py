@@ -47,6 +47,7 @@ PROPOSABLE_OPERATIONS = (
     "add_decision",
     "update_decision",
     "link_requirements",
+    "set_vision",
 )
 # What a proposal (made by an agent or by the derivation) may not set: only a person decides a decision's fate.
 AGENT_REFUSED_FIELDS = {

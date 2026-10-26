@@ -187,7 +187,9 @@ class RequirementsAgent:
         project and the counts of its requirements (the requirements themselves are read with tools)."""
         project = svc.projects.get(project_id)
         context = architecture_context(project)
-        architecture = prompts.architecture_part(context.drivers, context.stakeholders, context.decisions)
+        architecture = prompts.architecture_part(
+            context.drivers, context.stakeholders, context.decisions, context.vision
+        )
         digest = svc.requirements.page(project_id, limit=1)["digest"]
         steps = ", ".join(f"{name}: {count}" for name, count in digest["steps"].items())
         themes = ", ".join(f"{name} ({count})" for name, count in list(digest["themes"].items())[:12]) or "none"

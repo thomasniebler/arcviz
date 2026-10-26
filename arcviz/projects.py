@@ -49,6 +49,7 @@ from .project_model import (
     Driver,
     Element,
     Relation,
+    Vision,
     driver_number,
     find_driver,
     find_element,
@@ -63,6 +64,7 @@ from .project_model import (
     relation_number,
     relation_problem,
     same_relation,
+    vision_problems,
 )
 from .quality_model import MAX_QUALITIES, QUALITY_CHARACTERISTICS, clean_qualities
 
@@ -117,6 +119,8 @@ class Project(BaseModel):
     scenario_seq: int = 0
     decisions: list[Decision] = Field(default_factory=list)
     decision_seq: int = 0
+    # The product vision (spec: project-vision.md, ADR-0203), omitted from dumps while unset.
+    vision: Vision | None = None
     created_at: str = Field(default_factory=now_iso)
     updated_at: str = Field(default_factory=now_iso)
     # The workspace the project belongs to (spec: workspaces-and-sharing.md); None only for data written before
@@ -139,6 +143,8 @@ class Project(BaseModel):
             del data["roles"]
         if data.get("incarnation", "") is None:
             del data["incarnation"]
+        if data.get("vision", "") is None:
+            del data["vision"]  # projects written before the vision dump unchanged
         if data.get("relations", None) == []:
             del data["relations"]  # projects written before M25 dump (and export) unchanged
         if data.get("relation_seq", None) == 0:
@@ -514,6 +520,25 @@ def rename_project(project: Project, title: str) -> dict[str, Any]:
 def set_description(project: Project, description: str) -> dict[str, Any]:
     project.description = description.strip()
     return {"description": project.description}
+
+
+def set_vision(
+    project: Project, statement: str = "", goals: list[str] | None = None, non_goals: list[str] | None = None
+) -> dict[str, Any]:
+    """Replace the product vision as a whole; an all-empty call clears it (spec: project-vision.md, ADR-0203)."""
+    texts = (statement, *(goals or []), *(non_goals or []))
+    if any(any(ord(c) < 32 and c not in "\n\t" for c in text) for text in texts):
+        raise ProjectError("A vision must not contain control characters.")
+    vision = Vision(
+        statement=statement.strip(),
+        goals=[g.strip() for g in goals or [] if g.strip()],
+        non_goals=[g.strip() for g in non_goals or [] if g.strip()],
+    )
+    problems = vision_problems(vision.statement, vision.goals, vision.non_goals)
+    if problems:
+        raise ProjectError(" ".join(problems))
+    project.vision = None if vision.is_empty() else vision
+    return {"vision": project.vision.model_dump() if project.vision else None}
 
 
 def add_section(
@@ -1609,6 +1634,7 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "remove_code_ref": remove_code_ref,
     "rename_project": rename_project,
     "set_description": set_description,
+    "set_vision": set_vision,
     "add_section": add_section,
     "rename_section": rename_section,
     "move_section": move_section,
@@ -1644,6 +1670,7 @@ DECISION_SUPPORT_OPERATIONS = tuple(
     name for name in OPERATIONS if name.split("_", 1)[1] in ("stakeholder", "scenario", "decision")
 )
 DRIVER_OPERATIONS = ("add_driver", "update_driver", "move_driver", "remove_driver")  # public: one document
+VISION_OPERATIONS = ("set_vision",)  # public: one document; agents may only propose it (ADR-0203)
 CODE_REF_OPERATIONS = ("add_code_ref", "remove_code_ref")  # public: they touch only the project document
 # Membership is ProjectService's invariant, the model ModelService's (renames and deletes reach the diagrams).
 ELEMENT_OPERATIONS = (

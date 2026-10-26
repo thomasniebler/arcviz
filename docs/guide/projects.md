@@ -95,3 +95,10 @@ while it is empty, it comes back the next time it is needed.
 
 Administrators can also run `arcviz-migrate --projects <store>` (see
 [Configuration](../reference/configuration.md)).
+
+## Vision
+
+The **Vision** page (in the navigation under *Architektur*) holds what the product is for, what success looks like
+(goals, one per line) and what it deliberately is not (non-goals). The assistants take it into account when they design
+or propose something and name the goal a larger change serves. Only you can change the vision; an assistant may at most
+propose a change. The project review points out a project with diagrams or drivers but no vision.

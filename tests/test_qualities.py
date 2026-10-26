@@ -220,7 +220,7 @@ def test_a_bundle_with_characteristics_needs_the_newest_schema_and_round_trips()
     assert exchange.export_project(p, [])["schema_version"] == exchange.DECISION_SUPPORT_PROJECT_SCHEMA_VERSION
     projects.apply(p, "update_scenario", {"scenario": "q1", "qualities": ["security"]})
     bundle = exchange.export_project(p, [])
-    assert bundle["schema_version"] == exchange.QUALITIES_PROJECT_SCHEMA_VERSION == exchange.PROJECT_SCHEMA_VERSION
+    assert bundle["schema_version"] == exchange.QUALITIES_PROJECT_SCHEMA_VERSION < exchange.PROJECT_SCHEMA_VERSION
     assert bundle["project"]["scenarios"][0]["qualities"] == ["security"]
     parsed = exchange.parse_project(bundle)
     assert parsed.decision_support["scenarios"][0].qualities == ["security"]

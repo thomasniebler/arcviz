@@ -188,6 +188,12 @@ class ProjectOperationRequest(BaseModel):
     args: dict[str, Any] = Field(default_factory=dict)
 
 
+class VisionRequest(BaseModel):
+    statement: str = ""
+    goals: list[str] = Field(default_factory=list)
+    non_goals: list[str] = Field(default_factory=list)
+
+
 class CreateSectionRequest(BaseModel):
     title: str
     parent: str | None = None
@@ -1330,6 +1336,13 @@ def create_app(
         """Delete an empty project (owner); `If-Match` makes it conditional on the project revision (412, #175)."""
         with project_errors():
             svc.projects.delete(project_id, expected)
+
+    @app.put("/api/projects/{project_id}/vision")
+    def set_project_vision(svc: Svc, project_id: str, req: VisionRequest) -> dict[str, Any]:
+        """Replace the product vision (editor or owner); all fields empty clears it (spec: project-vision.md)."""
+        with project_errors():
+            svc.projects.apply(project_id, "set_vision", req.model_dump())
+            return project_view(svc.projects.view(project_id))
 
     @app.post("/api/projects/{project_id}/ops")
     def apply_project_operation(svc: Svc, project_id: str, req: ProjectOperationRequest) -> dict[str, Any]:

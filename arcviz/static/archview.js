@@ -1,5 +1,5 @@
 // The Architektur page (spec: docs/architecture/specs/app-shell.md and decision-support.md, ADR-0194): one main view with
-// the tabs Treiber, Szenarien, Entscheidungen and Stakeholder. Every tab loads its data when it is shown; a decision taken
+// the tabs Treiber, Szenarien, Entscheidungen, Stakeholder and Vision. Every tab loads its data when it is shown; a decision taken
 // from a scenario analysis opens in the Entscheidungen tab. Every tab is a two-pane list and editor (spec:
 // architecture-workspace.md); leaving a tab or the page with unsaved edits asks first. Which tab is shown is part of the URL hash (routes.js); the
 // shell (shell.js) calls showArchitectureView.
@@ -11,10 +11,11 @@ import { currentProject, onProjectShown } from "./navigator.js";
 import { ARCH_TABS, formatRoute } from "./routes.js";
 import { initScenarioPanel, isScenarioDirty, loadScenarios } from "./scenariopanel.js";
 import { initStakeholderPanel, isStakeholderDirty, loadStakeholders } from "./stakeholderpanel.js";
+import { initVisionPanel, isVisionDirty, loadVision } from "./visionpanel.js";
 
-const LOADERS = { drivers: loadDrivers, scenarios: loadScenarios, decisions: loadDecisions, stakeholders: loadStakeholders };
+const LOADERS = { drivers: loadDrivers, scenarios: loadScenarios, decisions: loadDecisions, stakeholders: loadStakeholders, vision: loadVision };
 
-const DIRTY = { drivers: isDriverDirty, scenarios: isScenarioDirty, decisions: isDecisionDirty, stakeholders: isStakeholderDirty };
+const DIRTY = { drivers: isDriverDirty, scenarios: isScenarioDirty, decisions: isDecisionDirty, stakeholders: isStakeholderDirty, vision: isVisionDirty };
 
 let shown = false;
 let current = ARCH_TABS[0];
@@ -56,6 +57,7 @@ export function initArchView({ onApply }) {
   initDriverPanel();
   initDecisionPanel();
   initStakeholderPanel();
+  initVisionPanel();
   initScenarioPanel({
     onDecided: async (decisionId) => {
       setHash(formatRoute({ view: "architecture", tab: "decisions" }));

@@ -139,6 +139,7 @@ def endpoints(f: dict[str, Any]) -> list[tuple[str, str, dict[str, Any] | None, 
         # project editors
         ("PATCH", "/api/projects/shop", {"title": "Shop 2"}, "editor"),
         ("POST", "/api/projects/shop/ops", {"op": "add_section", "args": {"title": "Neu"}}, "editor"),
+        ("PUT", "/api/projects/shop/vision", {"statement": "Schnell und sicher"}, "editor"),
         ("POST", "/api/projects/shop/sections", {"title": "Frontend"}, "editor"),
         ("PATCH", "/api/projects/shop/sections/backend", {"title": "Backend 2"}, "editor"),
         ("DELETE", "/api/projects/shop/sections/backend", None, "editor"),

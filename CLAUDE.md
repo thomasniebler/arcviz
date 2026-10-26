@@ -331,6 +331,11 @@ Agent tools `list_scenarios/list_decisions/list_stakeholders`, `create_scenario`
 page `static/archview.js` (layer 6; a main view addressed by hash routes, `routes.js` pure, `shell.js` layer 7 switches views, spec `app-shell.md`, ADR-0194) with the tabs `driverpanel.js`, `scenariopanel.js`, `decisionpanel.js`,
 `stakeholderpanel.js`, each a filterable card list with one editor (`mdpane.js` helpers, pure `listnav.js`, shared classes in `components.css`; spec `architecture-workspace.md`, ADR-0196); pure helpers `static/decisions.js` (`decisionFromAnalysis`).
 
+**Project vision** (spec `docs/architecture/specs/project-vision.md`, ADR-0203): `Project.vision` (`project_model.Vision`: statement, goals, non-goals, omitted
+while unset) is replaced by the public operation `set_vision`, `PUT /api/projects/{pid}/vision`; agents have no tool for it (they may only
+propose it, `PROPOSABLE_OPERATIONS`). `prompts.architecture_part(…, vision=)` puts it first (`prompts/shared/vision.txt`, goals as `[g1]…`);
+rule `vision-missing`; bundles `schema_version` 9. UI: tab **Vision** (`visionpanel.js`, pure `vision.js`).
+
 **ISO 25010 qualities** (spec `docs/architecture/specs/iso25010-qualities.md`, ADR-0202): `Scenario.qualities` holds one or at most two of the nine
 characteristics of `quality_model.QUALITY_CHARACTERISTICS` (omitted while empty; operations refuse anything else); a driver's are computed
 (`driver_qualities`), never stored. `quality_suggestion.suggest` (one `complete_tool` call, `POST …/scenarios/qualities`, rate class `review`) only
