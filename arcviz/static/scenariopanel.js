@@ -20,6 +20,7 @@ let drivers = [];
 let elements = [];
 let selected = null; // the id of the scenario in the editor, null = a new one
 let dirty = false;
+let editorGeneration = 0; // bumped whenever the editor is reset or switched: a late suggestion for an earlier one is dropped
 let chosenQualities = []; // the ISO 25010 characteristics ticked in the editor (at most two)
 let hooks = { onDecided: () => {}, onApply: () => {} };
 
@@ -80,16 +81,19 @@ async function suggestQualities() {
   const button = $("scenario-qualities-suggest");
   const body = suggestionBody(formValues(), SCENARIO_PARTS.map(([k]) => k));
   if (!body.title.trim() && Object.keys(body).length <= 2) { note.textContent = t("Erst Titel oder einen Teil des Szenarios eintragen."); return; }
+  const generation = editorGeneration;
   button.disabled = true;
   note.textContent = t("Schlage vor … (ein Modellaufruf, nichts wird gespeichert)");
   try {
     const answer = await api(path("scenarios", "qualities"), { method: "POST", body: JSON.stringify(body) });
+    if (generation !== editorGeneration) return; // another scenario is open now: its boxes are not this answer's
     const names = validQualities(answer.qualities);
     if (!names.length) { note.textContent = t("Kein brauchbarer Vorschlag: bitte selbst wählen."); return; }
     setQualities(names);
     dirty = true;
     note.textContent = [t("Vorschlag übernommen – bitte prüfen."), answer.reason].filter(Boolean).join(" ");
   } catch (err) {
+    if (generation !== editorGeneration) return;
     note.textContent = t("Kein Vorschlag: {error}", { error: err.message || String(err) });
   } finally {
     button.disabled = false;
@@ -104,6 +108,7 @@ const byId = (id) => scenarios.find((s) => s.id === id) ?? null;
 export function isScenarioDirty() { return dirty; }
 
 function fillForm(s) {
+  editorGeneration += 1;
   selected = s?.id ?? null;
   $("scenario-id").value = s?.id || "";
   $("scenario-form-heading").textContent = s ? t("Szenario bearbeiten ({id})", { id: s.id }) : t("Neues Szenario");
