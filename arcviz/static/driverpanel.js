@@ -11,6 +11,7 @@ import { filterItems, stepId } from "./listnav.js";
 import { bindListKeys, card, chip, confirmDiscard, hideIfEmpty, markSelected } from "./mdpane.js";
 import { currentProject } from "./navigator.js";
 import { chosenRequirements, fillRequirementSelect } from "./requirementpicker.js";
+import { qualityLabel } from "./qualities.js";
 import { requirementsText } from "./requirements.js";
 import { state } from "./state.js";
 
@@ -63,7 +64,7 @@ function renderList() {
     badge.title = priorityTitle(driver);
     li.appendChild(card({
       id: driver.id, lead: badge, title: driver.title,
-      chips: [chip(driverKindLabel(driver.kind), "accent"), ...(isRetired(driver) ? [chip(t(RETIRED_LABEL), "")] : [])], // the badge carries importance and risk (its title spells them out)
+      chips: [chip(driverKindLabel(driver.kind), "accent"), ...(driver.qualities || []).map((q) => chip(qualityLabel(q), "ok")), ...(isRetired(driver) ? [chip(t(RETIRED_LABEL), "")] : [])], // the badge carries importance and risk (its title spells them out)
       meta: [concernsText(driver, elements), requirementsText(driver)].filter(Boolean).join(" · "),
     }));
     list.appendChild(li);

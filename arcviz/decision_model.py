@@ -88,6 +88,8 @@ class Scenario(BaseModel):
     response_measure: str = ""
     driver: str | None = None  # the one driver it serves
     core: bool = False  # a core scenario: one of the core goals of its driver
+    # ISO/IEC 25010 characteristics it covers (quality_model, at most MAX_QUALITIES); omitted from dumps while empty
+    qualities: list[str] = Field(default_factory=list)
     elements: list[str] = Field(default_factory=list)
     # spec: requirements.md (ADR-0189), ADR-0187; omitted from dumps while empty
     requirements: list[str] = Field(default_factory=list)
@@ -138,7 +140,7 @@ class Decision(BaseModel):
 
 def _without_empty(data: dict[str, Any]) -> dict[str, Any]:
     """The link fields of M31 are omitted from dumps while empty, so stored data and fingerprints do not change."""
-    for key in ("requirements", "stakeholders", "origin"):
+    for key in ("requirements", "stakeholders", "origin", "qualities"):
         if not data.get(key):
             data.pop(key, None)
     return data
@@ -223,7 +225,8 @@ def core_scenario_lines(scenarios: list[Scenario], driver_id: str) -> list[str]:
         if s.driver == driver_id and s.core and not is_retired(s):
             what = _short(s.stimulus or s.title, 140)
             measure = f" → {_short(s.response_measure, 100)}" if s.response_measure else ""
-            out.append(f"  core: [{s.id}] {what}{measure}")
+            quality = f" ({', '.join(s.qualities)})" if s.qualities else ""
+            out.append(f"  core: [{s.id}] {what}{measure}{quality}")
     return out
 
 
@@ -261,6 +264,8 @@ def scenario_text(scenario: Scenario) -> str:
     """A scenario in its six parts, one per line (what the analysis and the decision context show)."""
     kind = _(SCENARIO_KIND_TEXT[scenario.kind]) if scenario.kind in SCENARIO_KIND_TEXT else scenario.kind
     lines = [f"[{scenario.id}] {scenario.title} ({kind})"]
+    if scenario.qualities:
+        lines.append("ISO 25010: " + ", ".join(scenario.qualities))
     lines += [f"{_(PART_TEXT[k])}: {getattr(scenario, k)}" for k in SCENARIO_PARTS if getattr(scenario, k)]
     return "\n".join(lines)
 

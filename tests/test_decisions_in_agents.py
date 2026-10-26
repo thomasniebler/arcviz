@@ -90,6 +90,32 @@ def test_reading_tools_and_create_scenario(services):
     assert [s.title for s in projects.get("shop").scenarios] == ["Ausfall", "Last x10"]
 
 
+def test_create_scenario_takes_iso_characteristics_and_refuses_unknown_ones(services):
+    diagrams, projects, models = services
+    provider = ScriptedProvider(
+        [
+            tool_round(
+                call("create_scenario", "c1", title="Last x10", kind="growth", stimulus="x", qualities=["flexibility"]),
+                call("create_scenario", "c2", title="Murks", kind="growth", stimulus="x", qualities=["blau"]),
+            ),
+            done(),
+        ]
+    )
+    events = list(DiagramAgent(provider, diagrams, background=False, models=models).chat("demo", "Was wenn x10?"))
+    created, refused = results(events)
+    assert created["scenario"]["qualities"] == ["flexibility"]
+    assert refused["ok"] is False and "ISO 25010" in refused["error"]
+    assert [s.qualities for s in projects.get("shop").scenarios] == [[], ["flexibility"]]
+    tool = next(t for t in diagrams_tools() if t.name == "create_scenario")
+    assert tool.parameters["properties"]["qualities"]["maxItems"] == 2
+
+
+def diagrams_tools():
+    from arcviz.agent_model import SUPPORT_TOOLS
+
+    return SUPPORT_TOOLS
+
+
 def test_preview_mode_reads_but_creates_no_scenario(services):
     diagrams, projects, models = services
     provider = ScriptedProvider(

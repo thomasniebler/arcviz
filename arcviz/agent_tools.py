@@ -21,6 +21,7 @@ from .ports import StoreError
 from .project_model import ELEMENT_KINDS, Element, active, is_retired, ranked_drivers
 from .projects import Project
 from .proposals import STATUSES, StoredProposal
+from .quality_model import driver_qualities
 from .rules import SEVERITY_ORDER
 from .services import Forbidden, Services
 from .services.proposals import ProposalError
@@ -300,6 +301,7 @@ class AgentTools:
                     "importance": d.importance,
                     "risk": d.risk,
                     "scenarios": sum(s.driver == d.id for s in p.scenarios),
+                    "qualities": driver_qualities(d.id, p.scenarios),
                     "requirements": d.requirements,
                     "components": d.elements,
                     **({"status": "retired"} if is_retired(d) else {}),
@@ -352,6 +354,7 @@ class AgentTools:
                     "kind": s.kind,
                     "driver": s.driver,
                     "core": s.core,
+                    "qualities": s.qualities,
                     "response_measure": _short(s.response_measure),
                     "requirements": s.requirements,
                     **({"status": "retired"} if is_retired(s) else {}),

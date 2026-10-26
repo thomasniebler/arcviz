@@ -12,6 +12,7 @@ import { filterItems, stepId } from "./listnav.js";
 import { bindListKeys, card, chip, confirmDiscard, hideIfEmpty, markSelected } from "./mdpane.js";
 import { currentProject } from "./navigator.js";
 import { chosenRequirements, fillRequirementSelect } from "./requirementpicker.js";
+import { qualitiesText, qualityChoices, qualityLabel, suggestionBody, toggledQuality, validQualities } from "./qualities.js";
 import { requirementsText } from "./requirements.js";
 
 let scenarios = [];
@@ -19,6 +20,7 @@ let drivers = [];
 let elements = [];
 let selected = null; // the id of the scenario in the editor, null = a new one
 let dirty = false;
+let chosenQualities = []; // the ISO 25010 characteristics ticked in the editor (at most two)
 let hooks = { onDecided: () => {}, onApply: () => {} };
 
 function path(...parts) {
@@ -49,6 +51,51 @@ function button(text, className, handler, title) {
 const driverTitle = (id) => drivers.find((d) => d.id === id)?.title ?? id;
 const elementName = (id) => elements.find((e) => e.id === id)?.name ?? id;
 
+// ---- the ISO 25010 characteristics ----
+
+function renderQualityChoices() {
+  const box = $("scenario-qualities");
+  box.replaceChildren();
+  for (const c of qualityChoices(chosenQualities)) {
+    const label = el("label");
+    const input = el("input");
+    input.type = "checkbox";
+    input.value = c.name;
+    input.checked = c.checked;
+    input.disabled = c.disabled;
+    input.addEventListener("change", () => { chosenQualities = toggledQuality(chosenQualities, c.name); renderQualityChoices(); });
+    label.append(input, el("span", "", qualityLabel(c.name)));
+    box.appendChild(label);
+  }
+}
+
+function setQualities(names) {
+  chosenQualities = validQualities(names);
+  renderQualityChoices();
+}
+
+/** Ask the model which characteristics the typed text is about; the answer only pre-ticks the boxes (nothing stored). */
+async function suggestQualities() {
+  const note = $("scenario-qualities-note");
+  const button = $("scenario-qualities-suggest");
+  const body = suggestionBody(formValues(), SCENARIO_PARTS.map(([k]) => k));
+  if (!body.title.trim() && Object.keys(body).length <= 2) { note.textContent = t("Erst Titel oder einen Teil des Szenarios eintragen."); return; }
+  button.disabled = true;
+  note.textContent = t("Schlage vor … (ein Modellaufruf, nichts wird gespeichert)");
+  try {
+    const answer = await api(path("scenarios", "qualities"), { method: "POST", body: JSON.stringify(body) });
+    const names = validQualities(answer.qualities);
+    if (!names.length) { note.textContent = t("Kein brauchbarer Vorschlag: bitte selbst wählen."); return; }
+    setQualities(names);
+    dirty = true;
+    note.textContent = [t("Vorschlag übernommen – bitte prüfen."), answer.reason].filter(Boolean).join(" ");
+  } catch (err) {
+    note.textContent = t("Kein Vorschlag: {error}", { error: err.message || String(err) });
+  } finally {
+    button.disabled = false;
+  }
+}
+
 // ---- the editor ----
 
 const byId = (id) => scenarios.find((s) => s.id === id) ?? null;
@@ -70,6 +117,8 @@ function fillForm(s) {
   $("scenario-core").checked = Boolean(s?.core);
   fillRequirementSelect($("scenario-requirements"), s?.requirements || []).then(() => hideIfEmpty($("scenario-requirements"))).catch(() => { $("scenario-requirements").disabled = true; });
   for (const [key] of SCENARIO_PARTS) $(`scenario-part-${key}`).value = s?.[key] || "";
+  setQualities(s?.qualities || []);
+  $("scenario-qualities-note").textContent = "";
   $("scenario-save").textContent = s ? t("Speichern") : t("Anlegen");
   for (const id of ["scenario-analyse", "scenario-retire", "scenario-delete"]) $(id).hidden = !s;
   if (s) {
@@ -95,7 +144,7 @@ function startNew() {
 }
 
 function formValues() {
-  const values = { title: $("scenario-title").value, kind: $("scenario-kind").value, driver: $("scenario-driver").value, core: $("scenario-core").checked, requirements: chosenRequirements($("scenario-requirements")) };
+  const values = { title: $("scenario-title").value, kind: $("scenario-kind").value, driver: $("scenario-driver").value, core: $("scenario-core").checked, requirements: chosenRequirements($("scenario-requirements")), qualities: chosenQualities };
   for (const [key] of SCENARIO_PARTS) values[key] = $(`scenario-part-${key}`).value;
   return values;
 }
@@ -106,7 +155,7 @@ async function save() {
   if (values.core && !values.driver) { say(t("Ein Kernszenario gehört zu einem Treiber: bitte einen Treiber wählen.")); return; }
   let result;
   if (selected) {
-    const body = changedFields(byId(selected), values, ["title", "kind", "driver", "core", "requirements", ...SCENARIO_PARTS.map(([k]) => k)]);
+    const body = changedFields(byId(selected), values, ["title", "kind", "driver", "core", "requirements", "qualities", ...SCENARIO_PARTS.map(([k]) => k)]);
     if (!body) { dirty = false; say(t("Keine Änderungen.")); return; }
     result = await api(path("scenarios", selected), { method: "PATCH", body: JSON.stringify(body) });
   } else {
@@ -176,7 +225,7 @@ async function analyse(scenario, box) {
 // ---- the list ----
 
 function haystack(s) {
-  return [s.title, scenarioKindLabel(s.kind), s.driver ? driverTitle(s.driver) : "", scenarioLine(s)].join(" ");
+  return [s.title, scenarioKindLabel(s.kind), s.driver ? driverTitle(s.driver) : "", scenarioLine(s), qualitiesText(s)].join(" ");
 }
 
 function visibleScenarios() { return filterItems(lifecycleItems(scenarios, $("scenarios-show-retired").checked), $("scenarios-filter").value, haystack); }
@@ -195,7 +244,7 @@ function renderList() {
       item.dataset.scenarioId = s.id;
       item.appendChild(card({
         id: s.id, lead: el("span", "scenario-star", s.core ? "★" : ""), title: s.title,
-        chips: [chip(scenarioKindLabel(s.kind), "accent"), ...(isRetired(s) ? [chip(t(RETIRED_LABEL), "")] : [])],
+        chips: [chip(scenarioKindLabel(s.kind), "accent"), ...(s.qualities || []).map((q) => chip(qualityLabel(q), "ok")), ...(isRetired(s) ? [chip(t(RETIRED_LABEL), "")] : [])],
         meta: [scenarioLine(s), requirementsText(s)].filter(Boolean).join(" · "),
       }));
       section.appendChild(item);
@@ -248,6 +297,7 @@ export function initScenarioPanel(callbacks) {
   form.addEventListener("submit", (e) => { e.preventDefault(); guarded(save); });
   form.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); fillForm(byId(selected)); } });
   $("scenario-cancel").addEventListener("click", () => fillForm(byId(selected)));
+  $("scenario-qualities-suggest").addEventListener("click", () => guarded(suggestQualities));
   $("scenario-analyse").addEventListener("click", () => guarded(() => analyse(byId(selected), $("scenario-analysis"))));
   $("scenarios-show-retired").addEventListener("change", () => { say(""); renderList(); });
   $("scenario-retire").addEventListener("click", () => guarded(async () => {

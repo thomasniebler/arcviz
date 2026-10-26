@@ -44,6 +44,12 @@ A quality scenario makes a driver concrete, in the six parts of ATAM:
 A scenario serves **at most one driver**; a driver usually has several. Mark the scenarios that state a driver's core
 goals as **Kernszenario** (★): the assistants see them next to their driver.
 
+**ISO-25010-Qualität**: assign each scenario to one, at most two of the nine quality characteristics of ISO/IEC 25010
+(for example *Zuverlässigkeit* or *Informationssicherheit*). **Vorschlagen** asks the model to propose them from the text
+of the scenario (one call, nothing is stored); it only pre-ticks the boxes, and you can always choose differently, because
+a suggestion can be wrong. The characteristics appear on the scenario cards; a driver card shows the ones its scenarios
+cover. The project review points out scenarios without one.
+
 **Analysieren** plays the scenario through (one call of the model; nothing is stored): what happens today, the effect
 on each driver (*unterstützt*, *gefährdet*, *verletzt*), the affected elements, sensitivity points and trade-offs, and
 two to four options with pros and cons; the recommended one is framed. For each option:
