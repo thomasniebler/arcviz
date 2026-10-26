@@ -389,6 +389,14 @@
                 <label class="field-inline"><input type="checkbox" id="scenario-core"> <span data-i18n>Kernszenario</span></label>
               </div>
               <label class="field-col"><span data-i18n>Anforderungen, denen das Szenario dient</span><select id="scenario-requirements" class="req-pick" multiple></select></label>
+              <fieldset class="quality-pick">
+                <legend data-i18n>ISO-25010-Qualität (eine, höchstens zwei)</legend>
+                <div id="scenario-qualities" class="quality-choices"></div>
+                <div class="quality-actions">
+                  <button type="button" id="scenario-qualities-suggest" class="btn small" data-edit title="Schlägt die Qualität aus dem Text des Szenarios vor (ein Modellaufruf, nichts wird gespeichert); die Auswahl bleibt Ihre" data-i18n-title data-i18n>Vorschlagen</button>
+                  <span id="scenario-qualities-note" class="muted" role="status"></span>
+                </div>
+              </fieldset>
               <div id="scenario-parts" class="scenario-parts"></div>
               <footer class="md-actions">
                 <button type="submit" id="scenario-save" class="btn primary" data-edit data-i18n>Anlegen</button>

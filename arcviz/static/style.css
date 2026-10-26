@@ -446,6 +446,12 @@ dialog menu { display: flex; justify-content: flex-end; gap: 8px; margin: 6px 0 
 .scenario-group h5 { margin: 10px 0 4px; font-size: 13px; color: var(--muted); }
 .scenario-star { color: var(--warn); min-width: 1em; }
 .option-actions { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+.quality-pick { border: 1px solid var(--border, currentColor); border-radius: 6px; padding: 6px 10px; margin: 0; }
+.quality-pick legend { font-size: .85em; padding: 0 4px; }
+.quality-choices { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.quality-choices label { display: inline-flex; gap: 4px; align-items: center; }
+.quality-choices label:has(input:disabled) { opacity: .55; }
+.quality-actions { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
 .scenario-parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 6px; }
 .scenario-analysis:empty { display: none; }
 .analysis-facts { margin: 4px 0; padding-left: 1.2em; font-size: 13px; }

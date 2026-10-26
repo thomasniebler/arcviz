@@ -64,10 +64,11 @@ SCHEMA_VERSION = 2  # the newest version this Arcviz reads and writes
 # need version 2 (it added `type`), which older versions refuse instead of importing an empty diagram.
 DEPLOYMENT_SCHEMA_VERSION = 1
 PROJECT_FORMAT = "arcviz-project"
-PROJECT_SCHEMA_VERSION = 7  # the newest project bundle version this Arcviz reads and writes
+PROJECT_SCHEMA_VERSION = 8  # the newest project bundle version this Arcviz reads and writes
 REQUIREMENTS_PROJECT_SCHEMA_VERSION = (
     7  # requirements, or links to them / to stakeholders on drivers, scenarios, decisions
 )
+QUALITIES_PROJECT_SCHEMA_VERSION = 8  # scenarios with ISO 25010 characteristics (ADR-0202)
 CODE_REFS_PROJECT_SCHEMA_VERSION = 6  # elements with code links (spec: agent-access.md); 5 added decision support
 DECISION_SUPPORT_PROJECT_SCHEMA_VERSION = 5
 DRIVERS_PROJECT_SCHEMA_VERSION = 4  # drivers without decision support; 5 adds stakeholders, scenarios, decisions (M29)
@@ -375,6 +376,8 @@ def export_project(
         model["requirement_seq"] = requirements.seq
     if _uses_requirement_fields(project, requirements):  # older versions refuse the bundle instead of dropping them
         schema_version = REQUIREMENTS_PROJECT_SCHEMA_VERSION
+    if any(s.qualities for s in project.scenarios):  # ISO 25010 characteristics (ADR-0202): older versions refuse it
+        schema_version = QUALITIES_PROJECT_SCHEMA_VERSION
     return {
         "format": PROJECT_FORMAT,
         "schema_version": schema_version,

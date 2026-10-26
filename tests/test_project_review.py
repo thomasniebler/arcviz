@@ -189,6 +189,7 @@ def test_the_project_rules_are_listed():
         "requirement-conflict-open",
         "requirement-duplicate-open",
         "scenario-no-requirement",
+        "scenario-no-quality",
         "decision-no-basis",
         "stakeholder-no-requirement",
     ]

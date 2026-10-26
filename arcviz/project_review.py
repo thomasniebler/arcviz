@@ -1327,6 +1327,19 @@ def scenario_no_requirement(snapshot: ProjectSnapshot) -> Iterator[ProjectFindin
         )
 
 
+def scenario_no_quality(snapshot: ProjectSnapshot) -> Iterator[ProjectFinding]:
+    bare = [s for s in active(snapshot.project.scenarios) if not s.qualities]
+    if bare:
+        names = ", ".join(_q(s.title) for s in bare[:5]) + (" …" if len(bare) > 5 else "")
+        yield _finding(
+            "scenario-no-quality",
+            "all",
+            "suggestion",
+            "low",
+            _("{count} Szenario(en) sind keiner ISO-25010-Qualität zugeordnet: {names}.", count=len(bare), names=names),
+        )
+
+
 def decision_no_basis(snapshot: ProjectSnapshot) -> Iterator[ProjectFinding]:
     for d in snapshot.project.decisions:
         if d.status == "accepted" and not d.drivers and not d.requirements:
@@ -1454,6 +1467,7 @@ PROJECT_RULES: list[ProjectRule] = [
         "requirement-duplicate-open", N_("Fast gleiche Anforderungen"), "suggestion", requirement_duplicate_open
     ),
     ProjectRule("scenario-no-requirement", N_("Szenario ohne Anforderung"), "suggestion", scenario_no_requirement),
+    ProjectRule("scenario-no-quality", N_("Szenario ohne ISO-25010-Qualität"), "suggestion", scenario_no_quality),
     ProjectRule("decision-no-basis", N_("Angenommene Entscheidung ohne Grundlage"), "risk", decision_no_basis),
     ProjectRule(
         "stakeholder-no-requirement",

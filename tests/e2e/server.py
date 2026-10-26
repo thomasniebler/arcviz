@@ -46,6 +46,16 @@ class SlowScriptedProvider(ScriptedProvider):
         if [t.name for t in tools] == ["submit_scenario_analysis"]:  # answered by tool, outside the turn order
             self.requests.append({"system": system, "messages": list(messages), "tools": ["submit_scenario_analysis"]})
             return ANALYSIS_REPLY
+        # the ISO 25010 suggestion (iso25010-qualities.md): one valid name, one gibberish
+        if [t.name for t in tools] == ["submit_qualities"]:
+            self.requests.append({"system": system, "messages": list(messages), "tools": ["submit_qualities"]})
+            return ModelReply(
+                text="",
+                tool_calls=[
+                    call("submit_qualities", "ql1", qualities=["reliability", "blau"], reason="Ausfallsicherheit.")
+                ],
+                stop_reason="tool_use",
+            )
         for tool_name, answer in (("submit_refinements", REFINE_REPLY), ("submit_derivation", DERIVE_REPLY)):
             if [t.name for t in tools] == [tool_name]:  # the workshop's chunks (requirements-workshop.md): by tool, too
                 self.requests.append({"system": system, "messages": list(messages), "tools": [tool_name]})

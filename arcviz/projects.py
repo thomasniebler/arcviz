@@ -64,6 +64,7 @@ from .project_model import (
     relation_problem,
     same_relation,
 )
+from .quality_model import MAX_QUALITIES, QUALITY_CHARACTERISTICS, clean_qualities
 
 
 class ProjectError(OperationError):
@@ -318,6 +319,8 @@ class Project(BaseModel):
         for sc in self.scenarios:
             if sc.kind not in dm.SCENARIO_KINDS:
                 errors.append(f"scenario '{sc.id}' has unknown kind '{sc.kind}'")
+            if clean_qualities(sc.qualities) != (sc.qualities, 0):
+                errors.append(f"scenario '{sc.id}' has invalid quality characteristics {sc.qualities}")
             if sc.driver is not None and sc.driver not in drivers:
                 errors.append(f"scenario '{sc.id}' serves unknown driver '{sc.driver}'")
             errors += [
@@ -1180,6 +1183,17 @@ def _requirement_ids(ids: list[str]) -> list[str]:
     return out
 
 
+def _qualities(values: list[str]) -> list[str]:
+    """ISO/IEC 25010 characteristics as given: each known, none twice, at most `MAX_QUALITIES` (ADR-0202)."""
+    kept, dropped = clean_qualities(values)
+    if dropped:
+        raise ProjectError(
+            f"A scenario names one or at most {MAX_QUALITIES} distinct ISO 25010 characteristics. "
+            f"Available: {', '.join(QUALITY_CHARACTERISTICS)}."
+        )
+    return kept
+
+
 def _origin(origin: str) -> str:
     """The proposal item that created an object (`<proposal>/<key>`); a format check only."""
     origin = origin.strip()
@@ -1348,6 +1362,7 @@ def add_scenario(
     requirements: list[str] | None = None,
     stakeholders: list[str] | None = None,
     origin: str = "",
+    qualities: list[str] | None = None,
 ) -> Scenario:
     if len(project.scenarios) >= dm.MAX_SCENARIOS:
         raise ProjectError(f"A project holds at most {dm.MAX_SCENARIOS} scenarios.")
@@ -1360,6 +1375,7 @@ def add_scenario(
         requirements=_requirement_ids(requirements or []),
         stakeholders=_stakeholder_refs(project, stakeholders or []),
         origin=_origin(origin),
+        qualities=_qualities(qualities or []),
     )
     _scenario_parts(
         scenario,
@@ -1397,8 +1413,10 @@ def update_scenario(
     requirements: list[str] | None = None,
     stakeholders: list[str] | None = None,
     status: str | None = None,
+    qualities: list[str] | None = None,
 ) -> Scenario:
-    """`driver=""` unassigns the scenario (and it is no core scenario any more)."""
+    """`driver=""` unassigns the scenario (and it is no core scenario any more); `qualities` replaces the ISO 25010
+    characteristics (`[]` clears them)."""
     target = _scenario(project, scenario)
     if title is not None:
         target.title = _title(project.scenarios, title, dm.MAX_TITLE, "The scenario title", "title", target.id)
@@ -1429,6 +1447,8 @@ def update_scenario(
         target.requirements = _requirement_ids(requirements)
     if stakeholders is not None:
         target.stakeholders = _stakeholder_refs(project, stakeholders)
+    if qualities is not None:
+        target.qualities = _qualities(qualities)
     if status is not None:
         target.status = _choice(status, OBJECT_STATUSES, "status")
     return target

@@ -39,6 +39,7 @@ from .project_model import (
     shown_relation_kinds,
 )
 from .projects import Project, ProjectError
+from .quality_model import MAX_QUALITIES, QUALITY_CHARACTERISTICS
 from .services import ElementChange, Forbidden, ModelService, RelationChange
 from .services.adoption import Adoption, adopted_views, adopting, unlink_change, without_taken_back
 
@@ -303,6 +304,12 @@ SUPPORT_TOOLS: list[ToolSpec] = [
                 **{k: {"type": "string", "description": text} for k, text in _PART_TEXTS.items()},
                 "driver": {"type": "string", "description": "Id of the one driver it serves (e.g. d1)."},
                 "core": {"type": "boolean", "description": "A core scenario: one of the driver's core goals."},
+                "qualities": {
+                    "type": "array",
+                    "items": {"type": "string", "enum": list(QUALITY_CHARACTERISTICS)},
+                    "maxItems": MAX_QUALITIES,
+                    "description": "The one, at most two ISO/IEC 25010 quality characteristics the scenario is about.",
+                },
                 "elements": {"type": "array", "items": {"type": "string"}, "description": "Element ids it concerns."},
             },
             "required": ["title", "kind", "stimulus"],

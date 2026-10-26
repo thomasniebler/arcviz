@@ -56,6 +56,10 @@ def test_the_architecture_objects_can_be_read(root):
     assert [s["id"] for s in full["scenarios"]] == ["q1"] and full["decisions"][0]["id"] == "adr1"
     assert full["stakeholders"] == [{"id": "s1", "name": "Operations"}]
     assert t.list_scenarios("shop", driver="d1")["scenarios"][0]["core"] is True
+    assert (
+        t.list_scenarios("shop")["scenarios"][0]["qualities"] == []
+        and t.list_drivers("shop")["drivers"][0]["qualities"] == []
+    )
     assert t.get_scenario("shop", "q1")["decisions"][0]["id"] == "adr1"
     listed = t.list_decisions("shop", status="accepted")["decisions"]
     assert listed[0]["label"] == "ADR-1" and t.get_decision("shop", "ADR-1")["title"] == "Second region"

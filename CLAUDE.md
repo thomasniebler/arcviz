@@ -331,6 +331,12 @@ Agent tools `list_scenarios/list_decisions/list_stakeholders`, `create_scenario`
 page `static/archview.js` (layer 6; a main view addressed by hash routes, `routes.js` pure, `shell.js` layer 7 switches views, spec `app-shell.md`, ADR-0194) with the tabs `driverpanel.js`, `scenariopanel.js`, `decisionpanel.js`,
 `stakeholderpanel.js`, each a filterable card list with one editor (`mdpane.js` helpers, pure `listnav.js`, shared classes in `components.css`; spec `architecture-workspace.md`, ADR-0196); pure helpers `static/decisions.js` (`decisionFromAnalysis`).
 
+**ISO 25010 qualities** (spec `docs/architecture/specs/iso25010-qualities.md`, ADR-0202): `Scenario.qualities` holds one or at most two of the nine
+characteristics of `quality_model.QUALITY_CHARACTERISTICS` (omitted while empty; operations refuse anything else); a driver's are computed
+(`driver_qualities`), never stored. `quality_suggestion.suggest` (one `complete_tool` call, `POST …/scenarios/qualities`, rate class `review`) only
+suggests: output goes through `clean_qualities`, nothing is stored, the editor pre-ticks and the person decides. Bundles that use it are `schema_version` 8;
+review rule `scenario-no-quality`.
+
 **Requirements** (M31; spec `docs/architecture/specs/requirements.md`, as-implemented `docs/spec/requirements.md`, ADR-0186,
 ADR-0188..0190; design of the MCP tools and the workshop: `architecture-objects-over-mcp.md`, `requirements-workshop.md`):
 `arcviz/requirement_model.py` (pure) holds `Requirement` (`req<n>`; `raw` immutable, `statement`, kind, MoSCoW priority, measure,

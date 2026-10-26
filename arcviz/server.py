@@ -48,6 +48,7 @@ from . import (
     operations,
     project_review,
     proposal,
+    quality_suggestion,
     render,
     requirement_derive,
     requirement_import,
@@ -93,6 +94,7 @@ from .project_model import (
     shown_relation_kinds,
 )
 from .proposals import ProposalConfig
+from .quality_model import driver_qualities
 from .requirements_agent import RequirementsAgent
 from .services import (
     Forbidden,
@@ -1609,7 +1611,13 @@ def create_app(
     def drivers_view(svc: Services, project_id: str) -> dict[str, Any]:
         project = svc.projects.get(project_id)
         ranks = {d.id: n for n, d in enumerate(ranked_drivers(project.drivers), start=1)}
-        return {"project": project_id, "drivers": [{**d.model_dump(), "rank": ranks[d.id]} for d in project.drivers]}
+        return {
+            "project": project_id,
+            "drivers": [
+                {**d.model_dump(), "rank": ranks[d.id], "qualities": driver_qualities(d.id, project.scenarios)}
+                for d in project.drivers
+            ],
+        }
 
     @app.get("/api/projects/{project_id}/drivers")
     def list_drivers(svc: Svc, project_id: str) -> dict[str, Any]:
@@ -2091,6 +2099,16 @@ def create_app(
         if scenario is None:
             raise HTTPException(404, f"Unknown scenario '{scenario_id}'.")
         return scenario_analysis.analyse(get_provider(), snapshot, scenario)
+
+    @app.post("/api/projects/{project_id}/scenarios/qualities")
+    def suggest_scenario_qualities(svc: Svc, project_id: str, body: dict[str, Any] = Body(...)) -> dict[str, Any]:  # noqa: B008
+        """Suggest the ISO 25010 characteristics of the scenario text in the body (title, kind, the six parts): one model
+        call, nothing written (spec: iso25010-qualities.md, ADR-0202); a failed or useless answer is `llm.ok = false`."""
+        with project_errors():
+            svc.projects.get(project_id)  # access and existence (404), as for every project route
+        if not quality_suggestion.has_text(body):
+            raise HTTPException(400, "Give the scenario a title or at least one of its parts.")
+        return quality_suggestion.suggest(get_provider(), body)
 
     @app.get("/api/diagrams/{diagram_id}/checks")
     def run_checks(svc: Svc, diagram_id: str) -> dict[str, Any]:
