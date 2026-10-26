@@ -1,6 +1,6 @@
 [project]
 name = "arcviz-agent"
-version = "0.4.2"
+version = "0.5.0"
 description = "Chat-driven manipulation of a UML-like deployment model with live Mermaid rendering"
 readme = "README.md"
 requires-python = ">=3.11"
