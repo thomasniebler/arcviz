@@ -29,9 +29,11 @@ from .decision_model import Decision, DecisionOption, Scenario, Stakeholder
 from .model import now_iso, single_line, slugify
 from .operations import OperationError, PropertyValue, validate_arguments
 from .project_model import (
+    ARC42_SECTIONS,
     DRIVER_KINDS,
     DRIVER_LEVELS,
     ELEMENT_KINDS,
+    MAX_ARC42_NOTE,
     MAX_CODE_REFS,
     MAX_DRIVER_DESCRIPTION,
     MAX_DRIVER_TITLE,
@@ -49,6 +51,7 @@ from .project_model import (
     Driver,
     Element,
     Relation,
+    Vision,
     driver_number,
     find_driver,
     find_element,
@@ -63,6 +66,7 @@ from .project_model import (
     relation_number,
     relation_problem,
     same_relation,
+    vision_problems,
 )
 from .quality_model import MAX_QUALITIES, QUALITY_CHARACTERISTICS, clean_qualities
 
@@ -117,6 +121,11 @@ class Project(BaseModel):
     scenario_seq: int = 0
     decisions: list[Decision] = Field(default_factory=list)
     decision_seq: int = 0
+    # The product vision (spec: project-vision.md, ADR-0203), omitted from dumps while unset.
+    vision: Vision | None = None
+    # Text of the arc42 sections the model does not cover (spec: arc42-export.md, ADR-0208): section id "01".."12" ->
+    # plain text, blank lines separate paragraphs; omitted from dumps while empty.
+    arc42_notes: dict[str, str] = Field(default_factory=dict)
     created_at: str = Field(default_factory=now_iso)
     updated_at: str = Field(default_factory=now_iso)
     # The workspace the project belongs to (spec: workspaces-and-sharing.md); None only for data written before
@@ -139,6 +148,10 @@ class Project(BaseModel):
             del data["roles"]
         if data.get("incarnation", "") is None:
             del data["incarnation"]
+        if data.get("arc42_notes", None) == {}:
+            del data["arc42_notes"]  # projects written before the arc42 export dump unchanged
+        if data.get("vision", "") is None:
+            del data["vision"]  # projects written before the vision dump unchanged
         if data.get("relations", None) == []:
             del data["relations"]  # projects written before M25 dump (and export) unchanged
         if data.get("relation_seq", None) == 0:
@@ -514,6 +527,44 @@ def rename_project(project: Project, title: str) -> dict[str, Any]:
 def set_description(project: Project, description: str) -> dict[str, Any]:
     project.description = description.strip()
     return {"description": project.description}
+
+
+def set_vision(
+    project: Project, statement: str = "", goals: list[str] | None = None, non_goals: list[str] | None = None
+) -> dict[str, Any]:
+    """Replace the product vision as a whole; an all-empty call clears it (spec: project-vision.md, ADR-0203)."""
+    texts = (statement, *(goals or []), *(non_goals or []))
+    if any(any(ord(c) < 32 and c not in "\n\t" for c in text) for text in texts):
+        raise ProjectError("A vision must not contain control characters.")
+    vision = Vision(
+        statement=statement.strip(),
+        goals=[g.strip() for g in goals or [] if g.strip()],
+        non_goals=[g.strip() for g in non_goals or [] if g.strip()],
+    )
+    problems = vision_problems(vision.statement, vision.goals, vision.non_goals)
+    if problems:
+        raise ProjectError(" ".join(problems))
+    project.vision = None if vision.is_empty() else vision
+    return {"vision": project.vision.model_dump() if project.vision else None}
+
+
+def set_arc42_note(project: Project, section: str, text: str = "") -> dict[str, Any]:
+    """Set (or, with empty text, clear) the note of one arc42 section (spec: arc42-export.md, ADR-0208)."""
+    key = section.strip()
+    if key.isdigit() and len(key) == 1:
+        key = f"0{key}"
+    if key not in ARC42_SECTIONS:
+        raise ProjectError(f"Unknown arc42 section '{section}'. Use one of: {', '.join(ARC42_SECTIONS)}.")
+    body = "\n".join(line.rstrip() for line in text.strip().splitlines())
+    if len(body) > MAX_ARC42_NOTE:
+        raise ProjectError(f"An arc42 note has at most {MAX_ARC42_NOTE} characters ({len(body)} given).")
+    if any(ord(c) < 32 and c not in "\n\t" for c in body):
+        raise ProjectError("An arc42 note must not contain control characters.")
+    if body:
+        project.arc42_notes[key] = body
+    else:
+        project.arc42_notes.pop(key, None)
+    return {"section": key, "note": body}
 
 
 def add_section(
@@ -1226,12 +1277,14 @@ def link_requirements(project: Project, target_kind: str, target: str, requireme
 
 
 def target_of(project: Project, op: str, args: dict[str, Any]) -> BaseModel | None:
-    """The driver, scenario or decision an `update_*` (or `link_requirements`) names, or None when it is not one of
+    """The driver, scenario, decision, element or relation an `update_*` (or `link_requirements`) names, or None when it is not one of
     those or does not exist (the operation reports that)."""
     refs = {
         "update_driver": (_driver, args.get("driver")),
         "update_scenario": (_scenario, args.get("scenario")),
         "update_decision": (_decision, args.get("decision")),
+        "update_element": (_element, args.get("element")),
+        "update_relation": (_relation, args.get("relation")),
     }
     if op == "link_requirements":
         finder = {"driver": _driver, "scenario": _scenario, "decision": _decision}.get(str(args.get("target_kind")))
@@ -1609,6 +1662,8 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "remove_code_ref": remove_code_ref,
     "rename_project": rename_project,
     "set_description": set_description,
+    "set_vision": set_vision,
+    "set_arc42_note": set_arc42_note,
     "add_section": add_section,
     "rename_section": rename_section,
     "move_section": move_section,
@@ -1644,6 +1699,7 @@ DECISION_SUPPORT_OPERATIONS = tuple(
     name for name in OPERATIONS if name.split("_", 1)[1] in ("stakeholder", "scenario", "decision")
 )
 DRIVER_OPERATIONS = ("add_driver", "update_driver", "move_driver", "remove_driver")  # public: one document
+VISION_OPERATIONS = ("set_vision", "set_arc42_note")  # public: one document; agents may only propose it (ADR-0203)
 CODE_REF_OPERATIONS = ("add_code_ref", "remove_code_ref")  # public: they touch only the project document
 # Membership is ProjectService's invariant, the model ModelService's (renames and deletes reach the diagrams).
 ELEMENT_OPERATIONS = (

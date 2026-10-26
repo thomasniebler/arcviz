@@ -302,3 +302,17 @@ where `diagrams` maps every member id to `{title, type, section}` and `model` ev
 `GET /api/projects/{pid}/checks` → `checks(snapshot)` = `{project, rules: [{id, title, category}], findings,
 diagrams}`; `POST /api/projects/{pid}/review` → the answer above (404 unknown project, 503 without a
 provider). The panel's project mode is described in [Frontend](frontend.md#architecture-review).
+
+## Steward
+
+The project steward ([design](../architecture/specs/project-steward.md), ADR-0204 to 0206) re-checks an opted-in project after it
+changed (`steward.StewardWorker`: live-hub hints, debounce, sweep, a lease in the keyed document `steward`) and stores
+**one** pending project proposal of the client `steward` (it discards its own earlier one): the deterministic rule findings that
+have exactly one model-level fix, and the candidates of one `complete_tool` call (`submit_steward_findings`) that a second
+model confirmed (`submit_verdict`, `supported` only). A candidate needs `cites` that exist, a next step needs `serves` (an active
+driver or `vision:g<n>`), its items must apply to a copy of the project, and a model never proposes a deletion
+(`steward.LLM_OPERATIONS`). Items carry `finding`, `group` (`fix` | `next_step`), `rationale` and `cites`
+(`proposals.ProposalItem`); a person's discard remembers the `finding` so it does not come back. The steward runs in the system
+context (`ServiceRoot.system_services`, identity `steward`) and writes nothing but its proposal and its document. Configuration:
+[reference](../reference/configuration.md#project-steward-optional); routes `GET|PUT /api/projects/{pid}/steward`,
+`POST …/steward/run`. Telemetry: span `arcviz.steward.run`, metrics `arcviz.steward.runs` and `arcviz.steward.items`.

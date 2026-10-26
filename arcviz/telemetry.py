@@ -34,6 +34,7 @@ SPAN_ATTRIBUTES = frozenset(
         "arcviz.tool.outcome",  # ok | error
         "arcviz.store.operation",  # write_through | commit_turn | append_chat
         "arcviz.store.outcome",  # the write's outcome (written, rejected, deleted, forbidden, busy, ok, skipped, error)
+        "arcviz.steward.outcome",  # a steward run's outcome (spec: project-steward.md): fixed names, never content
     }
 )
 METRIC_ATTRIBUTES = frozenset(
@@ -50,6 +51,8 @@ METRIC_ATTRIBUTES = frozenset(
         "arcviz.tool.outcome",  # ok | error
         "db.operation.name",  # a Cosmos DB request kind of STORE_OPERATIONS (#201)
         "arcviz.store.document",  # the kind of document a request addressed, one of STORE_DOCUMENTS (#201)
+        "arcviz.steward.outcome",  # unchanged | clean | proposed | blocked | disabled | capped
+        "arcviz.steward.verdict",  # what happened to a model candidate: supported | unsupported | unclear | proposed
     }
 )
 # The values of the request unit attributes (#201, ADR-0154): fixed names, never an id, a partition key or a query.
@@ -71,6 +74,7 @@ STORE_DOCUMENTS = frozenset(
         "token",
         "requirements",
         "reqchat",
+        "steward",
         "any",  # a query across partitions
         "other",  # anything else (never the partition key itself)
     }
@@ -222,6 +226,12 @@ def _meter_instruments() -> dict[str, Any]:
             unit="{request_unit}",
             description="Cosmos DB request charge per request, by operation and document kind",
         )
+        _instruments["steward_runs"] = meter.create_counter(
+            "arcviz.steward.runs", unit="{run}", description="Steward runs, by outcome"
+        )
+        _instruments["steward_items"] = meter.create_counter(
+            "arcviz.steward.items", unit="{item}", description="Steward candidates and items, by verdict"
+        )
         meter.create_observable_up_down_counter(
             "arcviz.live.streams", callbacks=[_observe_streams], unit="{stream}", description="Open live streams"
         )
@@ -266,6 +276,18 @@ def record_llm(
         count = int(usage.get(key) or 0)
         if count:
             instruments["llm_tokens"].add(count, metric_attributes({**base, "gen_ai.token.type": token_type}))
+
+
+def record_steward_run(outcome: str) -> None:
+    """One steward run and how it ended (a fixed outcome name)."""
+    if _enabled:
+        _meter_instruments()["steward_runs"].add(1, metric_attributes({"arcviz.steward.outcome": outcome}))
+
+
+def record_steward_items(verdict: str, count: int = 1) -> None:
+    """`count` candidates (or proposed items) with a verdict (a fixed name)."""
+    if _enabled and count:
+        _meter_instruments()["steward_items"].add(count, metric_attributes({"arcviz.steward.verdict": verdict}))
 
 
 def record_mcp_call(tool: str, outcome: str, seconds: float) -> None:

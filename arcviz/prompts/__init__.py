@@ -51,6 +51,7 @@ MODEL_PART = _read("shared/model.txt")
 MODEL_HEADING = "Project elements:"
 
 # The project's architecture drivers (spec architecture-drivers.md, ADR-0163): after the model, when it has any.
+VISION_PART = _read("shared/vision.txt")  # spec project-vision.md, ADR-0203: before the drivers
 DRIVERS_PART = _read("shared/drivers.txt")
 DRIVERS_HEADING = "Architecture drivers (most important first):"
 
@@ -110,10 +111,17 @@ def drivers_part(drivers: str) -> str:
     return f"{DRIVERS_PART}\n\n{DRIVERS_HEADING}\n{drivers}"
 
 
-def architecture_part(drivers: str | None, stakeholders: str | None = None, decisions: str | None = None) -> str | None:
-    """The drivers (with their core scenarios), the stakeholders and the accepted decisions, each block only when the
-    project has some; None for none (spec: decision-support.md)."""
-    blocks = [drivers_part(drivers)] if drivers else []
+def architecture_part(
+    drivers: str | None,
+    stakeholders: str | None = None,
+    decisions: str | None = None,
+    vision: str | None = None,
+) -> str | None:
+    """The vision, the drivers (with their core scenarios), the stakeholders and the accepted decisions, each block only
+    when the project has some; None for none (spec: decision-support.md, project-vision.md)."""
+    blocks = [f"{VISION_PART}\n\n{vision}"] if vision else []
+    if drivers:
+        blocks.append(drivers_part(drivers))
     if stakeholders:
         blocks.append(f"{STAKEHOLDERS_HEADING}\n{stakeholders}")
     if decisions:

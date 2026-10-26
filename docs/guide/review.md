@@ -203,3 +203,12 @@ a diagram opens that diagram and highlights the elements; **Als Vorschlag umsetz
 and previews the change there. The project review keeps its findings while you switch between the
 project's diagrams; it closes when you switch projects. When you change a diagram of the project, the rule
 checks run again and the AI findings are greyed out as outdated; run **KI-Review** again. Nothing is stored.
+
+## The steward
+
+On the **Architektur** page the owner can switch on the *Steward* for a project (when the installation allows it). After you
+changed the project and a few minutes passed, the steward looks at it again: it runs the review rules and asks the assistant for
+fixes the rules cannot see and for **next steps** that serve the vision or a driver. A **second model** checks every proposal of
+the assistant against the objects it names; only what it confirms reaches you. The result is one entry in the proposal list
+(**Vorschläge**) with **Korrekturen** and **Nächste Schritte**, each with its reason and the objects it is about. Nothing is applied
+without you; what you discard does not come back. **Jetzt prüfen** checks at once (editors).

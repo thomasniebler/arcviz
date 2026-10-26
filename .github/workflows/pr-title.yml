@@ -4,12 +4,10 @@ name: PR title
 # workflow re-checks the title on edits that change it and overwrites that status (the newest wins).
 # Body-only edits skip the job and cost nothing.
 
-# PAUSED together with ci.yml (2026-10-21, runners do not start): uncomment `pull_request` to resume. The job below
-# only acts on a title edit of a pull request, so a manual run does nothing.
 on:
-  # pull_request:
-  #   branches: [main]
-  #   types: [edited]
+  pull_request:
+    branches: [main]
+    types: [edited]
   workflow_dispatch:
 
 permissions:

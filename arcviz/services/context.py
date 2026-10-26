@@ -15,6 +15,7 @@ from typing import Any
 from ..live import LiveHub
 from ..ports import RepositoryPort
 from ..proposals import ProposalConfig
+from ..steward_model import AUTHOR_NAME, CLIENT, StewardConfig
 from ..workspaces import Identity, personal_workspace_id
 from .access import AccessPolicy, Guard, ensure_personal_workspace
 from .bundles import ProjectExchangeService
@@ -25,6 +26,7 @@ from .projects import ProjectService
 from .proposals import ProposalService
 from .requirement_chat import RequirementChatService
 from .requirements import RequirementService
+from .steward import StewardService, StewardStore
 from .tokens import AgentCredential, TokenService
 from .users import UserService
 from .workspaces import PersonalMigration, WorkspaceService, migrate_to_personal_workspaces
@@ -50,6 +52,18 @@ class Services:
     workspaces: WorkspaceService
     users: UserService
     live: LiveService
+    steward: StewardService
+
+
+@dataclass
+class SystemServices:
+    """What the steward runs on (spec: project-steward.md): unguarded reads and the steward's own writes, bound to the
+    fixed identity `steward`. Nothing here applies a proposal."""
+
+    projects: ProjectService
+    requirements: RequirementService
+    proposals: ProposalService
+    steward_store: StewardStore
 
 
 class ServiceRoot:
@@ -59,7 +73,9 @@ class ServiceRoot:
         hub: LiveHub | None = None,
         admin: Identity | None = None,
         proposal_config: ProposalConfig | None = None,
+        steward_config: StewardConfig | None = None,
     ):
+        self.steward_config = steward_config or StewardConfig()
         self._repo = repository
         self._proposal_config = proposal_config or ProposalConfig()
         self.admin = admin  # owns the default project (and the data from before workspaces)
@@ -81,6 +97,7 @@ class ServiceRoot:
         diagrams = DiagramService(self._repo, projects, guard, self.hub)
         models = ModelService(projects, diagrams)
         requirements = RequirementService(self._repo, projects, actor)
+        steward_store = StewardStore(self._repo, projects)
         return Services(
             actor=actor,
             guard=guard,
@@ -88,7 +105,14 @@ class ServiceRoot:
             projects=projects,
             models=models,
             proposals=ProposalService(
-                self._repo, projects, diagrams, models, actor, self._proposal_config.retention_days, requirements
+                self._repo,
+                projects,
+                diagrams,
+                models,
+                actor,
+                self._proposal_config.retention_days,
+                requirements,
+                steward_store,
             ),
             requirements=requirements,
             requirement_chat=RequirementChatService(self._repo, projects),
@@ -97,7 +121,22 @@ class ServiceRoot:
             workspaces=WorkspaceService(self._repo, self.users, guard),
             users=self.users,
             live=LiveService(self.hub, self._repo, projects, guard),
+            steward=StewardService(steward_store, projects, self.steward_config),
         )
+
+    def system_services(self) -> SystemServices:
+        """The steward's services (system context, unguarded; ADR-0204): it may read projects, replace its own pending
+        proposal and write its bookkeeping document, and nothing else."""
+        actor = Identity(id=CLIENT, name=AUTHOR_NAME)
+        projects = ProjectService(self._repo, self._repo, None, self.hub, self.users, self._default_workspace)
+        diagrams = DiagramService(self._repo, projects, None, self.hub)
+        models = ModelService(projects, diagrams)
+        requirements = RequirementService(self._repo, projects, actor)
+        store = StewardStore(self._repo, projects)
+        proposals = ProposalService(
+            self._repo, projects, diagrams, models, actor, self._proposal_config.retention_days, requirements, store
+        )
+        return SystemServices(projects, requirements, proposals, store)
 
     def authenticate_token(self, token: str) -> AgentCredential | None:
         """The credential of a personal access token (system context: the middleware's lookup, spec:

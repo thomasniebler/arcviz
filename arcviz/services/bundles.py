@@ -58,6 +58,7 @@ class ProjectExchangeService:
             drivers=parsed.drivers,
             driver_seq=parsed.driver_seq,
             decision_support=parsed.decision_support,
+            vision=parsed.vision,
         )
         created: list[str] = []
         try:

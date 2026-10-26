@@ -200,7 +200,7 @@ def build_project_prompt(
         prompt += f"\n{prompts.model_part(model)}\n"
     # what the architecture has to serve and what was decided (specs: architecture-drivers.md, decision-support.md)
     arch = architecture_context(project)
-    block = prompts.architecture_part(arch.drivers, arch.stakeholders, arch.decisions)
+    block = prompts.architecture_part(arch.drivers, arch.stakeholders, arch.decisions, arch.vision)
     if block:
         prompt += f"\n{block}\n"
     if active is None:

@@ -81,7 +81,25 @@ const ITEM_OP_LABELS = {
   add_decision: N_("Entscheidung anlegen (Entwurf)"),
   update_decision: N_("Entscheidung ändern"),
   link_requirements: N_("Anforderungen verknüpfen"),
+  set_vision: N_("Vision setzen"),
+  set_arc42_note: N_("arc42-Notiz setzen"),
+  add_element: N_("Element anlegen"),
+  update_element: N_("Element ändern"),
+  add_relation: N_("Beziehung anlegen"),
+  update_relation: N_("Beziehung ändern"),
+  remove_relation: N_("Beziehung entfernen"),
 };
+// What the steward says about its items (spec: docs/architecture/specs/project-steward.md): fixes first, then next steps.
+const GROUP_LABELS = { fix: N_("Korrekturen"), next_step: N_("Nächste Schritte") };
+const GROUP_ORDER = ["", "fix", "next_step"];
+
+/** The items of a project proposal in sections by `group`, in the order of GROUP_ORDER; items without a group come first
+ * and without a heading (`label` is ""). Empty sections are left out. */
+export function itemSections(items) {
+  return GROUP_ORDER
+    .map((group) => ({ group, label: GROUP_LABELS[group] ? t(GROUP_LABELS[group]) : "", items: (items || []).filter((i) => (i.group || "") === group) }))
+    .filter((s) => s.items.length);
+}
 
 export function itemStateLabel(state) {
   return ITEM_STATE_LABELS[state] ? t(ITEM_STATE_LABELS[state]) : state;
@@ -147,6 +165,12 @@ export function describeItem(item) {
   add(t("Kontext"), a.context);
   add(t("Entscheidung"), a.decision ?? a.text);
   add(t("Anforderungen"), [...(a.requirements || []), ...(item.derived_from || [])]);
+  add(t("Name"), a.name);
+  add(t("Aussage"), a.statement);
+  add(t("Ziele"), a.goals);
+  add(t("Nicht-Ziele"), a.non_goals);
+  if (item.op === "add_relation" || item.op === "update_relation") add(t("Beziehung"), [a.source, a.kind, a.target].filter(Boolean).join(" "));
+  if (item.op === "set_arc42_note") { add(t("Abschnitt"), a.section); add(t("Notiz"), a.text); }
   return lines;
 }
 

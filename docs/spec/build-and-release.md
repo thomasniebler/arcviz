@@ -96,12 +96,12 @@ Design and rationale: [ADR-0006](../architecture/adr/0006-ci-minutes-single-job-
 GitHub Actions bills every job rounded up to a full minute, so CI is **one job** (`CI`) whose checks
 are steps.
 
-**Paused (2026-10-21).** GitHub-hosted runners do not start on this repository (each job ends after about three
-seconds with `runner_id` 0 and no steps), so the automatic triggers of `ci.yml` and `pr-title.yml` are commented out
-and only `workflow_dispatch` remains. Pull requests are verified locally (`make lint typecheck test test-js e2e docs`,
-CLAUDE.md, *Commands*) and merged on those results. To resume, uncomment the triggers described below.
+CI was paused from 2026-10-21 to 2026-10-26: GitHub-hosted runners did not start on the repository (each job ended after about
+three seconds with `runner_id` 0 and no steps), so the automatic triggers were commented out. They are back now that the
+repository is public again; a pull request is still verified locally first (`make lint typecheck test test-js e2e docs`,
+CLAUDE.md, *Commands*).
 
-Triggers (while not paused): pull requests into `main` (`opened`, `synchronize`, `reopened`, `ready_for_review`; draft
+Triggers: pull requests into `main` (`opened`, `synchronize`, `reopened`, `ready_for_review`; draft
 pull requests skip the job), a weekly schedule (Mondays 04:17 UTC) and `workflow_dispatch`. There is
 no `push` trigger: merges to `main` are not re-tested, and pull requests into other branches
 (milestone branches) run no CI. Concurrency per ref with cancellation.

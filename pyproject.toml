@@ -24,6 +24,8 @@ telemetry = ["azure-monitor-opentelemetry>=1.6", "opentelemetry-exporter-otlp-pr
 # ARCVIZ_MCP=1 (ADR-0170): the official MCP SDK serves the protocol; PyJWT with cryptography validates OIDC access tokens
 # (ARCVIZ_MCP_OAUTH_ISSUER, ADR-0173).
 mcp = ["mcp>=2.3,<3", "pyjwt[crypto]>=2.8"]
+# GET /api/projects/{id}/arc42.docx (ADR-0207): the Word writer; 501 naming this extra without it.
+docx = ["python-docx>=1.1"]
 dev = [
     "pytest>=8",
     "pytest-cov>=5",
@@ -31,7 +33,7 @@ dev = [
     "ruff>=0.6",
     "mypy>=1.11",
     "hypothesis>=6.100",
-    "arcviz-agent[anthropic,openai,azure-openai,cosmos,telemetry,mcp]",
+    "arcviz-agent[anthropic,openai,azure-openai,cosmos,telemetry,mcp,docx]",
 ]
 
 [project.scripts]

@@ -1,0 +1,7 @@
+Product vision:
+- The project states what the product is for, what success looks like (goals, with ids like [g1]) and what it
+  deliberately is not (non-goals). Treat it as the direction of the architecture.
+- When you design or propose something, prefer what serves a goal, never work against a non-goal, and say briefly in
+  your reply which goal a larger change serves (e.g. "dient [g2]").
+- The vision is the user's statement: never change it yourself and never invent goals the user did not state. You may
+  suggest a change in your reply.

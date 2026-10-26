@@ -151,6 +151,24 @@ with an error naming the variable or the extra.
 | `ARCVIZ_MCP_OAUTH_SCOPES` | unset | Comma-separated scopes advertised as `scopes_supported` in the metadata. |
 | `ARCVIZ_PROPOSAL_RETENTION_DAYS` | `30` | How long decided proposals of agents stay listed (also at most the newest 20 per project). Pending proposals are never dropped. |
 
+## Project steward (optional)
+
+The background check that proposes fixes and next steps ([design](../architecture/specs/project-steward.md)). Off by default; a
+project opts in itself (owner, *Architektur* page). Everything the steward makes is a pending project proposal; nothing is applied
+without a person.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `ARCVIZ_STEWARD` | `0` | `1` starts the worker and offers the switch and **Jetzt prüfen**. Off: the routes answer, the run route with 409. |
+| `ARCVIZ_VERIFIER_PROVIDER` | unset | The provider of the **second model** that verifies what the main model proposes (`anthropic` or `openai`). Set together with `ARCVIZ_VERIFIER_MODEL`; its key and endpoint are the vendor's usual variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`). Must not be the chat's provider *and* model, else the start stops. Without it the steward proposes only what the review rules settle. |
+| `ARCVIZ_VERIFIER_MODEL` | unset | The verifier's model id. |
+| `ARCVIZ_STEWARD_DEBOUNCE_SECONDS` | `300` | A project is checked this long after its last change. |
+| `ARCVIZ_STEWARD_SWEEP_SECONDS` | `3600` (at least 60) | Every enabled project is checked at the latest this long after its last check (changes other replicas made). |
+| `ARCVIZ_STEWARD_MAX_RUNS_PER_DAY` | `4` | Runs per project and UTC day, manual runs included. |
+| `ARCVIZ_STEWARD_MAX_ITEMS` | `15` (1 to 60) | Items of one run. |
+
+`POST /api/projects/{id}/steward/run` is in the rate class of `ARCVIZ_RATE_LIMIT_REVIEW`.
+
 ## Request limits
 
 See [Request size and rate limits](../architecture/specs/request-limits.md). Values are non-negative

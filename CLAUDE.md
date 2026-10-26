@@ -41,10 +41,9 @@ under `docs/` (Zensical site, English); the UI is German.
 
 ## CI minutes
 
-**CI is paused** (2026-10-21): the hosted runners do not start, so the triggers of `ci.yml` and `pr-title.yml` are
-commented out (see `docs/spec/build-and-release.md`, "CI"). Run the full checks locally (`make lint typecheck test
-test-js e2e docs`, and `ARCVIZ_E2E_REAL_IDS=1 make e2e` for frontend changes) and merge on those results; the rules
-below apply again when the triggers are restored.
+CI runs again (it was paused 2026-10-21 to 2026-10-26 while the hosted runners did not start; the repository is public again). Still run
+the full checks locally first (`make lint typecheck test test-js e2e docs`, and `ARCVIZ_E2E_REAL_IDS=1 make e2e` for frontend changes): CI is a
+final gate, not a test runner.
 
 GitHub Actions bills every job rounded **up** to a full minute, so a 7-second job costs as much as a
 59-second one, and every push to an open PR into `main` starts a new run. Treat each run as expensive:
@@ -330,6 +329,27 @@ chats via `agent_model.architecture_context`, and both reviews (`review.review(�
 Agent tools `list_scenarios/list_decisions/list_stakeholders`, `create_scenario` (on request). UI: the **Architektur**
 page `static/archview.js` (layer 6; a main view addressed by hash routes, `routes.js` pure, `shell.js` layer 7 switches views, spec `app-shell.md`, ADR-0194) with the tabs `driverpanel.js`, `scenariopanel.js`, `decisionpanel.js`,
 `stakeholderpanel.js`, each a filterable card list with one editor (`mdpane.js` helpers, pure `listnav.js`, shared classes in `components.css`; spec `architecture-workspace.md`, ADR-0196); pure helpers `static/decisions.js` (`decisionFromAnalysis`).
+
+**Project vision** (spec `docs/architecture/specs/project-vision.md`, ADR-0203): `Project.vision` (`project_model.Vision`: statement, goals, non-goals, omitted
+while unset) is replaced by the public operation `set_vision`, `PUT /api/projects/{pid}/vision`; agents have no tool for it (they may only
+propose it, `PROPOSABLE_OPERATIONS`). `prompts.architecture_part(…, vision=)` puts it first (`prompts/shared/vision.txt`, goals as `[g1]…`);
+rule `vision-missing`; bundles `schema_version` 9. UI: tab **Vision** (`visionpanel.js`, pure `vision.js`).
+
+**arc42 export** (spec `docs/architecture/specs/arc42-export.md`, ADR-0207, ADR-0208): `arc42.build(snapshot, findings, requirements)` (pure) turns the
+review's `ProjectSnapshot` into twelve `Section`s of plain-text blocks (`Paragraph`, `Bullets`, `Heading`, `Table`, `Figure`) with `gaps` for what
+the model does not say; `Project.arc42_notes` + `set_arc42_note` fill the rest (agents may only propose). `arc42_export` writes Markdown, AsciiDoc
+(character references for specials), the zip and docx (extra `docx`, lazy import, 501 without), `arc42_html` the live page
+`GET /project/{pid}/arc42` (everything through `html.escape`, no inline script, strict CSP; Mermaid figures by the vendored Mermaid via
+`static/arc42/page.js`, SVG figures as `<img>` of the sandboxed figure route). No model call anywhere. UI: tab **Dokumentation** (`documentationpanel.js`).
+
+**Project steward** (spec `docs/architecture/specs/project-steward.md`, ADR-0204..0206): with `ARCVIZ_STEWARD=1` a `steward.StewardWorker` (one thread, started by the
+lifespan; `LiveHub.add_listener` hints, debounce, sweep, per-project lease in the keyed document `steward`) re-checks opted-in projects (`steward_model.StewardBox.enabled`,
+owner via `PUT /api/projects/{pid}/steward`) and `Steward.run` stores **one** pending project proposal of the client `steward`: rule findings with exactly one model-level fix
+(`rule_candidates`) plus the candidates of one `complete_tool` call that a **different model** (`ARCVIZ_VERIFIER_PROVIDER`/`_MODEL`, must not equal the chat model; without it rule
+items only) confirmed. It runs in the system context (`ServiceRoot.system_services()`, identity `steward`) and may only read, replace its own proposal and write its document
+(`tests/test_steward.py` forbids `apply`); a model never proposes a deletion (`LLM_OPERATIONS`), every candidate must cite existing ids. `ProposalItem` has `finding`/`group`/
+`rationale`/`cites`; the element and relation operations of an item apply through `ModelService`; a person's discard feeds `StewardBox.dismissed`. UI: `stewardpanel.js` on the
+**Architektur** page, groups in `proposalpanel.js`.
 
 **ISO 25010 qualities** (spec `docs/architecture/specs/iso25010-qualities.md`, ADR-0202): `Scenario.qualities` holds one or at most two of the nine
 characteristics of `quality_model.QUALITY_CHARACTERISTICS` (omitted while empty; operations refuse anything else); a driver's are computed

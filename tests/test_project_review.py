@@ -192,6 +192,8 @@ def test_the_project_rules_are_listed():
         "scenario-no-quality",
         "decision-no-basis",
         "stakeholder-no-requirement",
+        "vision-missing",
+        "arc42-section-empty",
     ]
 
 

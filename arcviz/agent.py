@@ -333,7 +333,7 @@ def build_system_prompt(
     each if the project has any, and the current summary at the end."""
     kinds = ", ".join(sorted(kinds_for(diagram.type).all_kinds))
     context = architecture or ArchitectureContext()
-    block = prompts.architecture_part(context.drivers, context.stakeholders, context.decisions)
+    block = prompts.architecture_part(context.drivers, context.stakeholders, context.decisions, context.vision)
     return prompts.system_prompt(diagram.type, kinds, diagram.summary(budget=context_budget), model, block)
 
 

@@ -95,7 +95,16 @@ def rate_class(method: str, path: str) -> str | None:
     if method == "POST" and (path.endswith("/chat") or path.endswith("/chat/compact")):
         return "chat"
     if method == "POST" and (
-        path.endswith(("/review", "/analysis", "/requirements/refine", "/requirements/derive", "/scenarios/qualities"))
+        path.endswith(
+            (
+                "/review",
+                "/analysis",
+                "/requirements/refine",
+                "/requirements/derive",
+                "/scenarios/qualities",
+                "/steward/run",
+            )
+        )
     ):  # model calls (decision-support.md, requirements-workshop.md)
         return "review"
     if _SHARE_PATH.match(path):

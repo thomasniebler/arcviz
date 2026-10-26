@@ -700,6 +700,56 @@ def referenced_model(
     )
 
 
+# ---- project vision (spec: docs/architecture/specs/project-vision.md, ADR-0203) -------------------------------------
+
+MAX_VISION_STATEMENT = 2000
+MAX_VISION_GOALS = 10
+MAX_VISION_ITEM = 200
+
+
+class Vision(BaseModel):
+    """What the product is for: a statement, what success looks like and what it deliberately is not."""
+
+    statement: str = ""
+    goals: list[str] = Field(default_factory=list)
+    non_goals: list[str] = Field(default_factory=list)
+
+    def is_empty(self) -> bool:
+        return not (self.statement or self.goals or self.non_goals)
+
+
+def vision_problems(statement: str, goals: list[str], non_goals: list[str]) -> list[str]:
+    """What is wrong with the three fields of a vision (bounds), for the operation to report."""
+    problems: list[str] = []
+    if len(statement) > MAX_VISION_STATEMENT:
+        problems.append(f"The vision statement has at most {MAX_VISION_STATEMENT} characters ({len(statement)} given).")
+    for name, items in (("goals", goals), ("non_goals", non_goals)):
+        if len(items) > MAX_VISION_GOALS:
+            problems.append(f"The vision has at most {MAX_VISION_GOALS} {name} ({len(items)} given).")
+        problems += [
+            f"A vision entry in {name} has at most {MAX_VISION_ITEM} characters."
+            for i in items
+            if len(i) > MAX_VISION_ITEM
+        ]
+    return problems
+
+
+def vision_lines(vision: Vision | None) -> str | None:
+    """The vision as prompt lines (goal ids `g1…` by position, so a finding can cite `vision:g2`); None while unset."""
+    if vision is None or vision.is_empty():
+        return None
+    lines = [f"Vision: {vision.statement}"] if vision.statement else []
+    lines += [f"[g{n}] goal: {goal}" for n, goal in enumerate(vision.goals, start=1)]
+    lines += [f"non-goal: {item}" for item in vision.non_goals]
+    return "\n".join(lines)
+
+
+# ---- arc42 notes (spec: docs/architecture/specs/arc42-export.md, ADR-0208) -------------------------------------------
+
+ARC42_SECTIONS = tuple(f"{n:02d}" for n in range(1, 13))
+MAX_ARC42_NOTE = 8000
+
+
 # ---- architecture drivers (spec: docs/architecture/specs/architecture-drivers.md, ADR-0163) ----------------------
 
 DRIVER_KINDS = ("quality_goal", "constraint", "requirement", "risk")

@@ -87,7 +87,7 @@ and after a decision; diffs by `proposal.js`).
 A stored proposal is a **diagram** proposal (above) or a **project** proposal: `kind` (omitted from dumps for diagram proposals, so
 stored data is unchanged), `items`, `diagram = ""` and no `operations`, `base`, `result` or `diff`. An item is `{key, op, arguments,
 title, derived_from, base, state pending|applied|discarded|stale|failed, created, error}`; `op` is one of `PROPOSABLE_OPERATIONS`
-(`add_`/`update_` of driver, scenario, decision, and the additive `link_requirements`); later items name earlier ones as `"@key"`.
+(`add_`/`update_` of driver, scenario, decision, the additive `link_requirements`, `set_vision`, `set_arc42_note`, and the shared model's `add_element`, `update_element`, `add_relation`, `update_relation`, `remove_relation`, ADR-0206); later items name earlier ones as `"@key"`. The steward ([design](../architecture/specs/project-steward.md)) also sets `finding`, `group` (`fix` | `next_step`), `rationale` (≤ 600 characters) and `cites` (≤ 12 ids) on an item; each is omitted from dumps while empty. An item of the shared model applies through `ModelService` (views follow a rename, links of a changed relation are cleared) instead of `ProjectService.apply_all`; `add_element` and `add_relation` carry no `origin`, an interrupted application is recognised by the element's name or the relation's kind and ends.
 
 `ProposalService.create_project` (editor) checks at most `MAX_ITEMS` 60 items and `MAX_PROJECT_PROPOSAL_BYTES` 64 KB, keys of 1 to
 24 characters `a-z0-9_`, at most `MAX_PENDING_PROJECT` 5 pending project proposals (diagram proposals count separately against

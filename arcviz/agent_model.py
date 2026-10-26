@@ -37,6 +37,7 @@ from .project_model import (
     model_summary,
     references,
     shown_relation_kinds,
+    vision_lines,
 )
 from .projects import Project, ProjectError
 from .quality_model import MAX_QUALITIES, QUALITY_CHARACTERISTICS
@@ -391,6 +392,7 @@ class ArchitectureContext:
     drivers: str | None = None
     stakeholders: str | None = None
     decisions: str | None = None
+    vision: str | None = None
 
 
 def architecture_context(project: Project) -> ArchitectureContext:
@@ -399,6 +401,7 @@ def architecture_context(project: Project) -> ArchitectureContext:
         dm.drivers_with_core_scenarios(project.drivers, project.scenarios),
         dm.stakeholder_lines(project.stakeholders, drivers=project.drivers),
         dm.decision_lines(project.decisions),
+        vision_lines(project.vision),
     )
 
 

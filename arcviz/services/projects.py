@@ -38,7 +38,7 @@ from ..ports import (
     check_id,
     is_definitely_missing,
 )
-from ..project_model import Driver, Element, Relation, view_connections, view_elements
+from ..project_model import Driver, Element, Relation, Vision, view_connections, view_elements
 from ..projects import Membership, Project, ProjectError, Section
 from ..workspaces import (
     DEFAULT_WORKSPACE_ID,
@@ -407,6 +407,7 @@ class ProjectService:
         drivers: list[Driver] | None = None,
         driver_seq: int = 0,
         decision_support: dict[str, Any] | None = None,
+        vision: Vision | None = None,
     ) -> Project:
         """A new project in the caller's personal workspace (as `create`) with the given section tree (and model
         elements, relations and architecture drivers) and a new id `<slug>-<random suffix>` (ADR-0131): imports."""
@@ -424,6 +425,7 @@ class ProjectService:
             drivers=drivers or [],
             driver_seq=driver_seq,
             decision_support=decision_support,
+            vision=vision,
         )
 
     def _create_free(
@@ -439,6 +441,7 @@ class ProjectService:
         drivers: list[Driver] | None = None,
         driver_seq: int = 0,
         decision_support: dict[str, Any] | None = None,
+        vision: Vision | None = None,
     ) -> Project:
         """Create the project under a new id `<base>-<random suffix>` (`ports.id_attempts`, ADR-0131): a taken candidate
         (practically never) moves on to a fresh suffix, so the answer never depends on other tenants' ids (#167). The
@@ -453,6 +456,7 @@ class ProjectService:
                 project.relation_seq = relation_seq
                 project.drivers = [d.model_copy(deep=True) for d in drivers or []]
                 project.driver_seq = driver_seq
+                project.vision = vision.model_copy(deep=True) if vision is not None else None
                 for key, value in (decision_support or {}).items():  # stakeholders, scenarios, decisions (M29)
                     setattr(
                         project, key, [v.model_copy(deep=True) for v in value] if isinstance(value, list) else value

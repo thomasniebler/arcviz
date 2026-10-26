@@ -32,7 +32,9 @@ def test_the_rules_are_listed():
     ids = [
         r.id
         for r in pr.PROJECT_RULES
-        if not r.id.startswith(("requirement-", "quality-requirement", "scenario-no", "decision-no", "stakeholder-no"))
+        if not r.id.startswith(
+            ("requirement-", "quality-requirement", "scenario-no", "decision-no", "stakeholder-no", "vision-", "arc42-")
+        )
     ]
     assert ids[-7:] == [
         "relation-not-shown",

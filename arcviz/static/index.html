@@ -128,6 +128,8 @@
         <button id="nav-arch-scenarios" type="button" class="nav-entry" data-route="#/architecture/scenarios" title="Qualitätsszenarien und ihre Analyse" data-i18n-title data-i18n>Szenarien</button>
         <button id="nav-arch-decisions" type="button" class="nav-entry" data-route="#/architecture/decisions" title="Architekturentscheidungen (ADRs)" data-i18n-title data-i18n>Entscheidungen</button>
         <button id="nav-arch-stakeholders" type="button" class="nav-entry" data-route="#/architecture/stakeholders" title="Stakeholder und ihre Anliegen" data-i18n-title data-i18n>Stakeholder</button>
+        <button id="nav-arch-vision" type="button" class="nav-entry" data-route="#/architecture/vision" title="Vision: wofür das Produkt da ist und woran man Erfolg erkennt" data-i18n-title data-i18n>Vision</button>
+        <button id="nav-arch-documentation" type="button" class="nav-entry" data-route="#/architecture/documentation" title="arc42-Dokumentation des Projekts: live ansehen, herunterladen, Notizen ergänzen" data-i18n-title data-i18n>Dokumentation</button>
         <button id="btn-model" type="button" class="nav-entry" title="Gemeinsames Projektmodell: Elemente, die mehrere Diagramme zeigen" data-i18n-title data-i18n>Modell</button>
       </div>
       <div class="nav-section" role="group" aria-label="Prüfen und Assistent" data-i18n-aria-label>
@@ -314,12 +316,19 @@
       <header class="page-header">
         <h2 id="arch-heading" data-i18n>Architektur</h2>
         <p class="muted" data-i18n>Treiber, Qualitätsszenarien, Entscheidungen und Stakeholder des Projekts. Der Assistent richtet sich danach.</p>
+        <div id="steward-bar" class="steward-bar hidden">
+          <label class="steward-switch" title="Der Steward prüft das Projekt nach Änderungen im Hintergrund und legt Vorschläge in die Vorschlagsliste; angewendet wird nichts von selbst." data-i18n-title><input id="steward-enabled" type="checkbox" data-edit> <span data-i18n>Steward</span></label>
+          <span id="steward-line" class="muted" role="status"></span>
+          <button id="steward-run" type="button" class="small" data-edit data-i18n>Jetzt prüfen</button>
+        </div>
       </header>
       <div id="arch-tabs" class="arch-tabs" role="tablist" aria-label="Bereiche" data-i18n-aria-label>
         <button type="button" role="tab" id="arch-tab-drivers" data-tab="drivers" data-route="#/architecture/drivers" aria-controls="arch-panel-drivers" aria-selected="true" data-i18n>Treiber</button>
         <button type="button" role="tab" id="arch-tab-scenarios" data-tab="scenarios" data-route="#/architecture/scenarios" aria-controls="arch-panel-scenarios" aria-selected="false" data-i18n>Szenarien</button>
         <button type="button" role="tab" id="arch-tab-decisions" data-tab="decisions" data-route="#/architecture/decisions" aria-controls="arch-panel-decisions" aria-selected="false" data-i18n>Entscheidungen</button>
         <button type="button" role="tab" id="arch-tab-stakeholders" data-tab="stakeholders" data-route="#/architecture/stakeholders" aria-controls="arch-panel-stakeholders" aria-selected="false" data-i18n>Stakeholder</button>
+        <button type="button" role="tab" id="arch-tab-vision" data-tab="vision" data-route="#/architecture/vision" aria-controls="arch-panel-vision" aria-selected="false" data-i18n>Vision</button>
+        <button type="button" role="tab" id="arch-tab-documentation" data-tab="documentation" data-route="#/architecture/documentation" aria-controls="arch-panel-documentation" aria-selected="false" data-i18n>Dokumentation</button>
       </div>
       <section id="arch-panel-drivers" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-drivers">
         <div class="md-toolbar">
@@ -489,6 +498,38 @@
           </form>
         </div>
         <p id="stakeholders-status" class="md-status muted" role="status"></p>
+      </section>
+      <section id="arch-panel-vision" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-vision" hidden>
+        <p class="md-intro muted" data-i18n>Wofür das Produkt da ist, woran man Erfolg erkennt und was es bewusst nicht ist. Der Assistent richtet Vorschläge daran aus; ändern kannst nur du, Assistenten schlagen höchstens eine Änderung vor.</p>
+        <form id="vision-form" class="md-detail card" data-edit-zone>
+          <label class="field-col"><span data-i18n>Aussage</span><textarea id="vision-statement" rows="4" maxlength="2000" placeholder="z. B. Teams entwerfen und dokumentieren ihre Architektur gemeinsam im Gespräch." data-i18n-placeholder></textarea></label>
+          <label class="field-col"><span data-i18n>Ziele (eines pro Zeile)</span><textarea id="vision-goals" rows="5" placeholder="z. B. Neue Teammitglieder verstehen das System am ersten Tag." data-i18n-placeholder></textarea></label>
+          <label class="field-col"><span data-i18n>Nicht-Ziele (eines pro Zeile)</span><textarea id="vision-non-goals" rows="3" placeholder="z. B. Kein Ersatz für ein Ticketsystem." data-i18n-placeholder></textarea></label>
+          <footer class="md-actions">
+            <button id="vision-save" type="submit" class="btn primary" data-edit data-i18n>Speichern</button>
+            <button id="vision-cancel" type="button" class="btn" data-i18n>Zurücksetzen</button>
+          </footer>
+        </form>
+        <p id="vision-status" class="md-status muted" role="status"></p>
+      </section>
+      <section id="arch-panel-documentation" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-documentation" hidden>
+        <p class="md-intro muted" data-i18n>Das Projekt als arc42-Dokumentation: live aus dem Modell zusammengestellt, ohne dass ein Assistent etwas dazu erfindet. Was das Modell nicht hergibt, ergänzt du als Notiz.</p>
+        <p class="md-links">
+          <a id="arc42-open" href="#" target="_blank" rel="noopener" data-i18n>arc42-Seite öffnen</a>
+          <a id="arc42-markdown" href="#" download data-i18n>Markdown</a>
+          <a id="arc42-asciidoc" href="#" download data-i18n>AsciiDoc (zip)</a>
+          <a id="arc42-docx" href="#" download data-i18n>Word (docx)</a>
+        </p>
+        <form id="documentation-form" class="md-detail card" data-edit-zone>
+          <label class="field-col"><span data-i18n>Abschnitt</span><select id="documentation-section"></select></label>
+          <p id="documentation-gaps" class="muted"></p>
+          <label class="field-col"><span data-i18n>Notiz (Leerzeile trennt Absätze)</span><textarea id="documentation-note" rows="8" maxlength="8000"></textarea></label>
+          <footer class="md-actions">
+            <button id="documentation-save" type="submit" class="btn primary" data-edit data-i18n>Speichern</button>
+            <button id="documentation-cancel" type="button" class="btn" data-i18n>Zurücksetzen</button>
+          </footer>
+        </form>
+        <p id="documentation-status" class="md-status muted" role="status"></p>
       </section>
     </section>
 

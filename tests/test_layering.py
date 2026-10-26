@@ -30,6 +30,7 @@ SERVICE_MAY_IMPORT = {
     "arcviz.envconfig",  # reading start-up variables (writers.WriterConfig, #189); no package imports
     "arcviz.tokens",  # personal access tokens: the format and the stored shape (ADR-0173)
     "arcviz.proposals",  # stored proposals: the shape, the diff of a preview and the retention (ADR-0172)
+    "arcviz.steward_model",  # the steward's configuration and per-project document (ADR-0204)
     "arcviz.requirement_model",  # requirements: the types, the operations and the agent policy (ADR-0188)
 }
 

@@ -1,20 +1,23 @@
 // The Architektur page (spec: docs/architecture/specs/app-shell.md and decision-support.md, ADR-0194): one main view with
-// the tabs Treiber, Szenarien, Entscheidungen and Stakeholder. Every tab loads its data when it is shown; a decision taken
+// the tabs Treiber, Szenarien, Entscheidungen, Stakeholder, Vision and Dokumentation. Every tab loads its data when it is shown; a decision taken
 // from a scenario analysis opens in the Entscheidungen tab. Every tab is a two-pane list and editor (spec:
 // architecture-workspace.md); leaving a tab or the page with unsaved edits asks first. Which tab is shown is part of the URL hash (routes.js); the
 // shell (shell.js) calls showArchitectureView.
 import { $, setHash } from "./dom.js";
 import { initDecisionPanel, isDecisionDirty, loadDecisions } from "./decisionpanel.js";
 import { initDriverPanel, isDriverDirty, loadDrivers } from "./driverpanel.js";
+import { initDocumentationPanel, isDocumentationDirty, loadDocumentation } from "./documentationpanel.js";
 import { confirmDiscard } from "./mdpane.js";
 import { currentProject, onProjectShown } from "./navigator.js";
 import { ARCH_TABS, formatRoute } from "./routes.js";
+import { initStewardPanel, loadSteward } from "./stewardpanel.js";
 import { initScenarioPanel, isScenarioDirty, loadScenarios } from "./scenariopanel.js";
 import { initStakeholderPanel, isStakeholderDirty, loadStakeholders } from "./stakeholderpanel.js";
+import { initVisionPanel, isVisionDirty, loadVision } from "./visionpanel.js";
 
-const LOADERS = { drivers: loadDrivers, scenarios: loadScenarios, decisions: loadDecisions, stakeholders: loadStakeholders };
+const LOADERS = { drivers: loadDrivers, scenarios: loadScenarios, decisions: loadDecisions, stakeholders: loadStakeholders, vision: loadVision, documentation: loadDocumentation };
 
-const DIRTY = { drivers: isDriverDirty, scenarios: isScenarioDirty, decisions: isDecisionDirty, stakeholders: isStakeholderDirty };
+const DIRTY = { drivers: isDriverDirty, scenarios: isScenarioDirty, decisions: isDecisionDirty, stakeholders: isStakeholderDirty, vision: isVisionDirty, documentation: isDocumentationDirty };
 
 let shown = false;
 let current = ARCH_TABS[0];
@@ -48,7 +51,10 @@ export async function showArchitectureView(on, tab) {
   shown = on;
   $("architecture-view").classList.toggle("hidden", !on);
   document.querySelector(".layout")?.classList.toggle("architecture-mode", on);
-  if (on && currentProject()) await show(ARCH_TABS.includes(tab) ? tab : current);
+  if (on && currentProject()) {
+    loadSteward(); // the status line loads beside the tab, never blocks it
+    await show(ARCH_TABS.includes(tab) ? tab : current);
+  }
 }
 
 /** `onApply(text)` sends an analysis option's instruction as a preview chat turn (and leaves the page first). */
@@ -56,6 +62,9 @@ export function initArchView({ onApply }) {
   initDriverPanel();
   initDecisionPanel();
   initStakeholderPanel();
+  initVisionPanel();
+  initStewardPanel();
+  initDocumentationPanel();
   initScenarioPanel({
     onDecided: async (decisionId) => {
       setHash(formatRoute({ view: "architecture", tab: "decisions" }));
