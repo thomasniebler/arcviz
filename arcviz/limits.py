@@ -102,6 +102,7 @@ def rate_class(method: str, path: str) -> str | None:
                 "/requirements/refine",
                 "/requirements/derive",
                 "/scenarios/qualities",
+                "/decisions/testability",
                 "/steward/run",
             )
         )

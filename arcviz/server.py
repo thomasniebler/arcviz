@@ -40,6 +40,7 @@ from . import (
     arc42_export,
     arc42_html,
     auth,
+    decision_testability,
     diff,
     exchange,
     i18n,
@@ -2281,6 +2282,16 @@ def create_app(
         if not quality_suggestion.has_text(body):
             raise HTTPException(400, "Give the scenario a title or at least one of its parts.")
         return quality_suggestion.suggest(get_provider(), body)
+
+    @app.post("/api/projects/{project_id}/decisions/testability")
+    def suggest_decision_testability(svc: Svc, project_id: str, body: dict[str, Any] = Body(...)) -> dict[str, Any]:  # noqa: B008
+        """Suggest assumptions, tests and a falsification criterion for the decision text in the body: one model call,
+        nothing written (spec: adr-testability.md, ADR-0209); a failed or useless answer is `llm.ok = false`."""
+        with project_errors():
+            svc.projects.get(project_id)  # access and existence (404), as for every project route
+        if not decision_testability.has_text(body):
+            raise HTTPException(400, "Give the decision a title or at least one of its texts.")
+        return decision_testability.suggest(get_provider(), body)
 
     @app.get("/api/diagrams/{diagram_id}/checks")
     def run_checks(svc: Svc, diagram_id: str) -> dict[str, Any]:

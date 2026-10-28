@@ -407,7 +407,7 @@ whose diagram exists, in membership order, with the fields of `GET /api/diagrams
 A project with a shared model exports `project.elements` (and `sections[].element`) as `schema_version` 2,
 and with relations also `project.relations` (and `project.relation_seq`, the highest generated `r<n>`, so ids are never
 issued again after an import) as `schema_version` 3, and with architecture drivers also `project.drivers` and
-`project.driver_seq` as `schema_version` 4 (5 with decision support, 6 when an element has code links, 7 with requirements or links to them and to stakeholders, 8 with ISO 25010 characteristics on scenarios, 9 with a project vision; the arc42 notes are not part of a bundle); without a model the bundle stays version 1. The import creates the elements with their ids, so the links inside
+`project.driver_seq` as `schema_version` 4 (5 with decision support, 6 when an element has code links, 7 with requirements or links to them and to stakeholders, 8 with ISO 25010 characteristics on scenarios, 9 with a project vision, 10 with decisions that carry assumptions or a falsification criterion; the arc42 notes are not part of a bundle); without a model the bundle stays version 1. The import creates the elements with their ids, so the links inside
 the diagram documents stay valid.
 
 ## Decision support: stakeholders, scenarios, decisions
@@ -429,7 +429,8 @@ writes need editor, reads viewer. Bodies are the arguments of the project operat
 | `POST /api/projects/{pid}/decisions` | Body `{"title", "status"? (draft, accepted, superseded, rejected), "context"?, "options"? ([{title, description, pros, cons}], ≤ 5), "chosen"?, "decision"?, "consequences"?, "scenario"?, "drivers"?, "elements"?, "superseded_by"?}` | 201 `{"decision", …}`, 400, 403, 404 |
 | `PATCH /api/projects/{pid}/decisions/{id}` | Any field; the decision text is `text`; `chosen: -1` clears the choice; `accepted` sets `decided_at`; `superseded` needs `superseded_by` | 200 `{"decision", …}`, 400, 403, 404 |
 | `DELETE /api/projects/{pid}/decisions/{id}` | Remove (a decision it superseded becomes rejected); an `accepted` decision must be rejected or superseded first | 200, 400, 403, 404, 409 (accepted) |
-| `GET /api/projects/{pid}/decisions/{id}/markdown` | The ADR as `text/markdown` (download `adr-<n>.md`) | 200, 404 |
+| `GET /api/projects/{pid}/decisions/{id}/markdown` | The ADR as `text/markdown` in the layout of MADR 4 plus the section *Annahmen und Testbarkeit* (download `adr-<n>.md`) | 200, 404 |
+| `POST /api/projects/{pid}/decisions/testability` | Suggest assumptions, cheap tests and a falsification criterion for the decision text in the body (`title`, `context`, `decision`, `consequences`, `options`, `chosen`): one model call, nothing stored, unusable items dropped; rate class `review`. `{"assumptions": [{"statement", "test", "effort"}], "falsification", "llm": {"ok", "error", "dropped", "usage"}}` | 200 (also when the call failed: `llm.ok` false), 400 (no text), 404 |
 
 Bundles with any of the three lists are `schema_version` 5.
 

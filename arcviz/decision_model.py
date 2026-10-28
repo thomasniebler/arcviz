@@ -30,12 +30,18 @@ MAX_OPTIONS = 5
 MAX_OPTION_DESCRIPTION = 1000
 MAX_POINTS = 6  # pros or cons of an option
 MAX_POINT = 300
+MAX_ASSUMPTIONS = 8  # assumptions of one decision (spec: adr-testability.md, ADR-0209)
+MAX_ASSUMPTION = 300  # the statement of an assumption
+MAX_TEST = 600  # how to test it, and the evidence so far
 PROMPT_BLOCK_BUDGET = 3_000  # characters of stakeholders, and of decisions, in a system prompt
 
 INFLUENCE = DRIVER_LEVELS
 SCENARIO_KINDS = ("usage", "growth", "change", "failure", "threat", "cost", "other")
 SCENARIO_PARTS = ("source", "stimulus", "environment", "artifact", "response", "response_measure")
 DECISION_STATUSES = ("draft", "accepted", "superseded", "rejected")
+ASSUMPTION_STATUSES = ("untested", "confirmed", "refuted")
+ASSUMPTION_STATUS_TEXT = {"untested": N_("ungetestet"), "confirmed": N_("bestätigt"), "refuted": N_("widerlegt")}
+LEVEL_TEXT = {"high": N_("hoch"), "medium": N_("mittel"), "low": N_("niedrig")}
 
 SCENARIO_KIND_TEXT = {
     "usage": N_("Nutzung"),
@@ -112,6 +118,23 @@ class DecisionOption(BaseModel):
     cons: list[str] = Field(default_factory=list)
 
 
+class Assumption(BaseModel):
+    """What a decision rests on and how cheaply that could be tested (spec: adr-testability.md)."""
+
+    statement: str
+    test: str = ""  # how to find out, and which result would count
+    effort: str = "medium"  # DRIVER_LEVELS: the cost of running that test
+    status: str = "untested"  # ASSUMPTION_STATUSES; omitted from dumps while untested
+    evidence: str = ""  # what is known so far
+
+    @model_serializer(mode="wrap")
+    def _omit_defaults(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = handler(self)
+        if data.get("status") == "untested":
+            data.pop("status", None)
+        return data
+
+
 class Decision(BaseModel):
     """An architecture decision record (ADR)."""
 
@@ -132,6 +155,9 @@ class Decision(BaseModel):
     requirements: list[str] = Field(default_factory=list)  # the requirements it addresses, ids (ADR-0189)
     stakeholders: list[str] = Field(default_factory=list)  # who it concerns or who decided, ids
     origin: str = ""
+    # testability (ADR-0209); omitted from dumps while empty
+    assumptions: list[Assumption] = Field(default_factory=list)
+    falsification: str = ""
 
     @model_serializer(mode="wrap")
     def _omit_empty_links(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
@@ -140,7 +166,7 @@ class Decision(BaseModel):
 
 def _without_empty(data: dict[str, Any]) -> dict[str, Any]:
     """The link fields of M31 are omitted from dumps while empty, so stored data and fingerprints do not change."""
-    for key in ("requirements", "stakeholders", "origin", "qualities"):
+    for key in ("requirements", "stakeholders", "origin", "qualities", "assumptions", "falsification"):
         if not data.get(key):
             data.pop(key, None)
     return data
@@ -270,7 +296,39 @@ def scenario_text(scenario: Scenario) -> str:
     return "\n".join(lines)
 
 
-# ---- Markdown ADR ----------------------------------------------------------------------------------------------------
+# ---- Markdown ADR (MADR 4, spec: adr-testability.md, ADR-0210) -----------------------------------------------------
+
+
+def _cell(text: str) -> str:
+    """A table cell: one line, the pipe escaped."""
+    return (single_line(text) or "–").replace("|", "\\|")
+
+
+def _status_line(decision: Decision) -> str:
+    if decision.status == "accepted":
+        return _("Angenommen ({date})", date=decision.decided_at[:10]) if decision.decided_at else _("Angenommen")
+    if decision.status == "superseded" and decision.superseded_by:
+        return _("Ersetzt durch {adr}", adr=adr_label(decision.superseded_by))
+    return _(STATUS_TEXT[decision.status]) if decision.status in STATUS_TEXT else decision.status
+
+
+def _testability(decision: Decision) -> list[str]:
+    lines = [_("## Annahmen und Testbarkeit"), ""]
+    if decision.assumptions:
+        lines += [
+            "| " + " | ".join([_("Annahme"), _("Test"), _("Aufwand"), _("Stand"), _("Beleg")]) + " |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+        for a in decision.assumptions:
+            effort = _(LEVEL_TEXT[a.effort]) if a.effort in LEVEL_TEXT else a.effort
+            status = _(ASSUMPTION_STATUS_TEXT[a.status]) if a.status in ASSUMPTION_STATUS_TEXT else a.status
+            lines.append("| " + " | ".join(_cell(x) for x in (a.statement, a.test, effort, status, a.evidence)) + " |")
+        lines.append("")
+    if decision.falsification.strip():
+        lines += [_("Widerlegt, wenn: {criterion}", criterion=single_line(decision.falsification)), ""]
+    if not decision.assumptions and not decision.falsification.strip():
+        lines += ["–", ""]
+    return lines
 
 
 def decision_markdown(
@@ -279,26 +337,40 @@ def decision_markdown(
     elements: list[Element],
     scenarios: list[Scenario],
 ) -> str:
-    """The decision as a Markdown ADR (spec: decision-support.md, Markdown ADR)."""
-    if decision.status == "accepted":
-        status = _("Angenommen ({date})", date=decision.decided_at[:10]) if decision.decided_at else _("Angenommen")
-    elif decision.status == "superseded" and decision.superseded_by:
-        status = _("Ersetzt durch {adr}", adr=adr_label(decision.superseded_by))
-    else:
-        status = _(STATUS_TEXT[decision.status]) if decision.status in STATUS_TEXT else decision.status
-    lines = [f"# {adr_label(decision.id)}: {decision.title}", "", _("- Status: {status}", status=status)]
+    """The decision as a Markdown ADR in the layout of MADR 4 plus a testability section."""
+    lines = [
+        f"# {adr_label(decision.id)}: {decision.title}",
+        "",
+        _("- Status: {status}", status=_status_line(decision)),
+    ]
     scenario = next((s for s in scenarios if s.id == decision.scenario), None)
     if scenario is not None:
         lines.append(_("- Szenario: {title} ({id})", title=scenario.title, id=scenario.id))
-    by_driver = {d.id: d.title for d in drivers}
-    if decision.drivers:
-        names = ", ".join(by_driver.get(d, d) for d in decision.drivers)
-        lines.append(_("- Treiber: {names}", names=names))
     by_element = {e.id: e.name for e in elements}
     if decision.elements:
         names = ", ".join(by_element.get(e, e) for e in decision.elements)
         lines.append(_("- Elemente: {names}", names=names))
-    lines += ["", _("## Kontext"), "", decision.context.strip() or "–", "", _("## Optionen"), ""]
+    lines += ["", _("## Kontext und Problemstellung"), "", decision.context.strip() or "–", ""]
+    by_driver = {d.id: d.title for d in drivers}
+    lines += [_("## Entscheidungstreiber"), ""]
+    lines += [f"- {by_driver.get(d, d)}" for d in decision.drivers] or ["–"]
+    lines += ["", _("## Betrachtete Optionen"), ""]
+    lines += [f"{n + 1}. {o.title}" for n, o in enumerate(decision.options)] or ["–"]
+    lines += ["", _("## Entscheidung"), ""]
+    reason = decision.decision.strip()
+    if decision.chosen is not None and 0 <= decision.chosen < len(decision.options):
+        title = decision.options[decision.chosen].title
+        lines.append(
+            _("Gewählte Option: „{title}“, weil {reason}", title=title, reason=reason)
+            if reason
+            else _("Gewählte Option: „{title}“.", title=title)
+        )
+    else:
+        lines.append(_("Noch keine Option gewählt."))
+        if reason:
+            lines += ["", reason]
+    lines += ["", _("### Konsequenzen"), "", decision.consequences.strip() or "–", ""]
+    lines += [_("## Vor- und Nachteile der Optionen"), ""]
     if not decision.options:
         lines += ["–", ""]
     for n, option in enumerate(decision.options):
@@ -306,10 +378,9 @@ def decision_markdown(
         lines += [f"### {n + 1}. {option.title}{mark}", ""]
         if option.description:
             lines += [option.description.strip(), ""]
-        if option.pros:
-            lines += [_("Pro:"), "", *[f"- {p}" for p in option.pros], ""]
-        if option.cons:
-            lines += [_("Contra:"), "", *[f"- {c}" for c in option.cons], ""]
-    lines += [_("## Entscheidung"), "", decision.decision.strip() or "–", "", _("## Konsequenzen"), ""]
-    lines += [decision.consequences.strip() or "–", ""]
+        lines += [f"- {_('Pro')}: {p}" for p in option.pros] + [f"- {_('Contra')}: {c}" for c in option.cons]
+        if option.pros or option.cons:
+            lines.append("")
+    if decision.assumptions or decision.falsification.strip() or decision.status == "accepted":
+        lines += _testability(decision)
     return "\n".join(lines)

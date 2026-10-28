@@ -453,6 +453,17 @@
               <div id="decision-options" class="decision-options"></div>
               <label class="field-col"><span data-i18n>Entscheidung und Begründung</span><textarea id="decision-text" rows="4" maxlength="3000"></textarea></label>
               <label class="field-col"><span data-i18n>Konsequenzen</span><textarea id="decision-consequences" rows="4" maxlength="3000"></textarea></label>
+              <fieldset id="decision-testability" class="md-group">
+                <legend data-i18n>Testbarkeit</legend>
+                <p class="muted" data-i18n>Worauf stützt sich die Entscheidung, und wie ließe sich das günstig prüfen? Der Assistent kann Annahmen und Tests vorschlagen; gespeichert wird erst, wenn du speicherst.</p>
+                <div id="decision-assumptions" class="assumption-rows"></div>
+                <div class="md-actions-row">
+                  <button type="button" id="decision-assumption-add" class="btn small" data-edit data-i18n>+ Annahme</button>
+                  <button type="button" id="decision-testability-suggest" class="btn small" data-edit data-i18n>Vorschlag vom Assistenten</button>
+                  <span id="decision-testability-note" class="muted" role="status"></span>
+                </div>
+                <label class="field-col"><span data-i18n>Widerlegt, wenn …</span><textarea id="decision-falsification" rows="2" maxlength="3000" placeholder="z. B. Der Failover dauert im Test länger als fünf Minuten." data-i18n-placeholder></textarea></label>
+              </fieldset>
               <p id="decision-refs" class="muted"></p>
               <footer class="md-actions">
                 <button type="submit" id="decision-save" class="btn primary" data-edit data-i18n>Speichern</button>

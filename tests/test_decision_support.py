@@ -194,11 +194,11 @@ def test_markdown_adr():
     text = dm.decision_markdown(p.decisions[0], p.drivers, p.elements, p.scenarios)
     assert text.startswith("# ADR-1: Zweite Region\n")
     assert "- Status: Angenommen (" in text
-    assert (
-        "- Szenario: Region fällt aus (q1)" in text and "- Treiber: Verfügbarkeit" in text and "- Elemente: API" in text
-    )
-    assert "### 2. Aktiv/Aktiv (gewählt)" in text and "Contra:\n\n- doppelte Kosten" in text
-    assert "## Entscheidung\n\nAktiv/Aktiv." in text and "## Konsequenzen\n\nMehr Kosten." in text
+    assert "- Szenario: Region fällt aus (q1)" in text and "- Elemente: API" in text
+    assert "## Entscheidungstreiber\n\n- Verfügbarkeit" in text
+    assert "### 2. Aktiv/Aktiv (gewählt)" in text and "- Contra: doppelte Kosten" in text
+    assert "## Entscheidung\n\nGewählte Option: „Aktiv/Aktiv“, weil Aktiv/Aktiv." in text
+    assert "### Konsequenzen\n\nMehr Kosten." in text
 
 
 # ---- prompt lines ------------------------------------------------------------------------------------------------

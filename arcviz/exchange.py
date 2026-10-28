@@ -66,12 +66,15 @@ SCHEMA_VERSION = 2  # the newest version this Arcviz reads and writes
 # need version 2 (it added `type`), which older versions refuse instead of importing an empty diagram.
 DEPLOYMENT_SCHEMA_VERSION = 1
 PROJECT_FORMAT = "arcviz-project"
-PROJECT_SCHEMA_VERSION = 9  # the newest project bundle version this Arcviz reads and writes
+PROJECT_SCHEMA_VERSION = 10  # the newest project bundle version this Arcviz reads and writes
 REQUIREMENTS_PROJECT_SCHEMA_VERSION = (
     7  # requirements, or links to them / to stakeholders on drivers, scenarios, decisions
 )
 VISION_PROJECT_SCHEMA_VERSION = (
     9  # a project vision (ADR-0203): older versions refuse the bundle instead of dropping it
+)
+TESTABILITY_PROJECT_SCHEMA_VERSION = (
+    10  # decisions with assumptions or a falsification criterion (ADR-0209): older versions refuse the bundle
 )
 QUALITIES_PROJECT_SCHEMA_VERSION = 8  # scenarios with ISO 25010 characteristics (ADR-0202)
 CODE_REFS_PROJECT_SCHEMA_VERSION = 6  # elements with code links (spec: agent-access.md); 5 added decision support
@@ -387,6 +390,8 @@ def export_project(
     if project.vision is not None and not project.vision.is_empty():  # ADR-0203
         model["vision"] = project.vision.model_dump(mode="json")
         schema_version = VISION_PROJECT_SCHEMA_VERSION
+    if any(d.assumptions or d.falsification for d in project.decisions):  # ADR-0209
+        schema_version = TESTABILITY_PROJECT_SCHEMA_VERSION
     return {
         "format": PROJECT_FORMAT,
         "schema_version": schema_version,

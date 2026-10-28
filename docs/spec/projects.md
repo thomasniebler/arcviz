@@ -407,6 +407,8 @@ project), `project_adopter(pid)`, `adoption_problems(pid, diagram, adoption)` an
 (adopted links whose element was removed or re-kinded meanwhile are taken back and reported as skipped, ADR-0128), `apply_operation(diagram_id, op, args, label, expected)` (the `/ops` route: operation
 and links in one version), `adoption_plan(pid)` and `adopt_all(pid) -> (done, failed)` (one version "Projektelemente
 übernommen" per diagram). `proposal.apply_proposal(…, models=)` adopts after the preview check and settles.
+Decision testability ([design](../architecture/specs/adr-testability.md), ADR-0209, ADR-0210): `Decision.assumptions` (`decision_model.Assumption`: `statement` ≤ 300, `test` and `evidence` ≤ 600, `effort` low/medium/high, `status` untested/confirmed/refuted, at most 8) and `Decision.falsification` (≤ 3000) are replaced as a whole by `add_decision`/`update_decision`, omitted from dumps while empty (`status` while untested); `decision_testability.suggest` (one `complete_tool` call, `POST …/decisions/testability`, rate class `review`) only suggests and stores nothing; the Markdown ADR follows MADR 4; a bundle that carries them is `schema_version` 10.
+
 Decision support ([design](../architecture/specs/decision-support.md), M29, ADR-0166..0168): `Project.stakeholders`,
 `Project.scenarios`, `Project.decisions` and `stakeholder_seq`/`scenario_seq`/`decision_seq` (all omitted while empty /
 0) with the types and bounds of `decision_model.py` (`MAX_STAKEHOLDERS` 50, `MAX_SCENARIOS` 200, `MAX_DECISIONS` 100;

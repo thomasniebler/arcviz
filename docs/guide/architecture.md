@@ -65,7 +65,17 @@ Architecture decision records (ADRs), numbered ADR-1, ADR-2, …, listed by stat
 analysis), the options with pros and cons, the decision ("Gewählt: … Begründung: …", complete the reasoning) and its
 consequences. Edit the texts, then set the status to **Angenommen** and save. **Neue Entscheidung…** records one without
 an analysis. A decision that a newer one replaces gets the status **Ersetzt** and names the newer one.
-**Als Markdown** downloads the ADR as a Markdown file, for example for a repository.
+**Als Markdown** downloads the ADR as a Markdown file in the layout of [MADR 4](https://adr.github.io/madr/) (context and
+problem statement, decision drivers, considered options, decision outcome, consequences, pros and cons of the options),
+for example for a repository.
+
+**Testbarkeit.** Every decision rests on assumptions ("the failover takes under a minute", "the team can operate
+Kubernetes"). In the group *Testbarkeit* of the editor, list them, say for each how it could be tested cheaply and
+what result would count, estimate the effort of that test (gering, mittel, hoch) and record what you know so far
+(*ungetestet*, *bestätigt*, *widerlegt*, with the evidence). *Widerlegt, wenn …* names the observation that would make
+you reverse the decision. **Vorschlag vom Assistenten** proposes assumptions and tests from the text of the decision;
+it adds rows you can edit or remove and stores nothing until you save. The ADR export gets a section *Annahmen und
+Testbarkeit*; an accepted decision without assumptions shows *ohne Annahmen* on its card.
 
 **Accepted decisions bind.** The assistants know them: when a request would contradict one, they say which (ADR-<n>)
 and ask before changing anything. The AI review of a diagram and of the project reports a finding *"Widerspricht
