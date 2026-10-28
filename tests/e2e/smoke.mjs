@@ -1409,6 +1409,19 @@ try {
   const adr = await page.evaluate(async (href) => (await fetch(href)).text(), await page.getAttribute("#decision-markdown", "href"));
   check("an accepted decision exports as a Markdown ADR", adr.startsWith("# ADR-1: Region fällt aus: Aktiv/Aktiv") && adr.includes("- Status: Angenommen"), adr.slice(0, 120));
   await page.screenshot({ path: join(outDir, "decision.png") });
+  // 14h2. readable editors (spec: decision-ui-readability.md) and the testability group (spec: adr-testability.md)
+  check("the text areas of the decision editor show their whole text", await page.locator("#decision-form textarea").evaluateAll((areas) => areas.filter((a) => a.offsetParent).every((a) => a.scrollHeight <= a.clientHeight + 2)));
+  check("a Markdown reply in the chat is not laid out as the two-pane grid", await page.evaluate(() => { const m = document.createElement("div"); m.className = "md"; document.querySelector(".messages").appendChild(m); const grid = getComputedStyle(m).display === "grid"; m.remove(); return !grid; }));
+  await page.click("#decision-assumption-add");
+  await page.fill("#decision-assumptions .assumption-row input", "Failover unter 60 s");
+  await page.fill("#decision-falsification", "Failover dauert länger als 5 Minuten");
+  await page.click("#decision-save");
+  await page.waitForFunction(() => document.querySelector("#decisions-list .md-chips")?.textContent.includes("1 Annahmen, 1 ungetestet"), null, { timeout: 10000 });
+  const madr = await page.evaluate(async (href) => (await fetch(href)).text(), await page.getAttribute("#decision-markdown", "href"));
+  check("the ADR export follows MADR and carries the assumptions", madr.includes("## Kontext und Problemstellung") && madr.includes("## Annahmen und Testbarkeit") && madr.includes("Failover unter 60 s") && madr.includes("Widerlegt, wenn: Failover dauert länger als 5 Minuten"), madr.slice(0, 80));
+  await page.click("#decision-preview summary");
+  await page.waitForFunction(() => document.getElementById("decision-preview-body").textContent.includes("Kontext und Problemstellung"), null, { timeout: 10000 });
+  check("the preview renders the exported ADR", (await page.locator("#decision-preview-body h3, #decision-preview-body h4").count()) > 2 && (await page.locator("#decision-preview-body table").count()) === 1);
   await page.click("#arch-tab-stakeholders");
   await page.fill("#stakeholder-name", "Betrieb");
   await page.fill("#stakeholder-role", "SRE");

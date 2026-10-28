@@ -9,6 +9,7 @@ import { t } from "./i18n.js";
 import { filterItems, stepId } from "./listnav.js";
 import { bindListKeys, card, chip, confirmDiscard, hideIfEmpty, markSelected } from "./mdpane.js";
 import { currentProject } from "./navigator.js";
+import { snippet } from "./readability.js";
 
 let stakeholders = [];
 let drivers = [];
@@ -42,7 +43,7 @@ function renderList() {
     const li = document.createElement("li");
     li.className = "stakeholder-row";
     li.dataset.stakeholderId = s.id;
-    li.appendChild(card({ id: s.id, title: s.name, chips: [chip(s.role || t("ohne Rolle")), chip(influenceLabel(s.influence))], meta: s.concerns || "" }));
+    li.appendChild(card({ id: s.id, title: s.name, chips: [chip(s.role || t("ohne Rolle")), chip(influenceLabel(s.influence))], meta: snippet(s.concerns) }));
     list.appendChild(li);
   }
   markSelected(list, selected);
@@ -79,7 +80,10 @@ function startNew() {
   $("stakeholder-name").focus();
 }
 
+let writes = 0; // counts the writes shown: a list read that started before one is stale when it arrives
+
 function show(result, keep = selected) {
+  writes += 1;
   stakeholders = result.stakeholders;
   renderList();
   fillForm(byId(keep));
@@ -107,9 +111,11 @@ async function save() {
 /** Load and show the stakeholders of the open project (when the tab is shown). */
 export async function loadStakeholders() {
   if (!currentProject()) return;
+  const seen = writes;
   const [listed, driverList] = await Promise.all([api(path("stakeholders")), api(path("drivers"))]);
-  stakeholders = listed.stakeholders;
   drivers = driverList.drivers;
+  if (seen !== writes) return; // a save or delete was shown meanwhile: this list is older than what is on screen
+  stakeholders = listed.stakeholders;
   say("");
   renderList();
   if (!dirty) fillForm(byId(selected)); // data arriving late must not wipe what the user has already typed

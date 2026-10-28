@@ -2,7 +2,8 @@
 // architecture-workspace.md): architecture decision records by status as a filterable card list with one editor beside it
 // (title, status, superseded by, context, decision, consequences; the options read-only with the chosen one marked; a
 // new decision or the selected one) and the Markdown ADR. Accepted decisions bind the assistants and the reviews.
-import { api } from "./api.js";
+import { api, apiFetch } from "./api.js";
+import { setRichText } from "./chatlog.js";
 import { $, option } from "./dom.js";
 import { STATUS_LABELS, adrLabel, changedFields, sortedDecisions, statusLabel } from "./decisions.js";
 import { locale, t } from "./i18n.js";
@@ -10,6 +11,7 @@ import { deleteGate } from "./lifecycle.js";
 import { filterItems, stepId } from "./listnav.js";
 import { bindListKeys, card, chip, confirmDiscard, hideIfEmpty, markSelected } from "./mdpane.js";
 import { currentProject } from "./navigator.js";
+import { snippet } from "./readability.js";
 import { chosenRequirements, fillRequirementSelect } from "./requirementpicker.js";
 import { ASSUMPTION_STATUS_LABELS, EFFORT_LABELS, MAX_ASSUMPTION, MAX_ASSUMPTIONS, assumptionStatusLabel, blankAssumption, effortLabel, mergeSuggestion, normalizeRows, suggestionBody, testabilityChip } from "./testability.js";
 
@@ -57,7 +59,7 @@ function render() {
   for (const d of shown) {
     const li = el("li", `decision-row status-${d.status}`);
     li.dataset.decisionId = d.id;
-    li.appendChild(card({ id: d.id, lead: adrLabel(d.id), title: d.title, chips: [chip(statusLabel(d.status), STATUS_TONES[d.status] || ""), ...cardChips(d)] }));
+    li.appendChild(card({ id: d.id, lead: adrLabel(d.id), title: d.title, chips: [chip(statusLabel(d.status), STATUS_TONES[d.status] || ""), ...cardChips(d)], meta: snippet(d.decision || d.context) }));
     list.appendChild(li);
   }
   markSelected(list, editing);
@@ -231,18 +233,21 @@ function edit(id) {
   setRows(d.assumptions);
   const options = $("decision-options");
   options.replaceChildren();
-  if (d.options.length) options.appendChild(el("span", "points-label", t("Optionen")));
   d.options.forEach((o, n) => {
     const card = el("div", `analysis-option${d.chosen === n ? " chosen" : ""}`);
     card.appendChild(el("strong", "", `${n + 1}. ${o.title}${d.chosen === n ? ` ${t("(gewählt)")}` : ""}`));
     if (o.description) card.appendChild(el("p", "", o.description));
+    const points = el("div", "option-points");
     for (const [label, items, cls] of [[t("Pro"), o.pros, "pros"], [t("Contra"), o.cons, "cons"]]) {
       if (!items.length) continue;
-      card.appendChild(el("span", `points-label ${cls}`, label));
+      const column = el("div");
+      column.appendChild(el("span", `points-label ${cls}`, label));
       const list = el("ul", `points ${cls}`);
       for (const item of items) list.appendChild(el("li", "", item));
-      card.appendChild(list);
+      column.appendChild(list);
+      points.appendChild(column);
     }
+    if (points.children.length) card.appendChild(points);
     options.appendChild(card);
   });
   const name = (list, id, attr) => list.find((x) => x.id === id)?.[attr] ?? id;
@@ -255,6 +260,21 @@ function edit(id) {
   ].filter(Boolean);
   $("decision-refs").textContent = refs.join(" · ");
   $("decision-markdown").href = path("decisions", d.id, "markdown");
+  $("decision-preview").open = false;
+  $("decision-preview-body").replaceChildren();
+}
+
+/** Show the exported ADR of the decision in the editor (its stored state), rendered like a chat reply. */
+async function loadPreview() {
+  const id = editing;
+  const body = $("decision-preview-body");
+  if (!id || body.dataset.loaded === id) return;
+  const res = await apiFetch(path("decisions", id, "markdown"));
+  if (!res.ok) { body.textContent = t("Die Vorschau ist nicht verfügbar."); return; }
+  const text = await res.text();
+  if (id !== editing) return; // another decision is open now
+  setRichText(body, text);
+  body.dataset.loaded = id;
 }
 
 async function createDecision() {
@@ -314,6 +334,7 @@ export function initDecisionPanel() {
   }, open);
   $("decisions-filter").addEventListener("input", () => { say(""); render(); });
   $("decision-add").addEventListener("click", startNew);
+  $("decision-preview").addEventListener("toggle", () => { if ($("decision-preview").open) { $("decision-preview-body").dataset.loaded = ""; guarded(loadPreview); } });
   $("decision-assumption-add").addEventListener("click", () => { rows.push(blankAssumption()); dirty = true; renderRows(); $("decision-assumptions").querySelector(".assumption-row:last-child input")?.focus(); });
   $("decision-testability-suggest").addEventListener("click", () => guarded(suggestTestability));
   const form = $("decision-form");

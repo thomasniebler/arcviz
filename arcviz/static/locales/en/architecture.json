@@ -303,5 +303,9 @@
   "+ Annahme": "+ Assumption",
   "Vorschlag vom Assistenten": "Suggestion from the assistant",
   "Widerlegt, wenn …": "Refuted if …",
-  "z. B. Der Failover dauert im Test länger als fünf Minuten.": "e.g. The failover takes longer than five minutes in the test."
+  "z. B. Der Failover dauert im Test länger als fünf Minuten.": "e.g. The failover takes longer than five minutes in the test.",
+  "Worum geht es, welche Kräfte wirken?": "What is it about, which forces are at play?",
+  "Kontext": "Context",
+  "Vorschau des exportierten ADR": "Preview of the exported ADR",
+  "Die Vorschau ist nicht verfügbar.": "The preview is not available."
 }

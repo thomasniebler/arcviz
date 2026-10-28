@@ -138,6 +138,7 @@ Rules that follow from the table:
 | [Decision support: stakeholders, scenarios, analysis, decisions](specs/decision-support.md) | Implemented | #226, #231, #232, #233 |
 | [ISO/IEC 25010 quality characteristics of scenarios](specs/iso25010-qualities.md) | Implemented | none yet |
 | [ADR testability and the MADR export](specs/adr-testability.md) | Implemented | #12 |
+| [Readability of the Architektur editors](specs/decision-ui-readability.md) | Implemented | #14 |
 | [Deployment traits: managed services and built-in redundancy](specs/deployment-traits.md) | Implemented | #236 |
 | [Agent access: MCP endpoint, code links, stored proposals](specs/agent-access.md) | Implemented | #237 |
 | [Agent authentication: PATs and OIDC bearer tokens](specs/agent-authentication.md) | Implemented | #238 |

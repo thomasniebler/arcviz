@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const staticDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "arcviz", "static");
 const modules = readdirSync(staticDir).filter((f) => f.endsWith(".js")).sort();
 const ENTRY = "app.js";
-const PURE = ["access.js", "agentaccess.js", "commands.js", "conflicts.js", "decisions.js", "drivers.js", "elements.js", "lifecycle.js", "listnav.js", "palette.js", "presence.js", "writequeue.js", "findings.js", "format.js", "geometry.js", "i18n.js", "model.js", "requirements.js", "steward.js", "testability.js", "vision.js", "markdown.js", "onboarding.js", "projects.js", "projectchat.js", "proposal.js", "qualities.js", "reply.js", "relations.js", "routes.js", "sharedmodel.js", "skins.js", "speech.js", "sse.js", "svgsafe.js", "types.js", "whatsnew.js"];
+const PURE = ["access.js", "agentaccess.js", "commands.js", "conflicts.js", "decisions.js", "drivers.js", "elements.js", "lifecycle.js", "listnav.js", "palette.js", "presence.js", "writequeue.js", "findings.js", "format.js", "geometry.js", "i18n.js", "model.js", "requirements.js", "steward.js", "testability.js", "vision.js", "markdown.js", "onboarding.js", "projects.js", "projectchat.js", "proposal.js", "qualities.js", "readability.js", "reply.js", "relations.js", "routes.js", "sharedmodel.js", "skins.js", "speech.js", "sse.js", "svgsafe.js", "types.js", "whatsnew.js"];
 // Layer of every module (the table in the spec); a module imports only modules of a lower layer.
 const LAYERS = {
   ...Object.fromEntries(PURE.map((f) => [f, 0])),

@@ -136,6 +136,7 @@ nav = [
       { "Decision support" = "architecture/specs/decision-support.md" },
       { "ISO 25010 qualities" = "architecture/specs/iso25010-qualities.md" },
       { "ADR testability and MADR export" = "architecture/specs/adr-testability.md" },
+      { "Readable Architektur editors" = "architecture/specs/decision-ui-readability.md" },
       { "Deployment traits" = "architecture/specs/deployment-traits.md" },
       { "Agent access" = "architecture/specs/agent-access.md" },
       { "Agent authentication" = "architecture/specs/agent-authentication.md" },

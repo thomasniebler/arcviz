@@ -77,6 +77,9 @@ you reverse the decision. **Vorschlag vom Assistenten** proposes assumptions and
 it adds rows you can edit or remove and stores nothing until you save. The ADR export gets a section *Annahmen und
 Testbarkeit*; an accepted decision without assumptions shows *ohne Annahmen* on its card.
 
+**Vorschau** at the bottom of the editor shows the exported ADR, rendered, as stored. Long texts grow the fields instead of
+scrolling inside them, and the list on the left stays in view while you edit.
+
 **Accepted decisions bind.** The assistants know them: when a request would contradict one, they say which (ADR-<n>)
 and ask before changing anything. The AI review of a diagram and of the project reports a finding *"Widerspricht
 ADR-<n>: …"* when a diagram contradicts one. Drafts, rejected and superseded decisions do not bind.

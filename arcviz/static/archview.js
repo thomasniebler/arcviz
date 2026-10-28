@@ -7,7 +7,7 @@ import { $, setHash } from "./dom.js";
 import { initDecisionPanel, isDecisionDirty, loadDecisions } from "./decisionpanel.js";
 import { initDriverPanel, isDriverDirty, loadDrivers } from "./driverpanel.js";
 import { initDocumentationPanel, isDocumentationDirty, loadDocumentation } from "./documentationpanel.js";
-import { confirmDiscard } from "./mdpane.js";
+import { confirmDiscard, initAutosize } from "./mdpane.js";
 import { currentProject, onProjectShown } from "./navigator.js";
 import { ARCH_TABS, formatRoute } from "./routes.js";
 import { initStewardPanel, loadSteward } from "./stewardpanel.js";
@@ -59,6 +59,7 @@ export async function showArchitectureView(on, tab) {
 
 /** `onApply(text)` sends an analysis option's instruction as a preview chat turn (and leaves the page first). */
 export function initArchView({ onApply }) {
+  initAutosize($("architecture-view"));
   initDriverPanel();
   initDecisionPanel();
   initStakeholderPanel();
