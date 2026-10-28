@@ -92,7 +92,7 @@ function show(result, keep = selected) {
 async function save() {
   const s = byId(selected);
   const values = {
-    name: $("stakeholder-name").value, role: $("stakeholder-role").value, influence: $("stakeholder-influence").value,
+    name: $("stakeholder-name").value, role: $("stakeholder-role").value, influence: $("stakeholder-influence").value || "medium", // empty while the tab is still loading
     concerns: $("stakeholder-concerns").value, drivers: [...$("stakeholder-drivers").selectedOptions].map((o) => o.value),
   };
   if (!values.name.trim()) { say(t("Bitte einen Namen angeben.")); $("stakeholder-name").focus(); return; }
