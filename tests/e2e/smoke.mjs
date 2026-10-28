@@ -1445,6 +1445,18 @@ try {
   const arc42Href = await page.getAttribute("#arc42-open", "href");
   const arc42Page = await page.evaluate(async (href) => { const r = await fetch(href); return { status: r.status, csp: r.headers.get("content-security-policy"), text: await r.text() }; }, arc42Href);
   check("the arc42 page shows the note and the vision under a strict policy", arc42Page.status === 200 && arc42Page.text.includes("Logging ist strukturiert.") && arc42Page.text.includes("Immer aktuell") && arc42Page.csp.includes("script-src 'self'"));
+  // 14k. the gap analysis (spec: arc42-gap-analysis.md): twelve cards, the note just written completes section 8, a next step navigates
+  await page.click("#arch-tab-gaps");
+  await page.waitForSelector("#gaps-list .gap-card", { timeout: 10000 });
+  check("the gap analysis shows twelve arc42 sections and its progress", (await page.locator("#gaps-list .gap-card").count()) === 12 && /von 12 Abschnitten vollständig/.test(await page.textContent(".gaps-progress")));
+  check("a note completes its section and a recorded vision is not a gap", (await page.locator('#gaps-list .gap-card[data-section="08"].status-complete').count()) === 1 && (await page.locator('#gaps-list [data-gap="vision-missing"]').count()) === 0);
+  const wanted = { "quality-goals-missing": "drivers", "constraints-missing": "drivers", "risks-missing": "drivers", "scenarios-missing": "scenarios", "decisions-missing": "decisions" };
+  const present = await page.evaluate((ids) => ids.find((id) => document.querySelector(`#gaps-list [data-gap="${id}"] button`)) ?? null, Object.keys(wanted));
+  if (present) {
+    await page.click(`#gaps-list [data-gap="${present}"] button`);
+    await page.waitForSelector(`#arch-panel-${wanted[present]}:not([hidden])`, { timeout: 10000 });
+    check("a next step of a gap opens the tab that fixes it", (await page.evaluate(() => location.hash)) === `#/architecture/${wanted[present]}`, present);
+  }
   await page.click("#arch-tab-stakeholders");
   await page.click("#arch-tab-stakeholders");
   await page.click("#nav-tree .nav-open >> nth=0");

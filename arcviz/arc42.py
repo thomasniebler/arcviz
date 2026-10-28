@@ -74,12 +74,25 @@ class Figure:
 Block = Paragraph | Bullets | Heading | Table | Figure
 
 
+@dataclass(frozen=True)
+class Gap:
+    """What the model does not say about a section: a stable `code` (spec: arc42-gap-analysis.md) and the text."""
+
+    code: str
+    text: str  # German, shown as a hint
+
+
 @dataclass
 class Section:
     id: str  # "01".."12"
     title: str
     blocks: list[Block] = field(default_factory=list)
-    gaps: list[str] = field(default_factory=list)  # what the model does not say (German, shown as a hint)
+    gap_items: list[Gap] = field(default_factory=list)
+
+    @property
+    def gaps(self) -> list[str]:
+        """The texts of `gap_items`, what the writers print."""
+        return [g.text for g in self.gap_items]
 
 
 @dataclass
@@ -149,9 +162,9 @@ def _section(number: str) -> Section:
     return Section(number, _(TITLES[number]))
 
 
-def _gap_if_empty(section: Section, text: str, *, has_note: bool = False) -> Section:
+def _gap_if_empty(section: Section, code: str, text: str, *, has_note: bool = False) -> Section:
     if not section.blocks and not has_note:
-        section.gaps.append(text)
+        section.gap_items.append(Gap(code, text))
     return section
 
 
@@ -168,7 +181,7 @@ def _introduction(project: Project, requirements: RequirementBox | None) -> Sect
         if vision.non_goals:
             section.blocks += [Heading(3, _("Nicht-Ziele")), Bullets(tuple(single(g) for g in vision.non_goals))]
     else:
-        section.gaps.append(_("Das Projekt hat keine Vision."))
+        section.gap_items.append(Gap("vision-missing", _("Das Projekt hat keine Vision.")))
     goals = [d for d in ranked_drivers(active(project.drivers)) if d.kind == "quality_goal"]
     if goals:
         rows = [(d.title, _level(d.importance), _level(d.risk), short(d.description)) for d in goals]
@@ -177,7 +190,7 @@ def _introduction(project: Project, requirements: RequirementBox | None) -> Sect
             Table((_("Qualitätsziel"), _("Wichtigkeit"), _("Risiko"), _("Beschreibung")), _capped(rows)),
         ]
     else:
-        section.gaps.append(_("Keine Qualitätsziele als Treiber erfasst."))
+        section.gap_items.append(Gap("quality-goals-missing", _("Keine Qualitätsziele als Treiber erfasst.")))
     functional = [r for r in (requirements.requirements if requirements else []) if r.status == "refined"]
     if functional:
         rows = [(r.id, short(r.statement), r.kind, r.priority or "–") for r in functional if r.kind != "constraint"]
@@ -193,7 +206,7 @@ def _introduction(project: Project, requirements: RequirementBox | None) -> Sect
             Table((_("Name"), _("Rolle"), _("Anliegen"), _("Einfluss")), _capped(rows)),
         ]
     else:
-        section.gaps.append(_("Keine Stakeholder erfasst."))
+        section.gap_items.append(Gap("stakeholders-missing", _("Keine Stakeholder erfasst.")))
     return section
 
 
@@ -213,6 +226,7 @@ def _constraints(project: Project, requirements: RequirementBox | None) -> Secti
         section.blocks.append(Table((_("Randbedingung"), _("Wichtigkeit"), _("Beschreibung")), _capped(rows)))
     return _gap_if_empty(
         section,
+        "constraints-missing",
         _("Keine Randbedingungen als Treiber oder Anforderung erfasst."),
         has_note=bool(project.arc42_notes.get("02")),
     )
@@ -228,6 +242,7 @@ def _context(project: Project, snapshot: ProjectSnapshot) -> Section:
     section.blocks += [Figure(d.id, d.title) for d in overviews]
     return _gap_if_empty(
         section,
+        "context-missing",
         _("Keine Kontext- oder Übersichtsdiagramme und keine Notiz."),
         has_note=bool(project.arc42_notes.get("03")),
     )
@@ -241,7 +256,10 @@ def _strategy(project: Project) -> Section:
             Bullets(tuple(single(f"{adr_label(d.id)} {d.title}: {short(d.decision, 200)}") for d in accepted))
         )
     return _gap_if_empty(
-        section, _("Keine angenommenen Entscheidungen und keine Notiz."), has_note=bool(project.arc42_notes.get("04"))
+        section,
+        "strategy-missing",
+        _("Keine angenommenen Entscheidungen und keine Notiz."),
+        has_note=bool(project.arc42_notes.get("04")),
     )
 
 
@@ -283,6 +301,7 @@ def _building_blocks(project: Project, snapshot: ProjectSnapshot) -> Section:
     section.blocks += [Figure(d.id, d.title) for d in _members(snapshot, STRUCTURE_TYPES)]
     return _gap_if_empty(
         section,
+        "building-blocks-missing",
         _("Keine Projektelemente und keine Komponentendiagramme."),
         has_note=bool(project.arc42_notes.get("05")),
     )
@@ -302,7 +321,10 @@ def _runtime(project: Project, snapshot: ProjectSnapshot) -> Section:
         ]
     section.blocks += [Figure(d.id, d.title) for d in _members(snapshot, RUNTIME_TYPES)]
     return _gap_if_empty(
-        section, _("Keine Sequenzdiagramme und keine Kernszenarien."), has_note=bool(project.arc42_notes.get("06"))
+        section,
+        "runtime-missing",
+        _("Keine Sequenzdiagramme und keine Kernszenarien."),
+        has_note=bool(project.arc42_notes.get("06")),
     )
 
 
@@ -318,13 +340,17 @@ def _deployment(project: Project, snapshot: ProjectSnapshot) -> Section:
     if rows:
         section.blocks += [Heading(3, _("Zuordnung")), Table((_("Baustein"), _("Läuft auf")), _capped(rows))]
     return _gap_if_empty(
-        section, _("Keine Verteilungsdiagramme und keine Zuordnungen."), has_note=bool(project.arc42_notes.get("07"))
+        section,
+        "deployment-missing",
+        _("Keine Verteilungsdiagramme und keine Zuordnungen."),
+        has_note=bool(project.arc42_notes.get("07")),
     )
 
 
 def _crosscutting(project: Project) -> Section:
     return _gap_if_empty(
         _section("08"),
+        "crosscutting-missing",
         _("Nicht aus dem Modell ableitbar: bitte als Notiz ergänzen."),
         has_note=bool(project.arc42_notes.get("08")),
     )
@@ -365,7 +391,10 @@ def _decisions(project: Project) -> Section:
             Paragraph(_("{n} Entwürfe oder verworfene Entscheidungen sind nicht aufgeführt.", n=hidden))
         )
     return _gap_if_empty(
-        section, _("Keine angenommenen Entscheidungen erfasst."), has_note=bool(project.arc42_notes.get("09"))
+        section,
+        "decisions-missing",
+        _("Keine angenommenen Entscheidungen erfasst."),
+        has_note=bool(project.arc42_notes.get("09")),
     )
 
 
@@ -395,7 +424,12 @@ def _quality(project: Project) -> Section:
                 _capped(rows),
             )
         )
-    return _gap_if_empty(section, _("Keine Qualitätsszenarien erfasst."), has_note=bool(project.arc42_notes.get("10")))
+    return _gap_if_empty(
+        section,
+        "scenarios-missing",
+        _("Keine Qualitätsszenarien erfasst."),
+        has_note=bool(project.arc42_notes.get("10")),
+    )
 
 
 def _risks(project: Project, findings: Sequence[ProjectFinding]) -> Section:
@@ -414,7 +448,10 @@ def _risks(project: Project, findings: Sequence[ProjectFinding]) -> Section:
             Bullets(tuple(short(f.message, 300) for f in open_findings[:MAX_ROWS])),
         ]
     return _gap_if_empty(
-        section, _("Keine Risiken und keine offenen Befunde."), has_note=bool(project.arc42_notes.get("11"))
+        section,
+        "risks-missing",
+        _("Keine Risiken und keine offenen Befunde."),
+        has_note=bool(project.arc42_notes.get("11")),
     )
 
 
@@ -427,7 +464,10 @@ def _glossary(project: Project) -> Section:
     if rows:
         section.blocks.append(Table((_("Begriff"), _("Bedeutung")), _capped(rows)))
     return _gap_if_empty(
-        section, _("Keine beschriebenen Projektelemente und keine Notiz."), has_note=bool(project.arc42_notes.get("12"))
+        section,
+        "glossary-missing",
+        _("Keine beschriebenen Projektelemente und keine Notiz."),
+        has_note=bool(project.arc42_notes.get("12")),
     )
 
 

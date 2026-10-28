@@ -38,6 +38,8 @@ from . import (
     agentauth,
     arc42,
     arc42_export,
+    arc42_gap_review,
+    arc42_gaps,
     arc42_html,
     auth,
     decision_testability,
@@ -2162,6 +2164,20 @@ def create_app(
         its deterministic findings, no model call."""
         snapshot = project_snapshot(svc, project_id)
         return arc42.build(snapshot, project_review.run_project_checks(snapshot), snapshot.requirements)
+
+    @app.get("/api/projects/{project_id}/arc42/gaps")
+    def arc42_gap_report(svc: Svc, project_id: str) -> dict[str, Any]:
+        """The gap analysis of a project against the arc42 sections (viewer): per section its status, the gaps with
+        severity and next step, and the most important gap; deterministic, no model call (spec: arc42-gap-analysis.md)."""
+        snapshot = project_snapshot(svc, project_id)
+        doc = arc42.build(snapshot, project_review.run_project_checks(snapshot), snapshot.requirements)
+        return arc42_gaps.analyse(doc, snapshot.project).model_dump()
+
+    @app.post("/api/projects/{project_id}/arc42/gaps/review")
+    def arc42_gap_review_route(svc: Svc, project_id: str) -> dict[str, Any]:
+        """The advisory model pass over the arc42 sections: one model call, nothing written, a failed call is
+        `llm.ok = false` (spec: arc42-gap-analysis.md, ADR-0211)."""
+        return arc42_gap_review.review(get_provider(), arc42_document(svc, project_id))
 
     def arc42_figure_link(project_id: str) -> Callable[[str], str]:
         return lambda diagram_id: f"/api/projects/{quote(project_id, safe='')}/arc42/figures/{diagram_id}.svg"

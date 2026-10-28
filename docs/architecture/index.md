@@ -83,6 +83,7 @@ not listed is a boundary violation and needs a spec change first.
 | `arcviz/agent_tools.py` | What an agent may ask and do: bounded read tools, code links, proposals; never applies a proposal | `services`, `project_review`, `agent`, `project_model` |
 | `arcviz/agentauth.py`, `arcviz/oidc.py` | Credentials of agents on the MCP path ([agent authentication](specs/agent-authentication.md)): `AgentGate`, personal access tokens, OIDC access tokens | `auth`, `limits`, `services` |
 | `arcviz/steward_model.py`, `arcviz/steward.py` | [Project steward](specs/project-steward.md): configuration and per-project document (pure); the background check, prompts, candidate validation, selection, the worker | `project_review`, `projects`, `proposals`, `services`, `live`, `llm`, `telemetry` |
+| `arcviz/arc42_gaps.py`, `arcviz/arc42_gap_review.py` | [arc42 gap analysis](specs/arc42-gap-analysis.md): the deterministic gaps, status and next steps per section (pure); the advisory model pass (ADR-0211) | `arc42`, `arc42_export`, `decision_model`, `project_model`, `projects`, `llm`, `review`, `i18n` |
 | `arcviz/arc42.py`, `arcviz/arc42_export.py`, `arcviz/arc42_html.py` | [arc42 export](specs/arc42-export.md): the pure section tree built from a project snapshot; the Markdown, AsciiDoc, zip and docx writers; the live HTML page | `project_review`, `projects`, `project_model`, `decision_model`, `requirement_model`, `quality_model`, `model`, `render`, `i18n` |
 | `arcviz/tokens.py`, `arcviz/proposals.py` | Domain types of personal access tokens and stored proposals (shape, bounds, retention, the proposal diff) | `workspaces`, `model` |
 | `arcviz/agent_types.py` | Tools of the diagram types other than deployment | `model`, `operations`, `sequence`, `llm` |
@@ -138,6 +139,7 @@ Rules that follow from the table:
 | [Decision support: stakeholders, scenarios, analysis, decisions](specs/decision-support.md) | Implemented | #226, #231, #232, #233 |
 | [ISO/IEC 25010 quality characteristics of scenarios](specs/iso25010-qualities.md) | Implemented | none yet |
 | [ADR testability and the MADR export](specs/adr-testability.md) | Implemented | #12 |
+| [arc42 gap analysis](specs/arc42-gap-analysis.md) | Implemented | #13 |
 | [Readability of the Architektur editors](specs/decision-ui-readability.md) | Implemented | #14 |
 | [Deployment traits: managed services and built-in redundancy](specs/deployment-traits.md) | Implemented | #236 |
 | [Agent access: MCP endpoint, code links, stored proposals](specs/agent-access.md) | Implemented | #237 |

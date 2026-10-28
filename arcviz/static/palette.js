@@ -19,6 +19,7 @@ export const COMMANDS = [
   nav("go-decisions", N_("Architektur: Entscheidungen"), "#/architecture/decisions", "architektur adr decision"),
   nav("go-stakeholders", N_("Architektur: Stakeholder"), "#/architecture/stakeholders", "architektur beteiligte"),
   nav("go-vision", N_("Architektur: Vision"), "#/architecture/vision", "architektur produktvision ziele"),
+  nav("go-gaps", N_("Architektur: Lücken (arc42)"), "#/architecture/gaps", "architektur arc42 lücken fehlt vollständigkeit nächster schritt"),
   nav("go-documentation", N_("Architektur: Dokumentation"), "#/architecture/documentation", "architektur arc42 doku export notiz"),
   press("go-model", N_("Modell"), "Gehe zu", "btn-model", "projektmodell elemente beziehungen matrix", { needs: "project" }),
   press("go-proposals", N_("Vorschläge"), "Gehe zu", "btn-proposals", "agenten änderungsvorschläge mcp prüfen", { needs: "project" }),

@@ -114,5 +114,15 @@ download it as Markdown, as an AsciiDoc zip or as a Word file. A section the mod
 write a short **note** on the same page (a blank line separates paragraphs). The project review lists the sections that
 are still empty.
 
+### Lücken: what is still missing
+
+*Architektur → Lücken* checks the project against the twelve sections and tells you what to do next. Every section is
+**vollständig**, **teilweise** or **fehlt**; under it the concrete gaps, most important first ("Das Projekt hat keine
+Vision", "Qualitätsziele ohne Szenario: …", "Angenommene Entscheidungen ohne Annahmen und Test: …"), each with a button
+that takes you to the place that fixes it: the Vision tab, the drivers, a new diagram, the model, or the note of a
+section. The check is deterministic and costs nothing. **Inhaltlich prüfen** additionally asks the assistant whether the
+sections that have content are thin or contradict each other; its remarks are advice, appear on the cards and are never
+stored or counted.
+
 The Word export needs the optional `docx` extra (`pip install "arcviz-agent[docx]"`, included in the Docker image);
 without it the download answers 501 with that hint. Diagrams drawn by Mermaid appear in the downloads as their source.

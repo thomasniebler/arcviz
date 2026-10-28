@@ -6,7 +6,8 @@
 import { $, setHash } from "./dom.js";
 import { initDecisionPanel, isDecisionDirty, loadDecisions } from "./decisionpanel.js";
 import { initDriverPanel, isDriverDirty, loadDrivers } from "./driverpanel.js";
-import { initDocumentationPanel, isDocumentationDirty, loadDocumentation } from "./documentationpanel.js";
+import { focusSection, initDocumentationPanel, isDocumentationDirty, loadDocumentation } from "./documentationpanel.js";
+import { initGapsPanel, isGapsDirty, loadGaps } from "./gapspanel.js";
 import { confirmDiscard, initAutosize } from "./mdpane.js";
 import { currentProject, onProjectShown } from "./navigator.js";
 import { ARCH_TABS, formatRoute } from "./routes.js";
@@ -15,9 +16,9 @@ import { initScenarioPanel, isScenarioDirty, loadScenarios } from "./scenariopan
 import { initStakeholderPanel, isStakeholderDirty, loadStakeholders } from "./stakeholderpanel.js";
 import { initVisionPanel, isVisionDirty, loadVision } from "./visionpanel.js";
 
-const LOADERS = { drivers: loadDrivers, scenarios: loadScenarios, decisions: loadDecisions, stakeholders: loadStakeholders, vision: loadVision, documentation: loadDocumentation };
+const LOADERS = { drivers: loadDrivers, scenarios: loadScenarios, decisions: loadDecisions, stakeholders: loadStakeholders, vision: loadVision, documentation: loadDocumentation, gaps: loadGaps };
 
-const DIRTY = { drivers: isDriverDirty, scenarios: isScenarioDirty, decisions: isDecisionDirty, stakeholders: isStakeholderDirty, vision: isVisionDirty, documentation: isDocumentationDirty };
+const DIRTY = { drivers: isDriverDirty, scenarios: isScenarioDirty, decisions: isDecisionDirty, stakeholders: isStakeholderDirty, vision: isVisionDirty, documentation: isDocumentationDirty, gaps: isGapsDirty };
 
 let shown = false;
 let current = ARCH_TABS[0];
@@ -57,6 +58,16 @@ export async function showArchitectureView(on, tab) {
   }
 }
 
+/** Follow the next step of a gap (gapspanel.js): click an existing control, or go to a tab, preselecting a documentation
+ * section or opening a decision. */
+async function followStep(step) {
+  if (step.click) { $(step.click)?.click(); return; }
+  if (!step.route) return;
+  if (step.section) focusSection(step.section);
+  setHash(step.route); // no hashchange follows a setHash: show the tab ourselves (the gap analysis has no editor to discard)
+  await show(step.route.split("/").pop(), step.item);
+}
+
 /** `onApply(text)` sends an analysis option's instruction as a preview chat turn (and leaves the page first). */
 export function initArchView({ onApply }) {
   initAutosize($("architecture-view"));
@@ -66,6 +77,7 @@ export function initArchView({ onApply }) {
   initVisionPanel();
   initStewardPanel();
   initDocumentationPanel();
+  initGapsPanel({ step: followStep });
   initScenarioPanel({
     onDecided: async (decisionId) => {
       setHash(formatRoute({ view: "architecture", tab: "decisions" }));

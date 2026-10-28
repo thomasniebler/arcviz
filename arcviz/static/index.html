@@ -129,6 +129,7 @@
         <button id="nav-arch-decisions" type="button" class="nav-entry" data-route="#/architecture/decisions" title="Architekturentscheidungen (ADRs)" data-i18n-title data-i18n>Entscheidungen</button>
         <button id="nav-arch-stakeholders" type="button" class="nav-entry" data-route="#/architecture/stakeholders" title="Stakeholder und ihre Anliegen" data-i18n-title data-i18n>Stakeholder</button>
         <button id="nav-arch-vision" type="button" class="nav-entry" data-route="#/architecture/vision" title="Vision: wofür das Produkt da ist und woran man Erfolg erkennt" data-i18n-title data-i18n>Vision</button>
+        <button id="nav-arch-gaps" type="button" class="nav-entry" data-route="#/architecture/gaps" title="Lücken: was gegenüber den zwölf arc42-Abschnitten noch fehlt" data-i18n-title data-i18n>Lücken</button>
         <button id="nav-arch-documentation" type="button" class="nav-entry" data-route="#/architecture/documentation" title="arc42-Dokumentation des Projekts: live ansehen, herunterladen, Notizen ergänzen" data-i18n-title data-i18n>Dokumentation</button>
         <button id="btn-model" type="button" class="nav-entry" title="Gemeinsames Projektmodell: Elemente, die mehrere Diagramme zeigen" data-i18n-title data-i18n>Modell</button>
       </div>
@@ -329,6 +330,7 @@
         <button type="button" role="tab" id="arch-tab-stakeholders" data-tab="stakeholders" data-route="#/architecture/stakeholders" aria-controls="arch-panel-stakeholders" aria-selected="false" data-i18n>Stakeholder</button>
         <button type="button" role="tab" id="arch-tab-vision" data-tab="vision" data-route="#/architecture/vision" aria-controls="arch-panel-vision" aria-selected="false" data-i18n>Vision</button>
         <button type="button" role="tab" id="arch-tab-documentation" data-tab="documentation" data-route="#/architecture/documentation" aria-controls="arch-panel-documentation" aria-selected="false" data-i18n>Dokumentation</button>
+        <button type="button" role="tab" id="arch-tab-gaps" data-tab="gaps" data-route="#/architecture/gaps" aria-controls="arch-panel-gaps" aria-selected="false" data-i18n>Lücken</button>
       </div>
       <section id="arch-panel-drivers" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-drivers">
         <div class="md-toolbar">
@@ -554,6 +556,16 @@
           </footer>
         </form>
         <p id="documentation-status" class="md-status muted" role="status"></p>
+      </section>
+      <section id="arch-panel-gaps" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-gaps" hidden>
+        <p class="md-intro muted" data-i18n>Was dem Projekt gemessen an den zwölf arc42-Abschnitten noch fehlt, und der nächste Schritt dazu. Die Prüfung rechnet nur aus dem Modell, ohne Assistenten und ohne Kosten.</p>
+        <div id="gaps-summary" class="gaps-summary card" role="status"></div>
+        <div class="md-toolbar">
+          <button id="gaps-review" type="button" class="btn" data-i18n>Inhaltlich prüfen (Assistent)</button>
+          <span id="gaps-review-note" class="muted" role="status"></span>
+        </div>
+        <ol id="gaps-list" class="gaps-list"></ol>
+        <p id="gaps-status" class="md-status muted" role="status"></p>
       </section>
     </section>
 
