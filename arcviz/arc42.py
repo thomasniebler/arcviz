@@ -386,7 +386,7 @@ def _decisions(project: Project) -> Section:
                 )
             )
     hidden = len(project.decisions) - len(shown)
-    if hidden:
+    if hidden and shown:  # a notice alone is no content: drafts only leave the section empty (and its gap raised)
         section.blocks.append(
             Paragraph(_("{n} Entwürfe oder verworfene Entscheidungen sind nicht aufgeführt.", n=hidden))
         )

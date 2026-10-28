@@ -36,7 +36,7 @@ export function stepFor(action) {
     return { label, route: `#/architecture/${action.target}`, ...(action.item ? { item: action.item } : {}), ...(action.section ? { section: action.section } : {}) };
   }
   if (action.kind === "model") return { label: t("Modell öffnen"), click: "btn-model" };
-  if (action.kind === "new-diagram") return { label: t("Diagramm anlegen: {type}", { type: labelOf(DIAGRAM_TYPES, action.diagram_type) }), click: "btn-new" };
+  if (action.kind === "new-diagram") return { label: t("Diagramm anlegen: {type}", { type: labelOf(DIAGRAM_TYPES, action.diagram_type) }), click: "btn-new", diagramType: action.diagram_type };
   return null;
 }
 

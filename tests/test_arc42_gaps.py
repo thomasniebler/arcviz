@@ -236,3 +236,11 @@ def test_the_routes(store):
     assert client.get("/api/projects/shop").json() == before
     assert client.get("/api/projects/nope/arc42/gaps").status_code == 404
     assert client.post("/api/projects/nope/arc42/gaps/review").status_code == 404
+
+
+def test_only_drafts_or_rejected_decisions_leave_the_decision_sections_empty():
+    p = projects.new_project("Leer", "leer")
+    op(p, "add_decision", title="Entwurf", status="draft")
+    r = report(p)
+    assert r.sections[8].status == "missing" and "decisions-missing" in codes(r, "09")
+    assert "strategy-missing" in codes(r, "04")

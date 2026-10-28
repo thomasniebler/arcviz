@@ -61,7 +61,15 @@ export async function showArchitectureView(on, tab) {
 /** Follow the next step of a gap (gapspanel.js): click an existing control, or go to a tab, preselecting a documentation
  * section or opening a decision. */
 async function followStep(step) {
-  if (step.click) { $(step.click)?.click(); return; }
+  if (step.click) {
+    $(step.click)?.click();
+    const type = $("new-type"); // the new-diagram dialog preselects the shown diagram's type: select the one the gap needs
+    if (step.diagramType && type && [...type.options].some((o) => o.value === step.diagramType)) {
+      type.value = step.diagramType;
+      type.dispatchEvent(new Event("change")); // refills the templates of that type
+    }
+    return;
+  }
   if (!step.route) return;
   if (step.section) focusSection(step.section);
   setHash(step.route); // no hashchange follows a setHash: show the tab ourselves (the gap analysis has no editor to discard)

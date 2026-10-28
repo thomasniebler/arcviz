@@ -20,7 +20,7 @@ test("every kind of action becomes a route or a control", () => {
   assert.deepEqual(stepFor({ kind: "tab", target: "decisions", item: "adr2" }), { label: "Entscheidung öffnen", route: "#/architecture/decisions", item: "adr2" });
   assert.deepEqual(stepFor({ kind: "tab", target: "documentation", section: "08" }), { label: "Notiz schreiben", route: "#/architecture/documentation", section: "08" });
   assert.deepEqual(stepFor({ kind: "model" }), { label: "Modell öffnen", click: "btn-model" });
-  assert.deepEqual(stepFor({ kind: "new-diagram", diagram_type: "sequence" }), { label: "Diagramm anlegen: Sequenzdiagramm", click: "btn-new" });
+  assert.deepEqual(stepFor({ kind: "new-diagram", diagram_type: "sequence" }), { label: "Diagramm anlegen: Sequenzdiagramm", click: "btn-new", diagramType: "sequence" });
   assert.equal(stepFor({ kind: "teleport" }), null);
   assert.equal(stepFor(undefined), null);
   assert.deepEqual(noteStep("03"), { label: "Notiz schreiben", route: "#/architecture/documentation", section: "03" });
