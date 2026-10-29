@@ -76,5 +76,8 @@
   "mittel": "medium",
   "niedrig": "low",
   "{n} Entwürfe oder verworfene Entscheidungen sind nicht aufgeführt.": "{n} drafts or rejected decisions are not listed.",
-  "… und {n} weitere": "… and {n} more"
+  "… und {n} weitere": "… and {n} more",
+  "Die Vision nennt keine Ziele.": "The vision names no goals.",
+  "Angenommene Entscheidungen ohne Annahmen und Test: {names}.": "Accepted decisions without assumptions and a test: {names}.",
+  "Qualitätsziele ohne Szenario: {titles}.": "Quality goals without a scenario: {titles}."
 }

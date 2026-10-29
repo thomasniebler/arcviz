@@ -1409,6 +1409,19 @@ try {
   const adr = await page.evaluate(async (href) => (await fetch(href)).text(), await page.getAttribute("#decision-markdown", "href"));
   check("an accepted decision exports as a Markdown ADR", adr.startsWith("# ADR-1: Region fällt aus: Aktiv/Aktiv") && adr.includes("- Status: Angenommen"), adr.slice(0, 120));
   await page.screenshot({ path: join(outDir, "decision.png") });
+  // 14h2. readable editors (spec: decision-ui-readability.md) and the testability group (spec: adr-testability.md)
+  check("the text areas of the decision editor show their whole text", await page.locator("#decision-form textarea").evaluateAll((areas) => areas.filter((a) => a.offsetParent).every((a) => a.scrollHeight <= a.clientHeight + 2)));
+  check("a Markdown reply in the chat is not laid out as the two-pane grid", await page.evaluate(() => { const m = document.createElement("div"); m.className = "md"; document.querySelector(".messages").appendChild(m); const grid = getComputedStyle(m).display === "grid"; m.remove(); return !grid; }));
+  await page.click("#decision-assumption-add");
+  await page.fill("#decision-assumptions .assumption-row input", "Failover unter 60 s");
+  await page.fill("#decision-falsification", "Failover dauert länger als 5 Minuten");
+  await page.click("#decision-save");
+  await page.waitForFunction(() => document.querySelector("#decisions-list .md-chips")?.textContent.includes("1 Annahmen, 1 ungetestet"), null, { timeout: 10000 });
+  const madr = await page.evaluate(async (href) => (await fetch(href)).text(), await page.getAttribute("#decision-markdown", "href"));
+  check("the ADR export follows MADR and carries the assumptions", madr.includes("## Kontext und Problemstellung") && madr.includes("## Annahmen und Testbarkeit") && madr.includes("Failover unter 60 s") && madr.includes("Widerlegt, wenn: Failover dauert länger als 5 Minuten"), madr.slice(0, 80));
+  await page.click("#decision-preview summary");
+  await page.waitForFunction(() => document.getElementById("decision-preview-body").textContent.includes("Kontext und Problemstellung"), null, { timeout: 10000 });
+  check("the preview renders the exported ADR", (await page.locator("#decision-preview-body h3, #decision-preview-body h4").count()) > 2 && (await page.locator("#decision-preview-body table").count()) === 1);
   await page.click("#arch-tab-stakeholders");
   await page.fill("#stakeholder-name", "Betrieb");
   await page.fill("#stakeholder-role", "SRE");
@@ -1432,6 +1445,18 @@ try {
   const arc42Href = await page.getAttribute("#arc42-open", "href");
   const arc42Page = await page.evaluate(async (href) => { const r = await fetch(href); return { status: r.status, csp: r.headers.get("content-security-policy"), text: await r.text() }; }, arc42Href);
   check("the arc42 page shows the note and the vision under a strict policy", arc42Page.status === 200 && arc42Page.text.includes("Logging ist strukturiert.") && arc42Page.text.includes("Immer aktuell") && arc42Page.csp.includes("script-src 'self'"));
+  // 14k. the gap analysis (spec: arc42-gap-analysis.md): twelve cards, the note just written completes section 8, a next step navigates
+  await page.click("#arch-tab-gaps");
+  await page.waitForSelector("#gaps-list .gap-card", { timeout: 10000 });
+  check("the gap analysis shows twelve arc42 sections and its progress", (await page.locator("#gaps-list .gap-card").count()) === 12 && /von 12 Abschnitten vollständig/.test(await page.textContent(".gaps-progress")));
+  check("a note completes its section and a recorded vision is not a gap", (await page.locator('#gaps-list .gap-card[data-section="08"].status-complete').count()) === 1 && (await page.locator('#gaps-list [data-gap="vision-missing"]').count()) === 0);
+  const wanted = { "quality-goals-missing": "drivers", "constraints-missing": "drivers", "risks-missing": "drivers", "scenarios-missing": "scenarios", "decisions-missing": "decisions" };
+  const present = await page.evaluate((ids) => ids.find((id) => document.querySelector(`#gaps-list [data-gap="${id}"] button`)) ?? null, Object.keys(wanted));
+  if (present) {
+    await page.click(`#gaps-list [data-gap="${present}"] button`);
+    await page.waitForSelector(`#arch-panel-${wanted[present]}:not([hidden])`, { timeout: 10000 });
+    check("a next step of a gap opens the tab that fixes it", (await page.evaluate(() => location.hash)) === `#/architecture/${wanted[present]}`, present);
+  }
   await page.click("#arch-tab-stakeholders");
   await page.click("#arch-tab-stakeholders");
   await page.click("#nav-tree .nav-open >> nth=0");

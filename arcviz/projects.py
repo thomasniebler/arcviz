@@ -1540,6 +1540,28 @@ def _options(options: list[dict[str, Any]]) -> list[DecisionOption]:
     return out
 
 
+def _assumptions(raw: list[dict[str, Any]]) -> list[dm.Assumption]:
+    if len(raw) > dm.MAX_ASSUMPTIONS:
+        raise ProjectError(f"A decision lists at most {dm.MAX_ASSUMPTIONS} assumptions.")
+    out: list[dm.Assumption] = []
+    for n, item in enumerate(raw, start=1):
+        if not isinstance(item, dict):
+            raise ProjectError(f"Assumption {n} must be an object with statement, test, effort, status and evidence.")
+        statement = _text(str(item.get("statement") or ""), dm.MAX_ASSUMPTION, f"The statement of assumption {n}", True)
+        if not statement:
+            raise ProjectError(f"Assumption {n} needs a statement.")
+        out.append(
+            dm.Assumption(
+                statement=statement,
+                test=_text(str(item.get("test") or ""), dm.MAX_TEST, f"The test of assumption {n}"),
+                effort=_choice(str(item.get("effort") or "medium"), dm.INFLUENCE, "effort"),
+                status=_choice(str(item.get("status") or "untested"), dm.ASSUMPTION_STATUSES, "assumption status"),
+                evidence=_text(str(item.get("evidence") or ""), dm.MAX_TEST, f"The evidence of assumption {n}"),
+            )
+        )
+    return out
+
+
 def _decision_texts(target: Decision, texts: dict[str, str | None]) -> None:
     for key, value in texts.items():
         if value is not None:
@@ -1575,6 +1597,8 @@ def add_decision(
     requirements: list[str] | None = None,
     stakeholders: list[str] | None = None,
     origin: str = "",
+    assumptions: list[dict[str, Any]] | None = None,
+    falsification: str = "",
 ) -> Decision:
     if len(project.decisions) >= dm.MAX_DECISIONS:
         raise ProjectError(f"A project holds at most {dm.MAX_DECISIONS} decisions.")
@@ -1588,9 +1612,13 @@ def add_decision(
         requirements=_requirement_ids(requirements or []),
         stakeholders=_stakeholder_refs(project, stakeholders or []),
         origin=_origin(origin),
+        assumptions=_assumptions(assumptions or []),
         created_at=now_iso(),
     )
-    _decision_texts(target, {"context": context, "decision": decision, "consequences": consequences})
+    _decision_texts(
+        target,
+        {"context": context, "decision": decision, "consequences": consequences, "falsification": falsification},
+    )
     if chosen is not None and not 0 <= chosen < len(target.options):
         raise ProjectError(f"Option {chosen} does not exist; the decision has {len(target.options)} options (from 0).")
     target.chosen = chosen
@@ -1615,6 +1643,8 @@ def update_decision(
     superseded_by: str | None = None,
     requirements: list[str] | None = None,
     stakeholders: list[str] | None = None,
+    assumptions: list[dict[str, Any]] | None = None,
+    falsification: str | None = None,
 ) -> Decision:
     """`text` is the decision itself (its rationale); `chosen=-1` clears the choice."""
     target = _decision(project, decision)
@@ -1628,7 +1658,12 @@ def update_decision(
         if chosen != -1 and not 0 <= chosen < len(target.options):
             raise ProjectError(f"Option {chosen} does not exist; the decision has {len(target.options)} options.")
         target.chosen = None if chosen == -1 else chosen
-    _decision_texts(target, {"context": context, "decision": text, "consequences": consequences})
+    _decision_texts(
+        target,
+        {"context": context, "decision": text, "consequences": consequences, "falsification": falsification},
+    )
+    if assumptions is not None:
+        target.assumptions = _assumptions(assumptions)
     if drivers is not None:
         target.drivers = _refs(lambda r: _live_driver(project, r, list(target.drivers)), drivers)
     if elements is not None:

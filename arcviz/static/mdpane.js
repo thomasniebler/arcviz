@@ -2,6 +2,7 @@
 // ADR-0196): the card of a list entry, chips, the selection mark, the keyboard step and the discard question.
 // Everything is built with DOM APIs: titles and descriptions are free text and must never reach innerHTML.
 import { t } from "./i18n.js";
+import { fitHeight } from "./readability.js";
 
 function node(tag, className, text) {
   const n = document.createElement(tag);
@@ -61,4 +62,24 @@ export function confirmDiscard(dirty) {
 /** Hide the label around a multi-select that has nothing to choose from (no empty box in the editor). */
 export function hideIfEmpty(select) {
   select.closest("label")?.classList.toggle("hidden", select.options.length === 0);
+}
+
+/** Text areas of the editors below `root` grow with their text, up to 60 % of the window. Browsers with CSS
+ * `field-sizing: content` do it themselves; elsewhere the height is set after every edit, click and DOM change. */
+export function initAutosize(root) {
+  if (typeof CSS !== "undefined" && CSS.supports?.("field-sizing", "content")) return;
+  let queued = false;
+  const fit = () => {
+    queued = false;
+    for (const area of root.querySelectorAll(".md-detail textarea")) {
+      if (!area.offsetParent) continue; // hidden: no size to measure
+      area.style.height = "auto";
+      const { height, overflow } = fitHeight(area.scrollHeight + 2, 88, Math.round(window.innerHeight * 0.6));
+      area.style.height = `${height}px`;
+      area.style.overflowY = overflow ? "auto" : "hidden";
+    }
+  };
+  const queue = () => { if (!queued) { queued = true; requestAnimationFrame(fit); } };
+  for (const type of ["input", "click", "change", "focusin"]) root.addEventListener(type, queue);
+  new MutationObserver(queue).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "hidden"] });
 }

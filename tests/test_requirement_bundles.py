@@ -136,8 +136,8 @@ def test_invalid_requirements_are_refused_with_every_problem():
 
 
 def test_a_newer_version_is_still_refused():
-    with pytest.raises(ExchangeError, match="schema_version 10"):
-        exchange.parse_project({"format": "arcviz-project", "schema_version": 10, "project": {}, "diagrams": []})
+    with pytest.raises(ExchangeError, match="schema_version 11"):
+        exchange.parse_project({"format": "arcviz-project", "schema_version": 11, "project": {}, "diagrams": []})
 
 
 def test_dumps_of_old_projects_are_unchanged():

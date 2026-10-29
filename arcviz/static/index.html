@@ -129,6 +129,7 @@
         <button id="nav-arch-decisions" type="button" class="nav-entry" data-route="#/architecture/decisions" title="Architekturentscheidungen (ADRs)" data-i18n-title data-i18n>Entscheidungen</button>
         <button id="nav-arch-stakeholders" type="button" class="nav-entry" data-route="#/architecture/stakeholders" title="Stakeholder und ihre Anliegen" data-i18n-title data-i18n>Stakeholder</button>
         <button id="nav-arch-vision" type="button" class="nav-entry" data-route="#/architecture/vision" title="Vision: wofür das Produkt da ist und woran man Erfolg erkennt" data-i18n-title data-i18n>Vision</button>
+        <button id="nav-arch-gaps" type="button" class="nav-entry" data-route="#/architecture/gaps" title="Lücken: was gegenüber den zwölf arc42-Abschnitten noch fehlt" data-i18n-title data-i18n>Lücken</button>
         <button id="nav-arch-documentation" type="button" class="nav-entry" data-route="#/architecture/documentation" title="arc42-Dokumentation des Projekts: live ansehen, herunterladen, Notizen ergänzen" data-i18n-title data-i18n>Dokumentation</button>
         <button id="btn-model" type="button" class="nav-entry" title="Gemeinsames Projektmodell: Elemente, die mehrere Diagramme zeigen" data-i18n-title data-i18n>Modell</button>
       </div>
@@ -329,6 +330,7 @@
         <button type="button" role="tab" id="arch-tab-stakeholders" data-tab="stakeholders" data-route="#/architecture/stakeholders" aria-controls="arch-panel-stakeholders" aria-selected="false" data-i18n>Stakeholder</button>
         <button type="button" role="tab" id="arch-tab-vision" data-tab="vision" data-route="#/architecture/vision" aria-controls="arch-panel-vision" aria-selected="false" data-i18n>Vision</button>
         <button type="button" role="tab" id="arch-tab-documentation" data-tab="documentation" data-route="#/architecture/documentation" aria-controls="arch-panel-documentation" aria-selected="false" data-i18n>Dokumentation</button>
+        <button type="button" role="tab" id="arch-tab-gaps" data-tab="gaps" data-route="#/architecture/gaps" aria-controls="arch-panel-gaps" aria-selected="false" data-i18n>Lücken</button>
       </div>
       <section id="arch-panel-drivers" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-drivers">
         <div class="md-toolbar">
@@ -337,7 +339,7 @@
           <button id="driver-add" type="button" class="btn primary" data-edit data-i18n>+ Treiber</button>
         </div>
         <p class="md-intro muted" data-i18n>Was die Architektur leisten muss, nach Priorität wie im ATAM-Utility-Tree: Wichtigkeit fürs Geschäft × technisches Risiko (H/M/L). Der Assistent wägt seine Vorschläge gegen die wichtigsten Treiber ab.</p>
-        <div class="md">
+        <div class="md-layout">
           <div class="md-side">
             <ul id="drivers-list" class="md-list"></ul>
             <div id="drivers-empty" class="empty-state hidden">
@@ -377,7 +379,7 @@
           <button id="scenario-add" type="button" class="btn primary" data-edit data-i18n>+ Szenario</button>
         </div>
         <p class="md-intro muted"><span data-i18n>Qualitätsszenarien beschreiben Treiber konkret, in den sechs Teilen von ATAM. Ein Szenario dient höchstens einem Treiber; Kernszenarien (★) sind die Kernziele ihres Treibers.</span> <strong data-i18n>Analysieren</strong> <span data-i18n>spielt ein Szenario durch und schlägt Optionen vor; eine gewählte Option wird zum Entscheidungsentwurf.</span></p>
-        <div class="md">
+        <div class="md-layout">
           <div class="md-side">
             <div id="scenarios-list" class="scenarios-list"></div>
             <div id="scenarios-empty" class="empty-state hidden">
@@ -428,7 +430,7 @@
           <button id="decision-add" type="button" class="btn primary" data-edit data-i18n>+ Entscheidung</button>
         </div>
         <p class="md-intro muted"><span data-i18n>Architekturentscheidungen (ADRs): aus einer Szenario-Analyse oder von Hand.</span> <strong data-i18n>Angenommene</strong> <span data-i18n>Entscheidungen binden den Assistenten und das KI-Review: Beide weisen darauf hin, wenn eine Änderung oder ein Diagramm einer Entscheidung widerspricht.</span></p>
-        <div class="md">
+        <div class="md-layout">
           <div class="md-side">
             <ul id="decisions-list" class="md-list"></ul>
             <div id="decisions-empty" class="empty-state hidden">
@@ -444,16 +446,40 @@
             <form id="decision-form" class="md-detail card decision-form hidden" data-edit-zone>
               <header class="md-detail-head"><h3 id="decision-form-heading"></h3></header>
               <div class="field-row">
-                <label class="field-col grow"><span data-i18n>Titel</span><input id="decision-title" aria-label="Titel der Entscheidung" maxlength="160" autocomplete="off" data-i18n-aria-label></label>
+                <label class="field-col grow wide"><span data-i18n>Titel</span><input id="decision-title" aria-label="Titel der Entscheidung" maxlength="160" autocomplete="off" data-i18n-aria-label></label>
                 <label class="field-col"><span data-i18n>Status</span><select id="decision-status" aria-label="Status" data-i18n-aria-label></select></label>
                 <label class="field-col"><span data-i18n>Ersetzt durch</span><select id="decision-superseded" aria-label="Ersetzt durch" data-i18n-aria-label></select></label>
               </div>
-              <label class="field-col"><span data-i18n>Anforderungen, die die Entscheidung abdeckt</span><select id="decision-requirements" class="req-pick" multiple aria-label="Anforderungen" data-i18n-aria-label></select></label>
-              <label class="field-col"><span data-i18n>Kontext</span><textarea id="decision-context" rows="5" maxlength="3000"></textarea></label>
-              <div id="decision-options" class="decision-options"></div>
-              <label class="field-col"><span data-i18n>Entscheidung und Begründung</span><textarea id="decision-text" rows="4" maxlength="3000"></textarea></label>
-              <label class="field-col"><span data-i18n>Konsequenzen</span><textarea id="decision-consequences" rows="4" maxlength="3000"></textarea></label>
+              <fieldset class="md-group">
+                <legend data-i18n>Kontext</legend>
+                <label class="field-col"><span data-i18n>Worum geht es, welche Kräfte wirken?</span><textarea id="decision-context" rows="5" maxlength="3000"></textarea></label>
+                <label class="field-col"><span data-i18n>Anforderungen, die die Entscheidung abdeckt</span><select id="decision-requirements" class="req-pick" multiple aria-label="Anforderungen" data-i18n-aria-label></select></label>
+              </fieldset>
+              <fieldset class="md-group">
+                <legend data-i18n>Optionen</legend>
+                <div id="decision-options" class="decision-options"></div>
+              </fieldset>
+              <fieldset class="md-group">
+                <legend data-i18n>Entscheidung</legend>
+                <label class="field-col"><span data-i18n>Entscheidung und Begründung</span><textarea id="decision-text" rows="4" maxlength="3000"></textarea></label>
+                <label class="field-col"><span data-i18n>Konsequenzen</span><textarea id="decision-consequences" rows="4" maxlength="3000"></textarea></label>
+              </fieldset>
+              <fieldset id="decision-testability" class="md-group">
+                <legend data-i18n>Testbarkeit</legend>
+                <p class="md-hint muted" data-i18n>Worauf stützt sich die Entscheidung, und wie ließe sich das günstig prüfen? Der Assistent kann Annahmen und Tests vorschlagen; gespeichert wird erst, wenn du speicherst.</p>
+                <div id="decision-assumptions" class="assumption-rows"></div>
+                <div class="md-actions-row">
+                  <button type="button" id="decision-assumption-add" class="btn small" data-edit data-i18n>+ Annahme</button>
+                  <button type="button" id="decision-testability-suggest" class="btn small" data-edit data-i18n>Vorschlag vom Assistenten</button>
+                  <span id="decision-testability-note" class="muted" role="status"></span>
+                </div>
+                <label class="field-col"><span data-i18n>Widerlegt, wenn …</span><textarea id="decision-falsification" rows="2" maxlength="3000" placeholder="z. B. Der Failover dauert im Test länger als fünf Minuten." data-i18n-placeholder></textarea></label>
+              </fieldset>
               <p id="decision-refs" class="muted"></p>
+              <details id="decision-preview" class="md-preview">
+                <summary data-i18n>Vorschau des exportierten ADR</summary>
+                <div id="decision-preview-body" class="adr-preview"></div>
+              </details>
               <footer class="md-actions">
                 <button type="submit" id="decision-save" class="btn primary" data-edit data-i18n>Speichern</button>
                 <button type="button" id="decision-close" class="btn" data-i18n>Schließen</button>
@@ -473,7 +499,7 @@
           <button id="stakeholder-add" type="button" class="btn primary" data-edit data-i18n>+ Stakeholder</button>
         </div>
         <p class="md-intro muted" data-i18n>Wer ein Interesse an der Architektur hat: Rolle, Anliegen, Einfluss und die Treiber, die ihnen wichtig sind. Assistent und Analyse sagen, wessen Anliegen eine Option dient oder schadet.</p>
-        <div class="md">
+        <div class="md-layout">
           <div class="md-side">
             <ul id="stakeholders-list" class="md-list"></ul>
             <div id="stakeholders-empty" class="empty-state hidden">
@@ -530,6 +556,16 @@
           </footer>
         </form>
         <p id="documentation-status" class="md-status muted" role="status"></p>
+      </section>
+      <section id="arch-panel-gaps" class="arch-panel" role="tabpanel" aria-labelledby="arch-tab-gaps" hidden>
+        <p class="md-intro muted" data-i18n>Was dem Projekt gemessen an den zwölf arc42-Abschnitten noch fehlt, und der nächste Schritt dazu. Die Prüfung rechnet nur aus dem Modell, ohne Assistenten und ohne Kosten.</p>
+        <div id="gaps-summary" class="gaps-summary card" role="status"></div>
+        <div class="md-toolbar">
+          <button id="gaps-review" type="button" class="btn" data-i18n>Inhaltlich prüfen (Assistent)</button>
+          <span id="gaps-review-note" class="muted" role="status"></span>
+        </div>
+        <ol id="gaps-list" class="gaps-list"></ol>
+        <p id="gaps-status" class="md-status muted" role="status"></p>
       </section>
     </section>
 

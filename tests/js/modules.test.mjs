@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const staticDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "arcviz", "static");
 const modules = readdirSync(staticDir).filter((f) => f.endsWith(".js")).sort();
 const ENTRY = "app.js";
-const PURE = ["access.js", "agentaccess.js", "commands.js", "conflicts.js", "decisions.js", "drivers.js", "elements.js", "lifecycle.js", "listnav.js", "palette.js", "presence.js", "writequeue.js", "findings.js", "format.js", "geometry.js", "i18n.js", "model.js", "requirements.js", "steward.js", "vision.js", "markdown.js", "onboarding.js", "projects.js", "projectchat.js", "proposal.js", "qualities.js", "reply.js", "relations.js", "routes.js", "sharedmodel.js", "skins.js", "speech.js", "sse.js", "svgsafe.js", "types.js", "whatsnew.js"];
+const PURE = ["access.js", "agentaccess.js", "commands.js", "conflicts.js", "decisions.js", "drivers.js", "elements.js", "lifecycle.js", "listnav.js", "palette.js", "presence.js", "writequeue.js", "findings.js", "format.js", "gaps.js", "geometry.js", "i18n.js", "model.js", "requirements.js", "steward.js", "testability.js", "vision.js", "markdown.js", "onboarding.js", "projects.js", "projectchat.js", "proposal.js", "qualities.js", "readability.js", "reply.js", "relations.js", "routes.js", "sharedmodel.js", "skins.js", "speech.js", "sse.js", "svgsafe.js", "types.js", "whatsnew.js"];
 // Layer of every module (the table in the spec); a module imports only modules of a lower layer.
 const LAYERS = {
   ...Object.fromEntries(PURE.map((f) => [f, 0])),
@@ -19,7 +19,7 @@ const LAYERS = {
   "canvas.js": 2, "mdpane.js": 2, "chatlog.js": 2, "ui.js": 2, "requirementpicker.js": 2,
   "diagram.js": 3,
   "navigator.js": 4,
-  "appearance.js": 5, "decisionpanel.js": 5, "driverpanel.js": 5, "documentationpanel.js": 5, "scenariopanel.js": 5, "stakeholderpanel.js": 5, "stewardpanel.js": 5, "visionpanel.js": 5, "export.js": 5, "inspector.js": 5, "live.js": 5, "modelpanel.js": 5, "proposalpanel.js": 5, "requirementview.js": 5, "tokenpanel.js": 5, "review.js": 5, "settings.js": 5, "splitter.js": 5, "topbar.js": 5, "versions.js": 5, "voice.js": 5, "releasebanner.js": 5, "welcome.js": 5, "workspaces.js": 5,
+  "appearance.js": 5, "decisionpanel.js": 5, "driverpanel.js": 5, "documentationpanel.js": 5, "gapspanel.js": 5, "scenariopanel.js": 5, "stakeholderpanel.js": 5, "stewardpanel.js": 5, "visionpanel.js": 5, "export.js": 5, "inspector.js": 5, "live.js": 5, "modelpanel.js": 5, "proposalpanel.js": 5, "requirementview.js": 5, "tokenpanel.js": 5, "review.js": 5, "settings.js": 5, "splitter.js": 5, "topbar.js": 5, "versions.js": 5, "voice.js": 5, "releasebanner.js": 5, "welcome.js": 5, "workspaces.js": 5,
   "chat.js": 6, "archview.js": 6, "paletteview.js": 6,
   "shell.js": 7,
   [ENTRY]: 8,

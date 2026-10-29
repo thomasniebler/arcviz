@@ -440,5 +440,6 @@
   "Für {type} noch nicht verfügbar": "Not yet available for {type}",
   "Start fehlgeschlagen: {message}": "Start failed: {message}",
   "Architektur: Vision": "Architecture: vision",
-  "Architektur: Dokumentation": "Architecture: documentation"
+  "Architektur: Dokumentation": "Architecture: documentation",
+  "Architektur: Lücken (arc42)": "Architecture: gaps (arc42)"
 }

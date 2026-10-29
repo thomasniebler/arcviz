@@ -11,6 +11,10 @@ const MAX_NOTE = 8000;
 let sections = []; // [{id, title, gaps}] of the arc42 document, in the request language
 let notes = {}; // section id -> note
 let dirty = false;
+let wanted = null; // a section to preselect when the tab loads (a next step of the gap analysis)
+
+/** Preselect `id` in the section list the next time the tab is shown. */
+export function focusSection(id) { wanted = id; }
 
 function say(text) { $("documentation-status").textContent = text || ""; }
 
@@ -63,7 +67,8 @@ export async function loadDocumentation() {
   say("");
   if (dirty) return; // data arriving late must not wipe what the user has already typed
   const select = $("documentation-section");
-  const chosen = select.value || sections[0]?.id;
+  const chosen = wanted || select.value || sections[0]?.id;
+  wanted = null;
   select.replaceChildren(...sections.map((s) => option(s.id, `${Number(s.id)} ${s.title}`, s.id === chosen)));
   fillNote();
 }

@@ -38,8 +38,11 @@ from . import (
     agentauth,
     arc42,
     arc42_export,
+    arc42_gap_review,
+    arc42_gaps,
     arc42_html,
     auth,
+    decision_testability,
     diff,
     exchange,
     i18n,
@@ -2162,6 +2165,20 @@ def create_app(
         snapshot = project_snapshot(svc, project_id)
         return arc42.build(snapshot, project_review.run_project_checks(snapshot), snapshot.requirements)
 
+    @app.get("/api/projects/{project_id}/arc42/gaps")
+    def arc42_gap_report(svc: Svc, project_id: str) -> dict[str, Any]:
+        """The gap analysis of a project against the arc42 sections (viewer): per section its status, the gaps with
+        severity and next step, and the most important gap; deterministic, no model call (spec: arc42-gap-analysis.md)."""
+        snapshot = project_snapshot(svc, project_id)
+        doc = arc42.build(snapshot, project_review.run_project_checks(snapshot), snapshot.requirements)
+        return arc42_gaps.analyse(doc, snapshot.project).model_dump()
+
+    @app.post("/api/projects/{project_id}/arc42/gaps/review")
+    def arc42_gap_review_route(svc: Svc, project_id: str) -> dict[str, Any]:
+        """The advisory model pass over the arc42 sections: one model call, nothing written, a failed call is
+        `llm.ok = false` (spec: arc42-gap-analysis.md, ADR-0211)."""
+        return arc42_gap_review.review(get_provider(), arc42_document(svc, project_id))
+
     def arc42_figure_link(project_id: str) -> Callable[[str], str]:
         return lambda diagram_id: f"/api/projects/{quote(project_id, safe='')}/arc42/figures/{diagram_id}.svg"
 
@@ -2281,6 +2298,16 @@ def create_app(
         if not quality_suggestion.has_text(body):
             raise HTTPException(400, "Give the scenario a title or at least one of its parts.")
         return quality_suggestion.suggest(get_provider(), body)
+
+    @app.post("/api/projects/{project_id}/decisions/testability")
+    def suggest_decision_testability(svc: Svc, project_id: str, body: dict[str, Any] = Body(...)) -> dict[str, Any]:  # noqa: B008
+        """Suggest assumptions, tests and a falsification criterion for the decision text in the body: one model call,
+        nothing written (spec: adr-testability.md, ADR-0209); a failed or useless answer is `llm.ok = false`."""
+        with project_errors():
+            svc.projects.get(project_id)  # access and existence (404), as for every project route
+        if not decision_testability.has_text(body):
+            raise HTTPException(400, "Give the decision a title or at least one of its texts.")
+        return decision_testability.suggest(get_provider(), body)
 
     @app.get("/api/diagrams/{diagram_id}/checks")
     def run_checks(svc: Svc, diagram_id: str) -> dict[str, Any]:

@@ -29,7 +29,7 @@ jobs:
     name: CI
     # Drafts cost nothing; CI runs once the PR is marked ready for review.
     if: ${{ !github.event.pull_request.draft }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Playwright 1.56 does not support the Ubuntu 26.04 of ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

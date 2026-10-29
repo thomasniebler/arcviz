@@ -75,6 +75,7 @@ not listed is a boundary violation and needs a spec change first.
 | `arcviz/agent_model.py` | Element and relation tools of both chats ([shared project model](specs/shared-project-model.md), [model relations](specs/model-relations.md)): list, create, update, link, unlink | `model`, `operations`, `llm`, `ports`, `projects`, `project_model`, `services` |
 | `arcviz/project_agent.py` | One project chat turn ([project chat](specs/project-chat.md)): project prompt and tools, the active diagram per turn, per-diagram write-through and versions, the project transcript | `model`, `operations`, `projects`, `sequence`, `llm`, `ports`, `services`, `render`, `proposal`, `agent`, `agent_model`, `prompts`, `telemetry` |
 | `arcviz/project_review.py` | Project review ([project review](specs/project-review.md)): project rules (also the consistency rules of the [shared model](specs/shared-project-model.md)), aggregated diagram findings, one LLM review of the whole project | `model`, `projects`, `project_model`, `decision_model`, `sequence`, `llm`, `rules`, `review` |
+| `arcviz/decision_testability.py` | [ADR testability](specs/adr-testability.md): suggestion of assumptions, tests and a falsification criterion (ADR-0209): one LLM call, validated, never stored | `decision_model`, `llm`, `review` |
 | `arcviz/quality_model.py` | [ISO 25010 qualities](specs/iso25010-qualities.md): the nine characteristics, `clean_qualities`, `driver_qualities` | none |
 | `arcviz/quality_suggestion.py` | Suggestion of the characteristics of a scenario (ADR-0202): one LLM call, validated, never stored | `decision_model`, `llm`, `quality_model`, `review` |
 | `arcviz/scenario_analysis.py` | What-if analysis of a quality scenario ([decision support](specs/decision-support.md)): one LLM call over the project digest and the architecture context, validated, never stored | `decision_model`, `llm`, `project_review` |
@@ -82,6 +83,7 @@ not listed is a boundary violation and needs a spec change first.
 | `arcviz/agent_tools.py` | What an agent may ask and do: bounded read tools, code links, proposals; never applies a proposal | `services`, `project_review`, `agent`, `project_model` |
 | `arcviz/agentauth.py`, `arcviz/oidc.py` | Credentials of agents on the MCP path ([agent authentication](specs/agent-authentication.md)): `AgentGate`, personal access tokens, OIDC access tokens | `auth`, `limits`, `services` |
 | `arcviz/steward_model.py`, `arcviz/steward.py` | [Project steward](specs/project-steward.md): configuration and per-project document (pure); the background check, prompts, candidate validation, selection, the worker | `project_review`, `projects`, `proposals`, `services`, `live`, `llm`, `telemetry` |
+| `arcviz/arc42_gaps.py`, `arcviz/arc42_gap_review.py` | [arc42 gap analysis](specs/arc42-gap-analysis.md): the deterministic gaps, status and next steps per section (pure); the advisory model pass (ADR-0211) | `arc42`, `arc42_export`, `decision_model`, `project_model`, `projects`, `llm`, `review`, `i18n` |
 | `arcviz/arc42.py`, `arcviz/arc42_export.py`, `arcviz/arc42_html.py` | [arc42 export](specs/arc42-export.md): the pure section tree built from a project snapshot; the Markdown, AsciiDoc, zip and docx writers; the live HTML page | `project_review`, `projects`, `project_model`, `decision_model`, `requirement_model`, `quality_model`, `model`, `render`, `i18n` |
 | `arcviz/tokens.py`, `arcviz/proposals.py` | Domain types of personal access tokens and stored proposals (shape, bounds, retention, the proposal diff) | `workspaces`, `model` |
 | `arcviz/agent_types.py` | Tools of the diagram types other than deployment | `model`, `operations`, `sequence`, `llm` |
@@ -136,6 +138,9 @@ Rules that follow from the table:
 | [Project elements by default](specs/elements-by-default.md) | Implemented | #225 |
 | [Decision support: stakeholders, scenarios, analysis, decisions](specs/decision-support.md) | Implemented | #226, #231, #232, #233 |
 | [ISO/IEC 25010 quality characteristics of scenarios](specs/iso25010-qualities.md) | Implemented | none yet |
+| [ADR testability and the MADR export](specs/adr-testability.md) | Implemented | #12 |
+| [arc42 gap analysis](specs/arc42-gap-analysis.md) | Implemented | #13 |
+| [Readability of the Architektur editors](specs/decision-ui-readability.md) | Implemented | #14 |
 | [Deployment traits: managed services and built-in redundancy](specs/deployment-traits.md) | Implemented | #236 |
 | [Agent access: MCP endpoint, code links, stored proposals](specs/agent-access.md) | Implemented | #237 |
 | [Agent authentication: PATs and OIDC bearer tokens](specs/agent-authentication.md) | Implemented | #238 |

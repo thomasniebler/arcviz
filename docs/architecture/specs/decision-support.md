@@ -171,20 +171,23 @@ driver except `neutral`), `elements` (the affected ones), status `draft`. The an
 
 ### Markdown ADR (`decision_model.decision_markdown`)
 
-In German, like the UI:
+In the request language, in the layout of MADR 4 plus a testability section
+([ADR testability](adr-testability.md), ADR-0210):
 
 ```
 # ADR-3: <title>
 
 - Status: Angenommen (<decided_at date>) | Entwurf | Verworfen | Ersetzt durch ADR-<n>
 - Szenario: <title> (q4)
-- Treiber: <titles>
 - Elemente: <names>
 
-## Kontext
-## Optionen        (### per option, "Pro:" / "Contra:" lists, the chosen one marked "(gewählt)")
-## Entscheidung
-## Konsequenzen
+## Kontext und Problemstellung
+## Entscheidungstreiber
+## Betrachtete Optionen
+## Entscheidung        (Gewählte Option: „…“, weil <decision>)
+### Konsequenzen
+## Vor- und Nachteile der Optionen   (### per option, "- Pro: …" / "- Contra: …", the chosen one marked)
+## Annahmen und Testbarkeit          (table of assumptions, "Widerlegt, wenn: …"; accepted decisions always)
 ```
 
 ### Assistants and reviews (ADR-0168)
