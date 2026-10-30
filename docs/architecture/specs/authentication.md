@@ -76,7 +76,7 @@ a request without a valid id header with `401` — browser navigations included,
 send them to. In token mode, without an identity:
 
 - a browser navigation (`GET`/`HEAD`, `Accept` contains `text/html`, path outside `/api/`) gets
-  `303 See Other` to `/login?next=<path and query>`;
+  `303 See Other` to `/login?next=<path and query>` (the browser keeps the original fragment on the login page, which hands it on, see below);
 - everything else gets `401 {"detail": "Authentication required."}` with
   `WWW-Authenticate: Bearer realm="arcviz"` (token mode).
 
@@ -93,7 +93,7 @@ state: changing the token invalidates every session, logout deletes the cookie i
 
 ### Login and logout
 
-- `GET /login?next=/path`: in token mode a small German login page (self-contained HTML, no script)
+- `GET /login?next=/path`: in token mode a small German login page (self-contained HTML; its one inline script appends the address fragment, such as a permalink `#/p/…`, to `next`, because the server never sees fragments)
   with a password field `token` and the `next` value in a hidden field; in the other modes a redirect
   to `next`.
 - `POST /login` (form-encoded or JSON `{"token", "next"}`): a correct token sets the cookie and

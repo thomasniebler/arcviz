@@ -98,7 +98,8 @@ def test_a_browser_navigation_is_redirected_to_the_login_page(token_client):
     assert r.status_code == 401
     page = token_client.get("/login?next=/%3Fd%3Ddemo")
     assert page.status_code == 200 and 'type="password"' in page.text and 'name="token"' in page.text
-    assert 'value="/?d=demo"' in page.text and "<script" not in page.text
+    assert 'value="/?d=demo"' in page.text
+    assert page.text.count("<script") == 1 and "location.hash" in page.text  # carries a permalink fragment into `next`
 
 
 def test_bearer_token_passes_and_a_wrong_one_does_not(token_client):
@@ -122,6 +123,13 @@ def test_login_sets_a_strict_http_only_session_cookie_and_redirects(token_client
     assert "secure" not in cookie.lower()  # plain HTTP test client, ARCVIZ_COOKIE_SECURE=auto
     assert token_client.get("/api/diagrams/demo").status_code == 200  # the client keeps the cookie
     assert token_client.get("/", headers=HTML).status_code == 200
+
+
+def test_login_returns_to_a_permalink_fragment(token_client):
+    r = login(token_client, next_="/#/p/webshop/d/zahlungen")
+    assert r.status_code == 303 and r.headers["location"] == "/#/p/webshop/d/zahlungen"
+    page = token_client.get("/login?next=/%23/p/webshop/d/zahlungen")
+    assert 'value="/#/p/webshop/d/zahlungen"' in page.text
 
 
 def test_login_accepts_json_too(token_client):

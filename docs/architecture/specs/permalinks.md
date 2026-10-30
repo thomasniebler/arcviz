@@ -55,8 +55,12 @@ the palette (`diagram-copy-link`, `project-copy-link`); `navigator.currentLink(s
 The ids in a link are not secrets and the link grants nothing: `GET /api/projects/{id}` and every diagram route go
 through the guard, so a caller without a role gets the same 404 as for a missing id (no existence oracle,
 see the access matrix in [Personal workspaces](personal-workspaces.md)). The fragment is never sent to the server, so it appears in no access log.
-Known limitation: a login redirect (`ARCVIZ_AUTH=token`, or a proxy login) may drop the fragment, so a link opened
-without a session lands on the remembered project; open the link again after signing in.
+Signing in: nobody gets around the login for a link. In token mode the server redirects a navigation to
+`/login?next=<path>`; the browser keeps the fragment on the login page, whose inline script appends it to `next`
+(`auth.login_page`), so the login returns to the permalink. A session that expires while the app is open leads to
+`/login?next=<path, query and fragment>` (`api.loginUrl`). Behind a login proxy the proxy decides: a browser keeps
+the fragment through plain redirect chains, but a proxy login page that posts a form may drop it (not verified
+for any specific proxy); then the person lands on the remembered project and opens the link again.
 
 ## Testing
 
