@@ -3,7 +3,7 @@
 // navigator entries only set the hash; this module turns the hash into a view on every hash change and once after the
 // first project is shown, so a deep link such as `#/architecture/scenarios` opens its page. Views that change it from
 // code call `setMainView`, which keeps the hash in line.
-import { confirmLeaveTab, currentArchTab, showArchitectureView } from "./archview.js";
+import { confirmLeaveTab, currentArchTab, hasUnsavedEdits, showArchitectureView } from "./archview.js";
 import { setChatScope } from "./chat.js";
 import { $, setHash } from "./dom.js";
 import { onDiagramSwitched } from "./diagram.js";
@@ -55,7 +55,11 @@ async function apply() {
       setStatus(t("Der Link wird erst geöffnet, wenn der Assistent fertig ist oder der Vorschlag entschieden ist."));
       return;
     }
-    if (state.mainView === "architecture" && !confirmLeaveTab()) { syncRoute(true); return; } // the project switch reloads the open tab
+    if (state.mainView === "architecture" && hasUnsavedEdits()) { // the tab's editor would keep its form across the project switch
+      syncRoute(true);
+      setStatus(t("Der Link wird erst geöffnet, wenn die ungespeicherten Änderungen gespeichert oder verworfen sind."));
+      return;
+    }
     let followed = false;
     try {
       followed = await openLocation(route.project, route.diagram);

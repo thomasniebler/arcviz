@@ -66,7 +66,7 @@ arcviz/prompts/
 read: the automatic layout can only draw the structure the model has, so for what is asked for the assistant plans the
 whole structure first, builds several new elements in one `apply_batch` in reading order, groups related new elements
 where the type has containers, adds only meaningful edges, picks the direction with `set_direction` where the type has
-that tool, and keeps names and labels short. It never overrides the modelling hints: it adds no elements to tidy edges,
+that tool, and keeps names and labels short. It never overrides the modelling hints or the type's own notation and nesting rules: it adds no elements to tidy edges,
 does not cut a request down or split a diagram (it may suggest a split once) and changes nothing that was not asked for.
 It is a prompt rule, not a validation. Its effect is not covered by the eval set yet (a follow-up: cases that count
 elements and crossings); it has to be judged on real diagrams.
