@@ -457,5 +457,6 @@
   "Neu anlegen": "Create new",
   "Neu anlegen: Diagramm oder Abschnitt im geöffneten Projekt, oder ein neues Projekt": "Create a diagram or section in the open project, or a new project",
   "Neues Projekt…": "New project…",
-  "Der Link wird erst geöffnet, wenn der Assistent fertig ist oder der Vorschlag entschieden ist.": "The link opens only when the assistant has finished or the proposal is decided."
+  "Der Link wird erst geöffnet, wenn der Assistent fertig ist oder der Vorschlag entschieden ist.": "The link opens only when the assistant has finished or the proposal is decided.",
+  "Der Link konnte nicht geöffnet werden: {message}": "The link could not be opened: {message}"
 }

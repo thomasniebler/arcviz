@@ -35,7 +35,7 @@ Routes (pure, `static/routes.js`):
 `parseRoute` adds `project` (and `diagram`) to the route; ids are `encodeURIComponent`-escaped and an id that does not
 decode, or an empty one, makes the hash an ordinary route; a bad diagram id falls back to the project (`#/p/pr/d/` opens project `pr`). `permalink(route)` builds the hash.
 
-While a chat turn or a proposal locks navigation (`state.busy`) a permalink is not followed: the address is cleared and the
+A link is also not followed while the Architektur page holds unsaved edits that the person declines to discard; a refused or failed link restores the address of the view on screen (`syncRoute`). While a chat turn or a proposal locks navigation (`state.busy`) a permalink is not followed: the address is cleared and the
 status line says so. Otherwise `shell.apply` resolves a permalink through `navigator.openLocation(project, diagram)`: it reads the project
 (`GET /api/projects/{id}`); a failure (404 for a missing project and for one the caller has no role in alike) sets the
 status line and leaves the shown project, otherwise the project list is reloaded (a project shared after page load is

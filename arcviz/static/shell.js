@@ -51,12 +51,18 @@ async function apply() {
   const route = parseRoute(location.hash);
   if (route.project) { // a permalink (spec: permalinks.md): open what it names, then show the address in its in-app form
     if (state.busy) { // a turn or a pending proposal locks navigation, like every other switch
-      setHash("", { replace: true });
+      syncRoute(true);
       setStatus(t("Der Link wird erst geöffnet, wenn der Assistent fertig ist oder der Vorschlag entschieden ist."));
       return;
     }
-    const followed = await openLocation(route.project, route.diagram);
-    if (!followed) { setHash("", { replace: true }); return; }
+    if (state.mainView === "architecture" && !confirmLeaveTab()) { syncRoute(true); return; } // the project switch reloads the open tab
+    let followed = false;
+    try {
+      followed = await openLocation(route.project, route.diagram);
+    } catch (err) {
+      setStatus(t("Der Link konnte nicht geöffnet werden: {message}", { message: err.message || err }));
+    }
+    if (!followed) { syncRoute(true); return; } // the address shows the view that is on screen again
     setHash(formatRoute(route), { replace: true });
   }
   return setMainView(route.view, route.tab);
