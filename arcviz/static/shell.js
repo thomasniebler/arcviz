@@ -7,7 +7,7 @@ import { confirmLeaveTab, currentArchTab, showArchitectureView } from "./archvie
 import { setChatScope } from "./chat.js";
 import { $, setHash } from "./dom.js";
 import { onDiagramSwitched } from "./diagram.js";
-import { onProjectShown } from "./navigator.js";
+import { onProjectShown, openLocation } from "./navigator.js";
 import { showRequirementView } from "./requirementview.js";
 import { formatRoute, parseRoute } from "./routes.js";
 import { state } from "./state.js";
@@ -45,8 +45,13 @@ export async function setMainView(view, tab) {
   syncRoute(false);
 }
 
-function apply() {
+async function apply() {
   const route = parseRoute(location.hash);
+  if (route.project) { // a permalink (spec: permalinks.md): open what it names, then show the address in its in-app form
+    const followed = await openLocation(route.project, route.diagram);
+    if (!followed) { setHash("", { replace: true }); return; }
+    setHash(formatRoute(route), { replace: true });
+  }
   return setMainView(route.view, route.tab);
 }
 

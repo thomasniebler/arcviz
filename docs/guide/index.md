@@ -9,8 +9,8 @@ sections](projects.md), [Own and shared projects](workspaces.md)). The header ho
 
 | Area | Controls |
 |---|---|
-| Header, left | **Projekte** (show or hide the navigator), **Neu** (create in the open project), **Löschen** (delete), **Importieren** |
-| Navigator | **Projekt** selector (groups **Meine Projekte** and **Mit mir geteilt**) with **+** and **⋯** (share, rename, describe, export, import, delete), **+ Abschnitt**, the tree of sections and diagrams with a **⋯** menu per row |
+| Header, left | the sidebar button (show or hide the navigator), **Neu** (create in the open project), **Löschen** (delete), **Importieren** |
+| Navigator | **Projekt** selector (groups **Meine Projekte** and **Mit mir geteilt**) with **+** (new diagram, section or project) and **⋯** (copy link, share, rename, describe, export, import, delete), **+ Diagramm**, **+ Abschnitt**, the tree of sections and diagrams with a **⋯** menu per row |
 | Header, right | **Undo**, **Version sichern** (manual snapshot), **Versionen** selector, **Wiederherstellen** (restore), **Chat leeren**, active provider and model, your name, **Hilfe** (**Rundgang starten**, and this documentation for the running version: user guide, architecture documentation, everything). The header always stays one row: a long version name is shortened with "…" (the tooltip shows it in full), and in a narrow window the less used tools move into the **⋯** menu |
 | Chat | Transcript, input box, microphone button with **Dauerhören** and language selector, **Senden** |
 | Canvas toolbar | Diagram title and statistics, **Review** (architecture review panel), **Richtung** (layout direction) |

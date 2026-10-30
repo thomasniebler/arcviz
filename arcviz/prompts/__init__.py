@@ -24,10 +24,11 @@ PERSONA = _read("shared/persona.txt")
 TOPIC_SCOPE = _read("shared/scope.txt")
 WORKING_RULES = _read("shared/working.txt")
 MODELLING_HINTS = _read("shared/hints.txt")
+READABILITY = _read("shared/readability.txt")  # spec assistant-prompts.md: structure the automatic layout can draw
 REPLY_STYLE = _read("shared/reply.txt")
 
 # In prompt order; other prompts (e.g. a project chat) reuse them through `compose`.
-SHARED_BLOCKS: tuple[str, ...] = (PERSONA, TOPIC_SCOPE, WORKING_RULES, MODELLING_HINTS, REPLY_STYLE)
+SHARED_BLOCKS: tuple[str, ...] = (PERSONA, TOPIC_SCOPE, WORKING_RULES, MODELLING_HINTS, READABILITY, REPLY_STYLE)
 
 # diagram type -> expert part (notation, modelling guidance, guided start, examples); may contain {kinds}
 EXPERT_PARTS: dict[str, str] = {

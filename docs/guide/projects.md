@@ -8,12 +8,17 @@ unless you link their elements to the [shared project model](shared-model.md).
 
 ## The navigator
 
-The column on the left is the **project navigator**. The button **Projekte** in the header shows or
+The column on the left is the **project navigator**. The sidebar button at the left of the header shows or
 hides it; the browser remembers the choice, the open project, the open diagram and which sections are
 collapsed.
 
-- **Projekt** switches between projects. **+** creates a project; the **⋯** menu next to it renames
-  it, edits its description (shown below the selector) and deletes it.
+- **Projekt** switches between projects. **+** opens a menu: **Diagramm…** and **Abschnitt…** are created in the
+  open project, **Neues Projekt…** creates a project. The **⋯** menu next to it copies a link to the project
+  (**Link kopieren**), shares, renames it, edits its description (shown below the selector) and deletes it.
+- **+ Diagramm** above the tree creates a diagram in the open project (**+ Abschnitt** a top-level section).
+- **Links:** **Link kopieren** (project menu, the **⋯** menu of the header for the open diagram, or `Strg+K`) copies
+  a permalink. It only names the project or diagram: it opens for people the project is shared with
+  (**Freigeben…**) and shows "not found" for everybody else.
 - **+ Abschnitt** creates a section at the top level.
 - The tree shows the sections first, then the diagrams, in their order. Click a diagram to open it; the
   open diagram is highlighted. The arrow in front of a section folds it.

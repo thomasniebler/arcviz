@@ -138,13 +138,16 @@ select, input, textarea {
 .nav-description:empty { display: none; }
 .nav-tree-head { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 4px; }
 .nav-tree-head button { padding: 2px 8px; }
+.nav-tree-head .nav-tree-actions { display: flex; gap: 4px; }
+#btn-navigator svg { width: 18px; height: 18px; vertical-align: middle; fill: none; stroke: currentColor; stroke-width: 1.8; }
+#nav-new-menu > summary { font-weight: 600; }
 .nav-tree { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
 .nav-row { display: flex; align-items: center; gap: 2px; padding-left: calc(var(--depth, 0) * 14px); border-radius: 6px; }
 .nav-row:hover { background: var(--bg); }
 .nav-row > button { padding: 3px 6px; border-color: transparent; background: transparent; }
 .nav-row .nav-title, .nav-row .nav-open { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
-.nav-section .nav-title { font-weight: 600; padding: 3px 0; }
-.nav-section.empty .nav-title { color: var(--muted); }
+.nav-sec .nav-title { font-weight: 600; padding: 3px 0; }
+.nav-sec.empty .nav-title { color: var(--muted); }
 .nav-diagram[aria-current="true"] { background: var(--accent-soft); }
 .nav-diagram[aria-current="true"] .nav-open { font-weight: 600; color: var(--accent); }
 .nav-toggle { width: 22px; color: var(--muted); }

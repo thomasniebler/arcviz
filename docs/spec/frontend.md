@@ -36,7 +36,7 @@ ADR-0020), in layers; a module imports only from lower layers:
 | | `skins.js` | UI skins: `SKINS`, `DEFAULT_SKIN`, `SKIN_STORAGE_KEY`, `resolveSkin` ([Skins](#skins)) |
 | | `elements.js` | Sequence-diagram elements: `findElement`, `messageCount`, `elementFields`, `elementUpdate`, `elementRemove`, `elementTitle` |
 | | `projectchat.js` | Project chat: `describeProjectCall` (German tool lines of the project tools, `null` for others), `changedDiagramItems`, `changedDiagramsLabel`, `diagramSwitch`, `scopeLabel` ([Project chat](#project-chat)) |
-| | `routes.js` | Hash routes of the shell ([app shell](../architecture/specs/app-shell.md), ADR-0194): `ARCH_TABS`, `parseRoute(hash)` (`{view: "diagram"}`, `{view: "requirements"}` or `{view: "architecture", tab}`), `formatRoute(route)` |
+| | `routes.js` | Hash routes of the shell ([app shell](../architecture/specs/app-shell.md), ADR-0194): `ARCH_TABS`, `parseRoute(hash)` (`{view: "diagram"}`, `{view: "requirements"}` or `{view: "architecture", tab}`; permalinks `#/p/<project>[/d/<diagram>|/requirements|/architecture/<tab>]` add `project`/`diagram`, [design](../architecture/specs/permalinks.md)), `formatRoute(route)`, `permalink(route)` |
 | | `relations.js` | Model relations: `RELATION_KIND_LABELS`, `relationKindLabel`, `relationKindName`, `relationText`, `viewConnections`, `fits`, `relationChoices`, `shownElements`, `relationsNotDrawn`, `completenessText`, `resolutionRequest`, `needsConfirmation`, `elementKinds`, `nestedNodes`, `showsRelation` (mirrors `project_model.shows`; both checked against `tests/fixtures/relations_shown.json`) ([model relations](../architecture/specs/model-relations.md)) |
 | | `sharedmodel.js` | Shared project model: `ELEMENT_KIND_LABELS`, `kindLabel`, `linkableKinds`, `viewElement`, `findModelElement`, `linkChoices`, `defaultKind`, `usageText`, `elementChanges`, `propagationText` ([Shared project model](#shared-project-model)) |
 | | `access.js` | Users, own and shared projects and roles ([Own and shared projects](#own-and-shared-projects)): `ROLE_LABELS`, `ROLES`, `SHARE_ROLES`, `READ_ONLY_HINT`, `FORBIDDEN_TEXT`, `EMPTY_PROJECTS_TEXT`, `canEdit`, `canOwn`, `abilities`, `roleLabel`, `projectGroups`, `offerDemo`, `sharedLabel`, `personLabel`, `shareRows`, `editLock`, `addedText`, `suggestionLabel`, `wantsSuggestions` (share suggestions, ADR-0165) |
@@ -77,7 +77,7 @@ ADR-0020), in layers; a module imports only from lower layers:
 | pure | `readability.js`, `testability.js` | `snippet(text, max)` (one-line card text cut at a word), `fitHeight` (height of an auto-growing area); the rows, suggestion merge and card chip of the decision [testability](../architecture/specs/adr-testability.md) |
 | pure | `listnav.js` | `filterItems(items, query, textOf)` (every word, case-insensitive), `stepId(ids, current, delta)` (keyboard step, clamped) |
 | | `archview.js` (layer 6) | The **Architektur** page (`#architecture-view`, a main view next to the requirements view): tabs Treiber, Szenarien, Entscheidungen, Stakeholder (`#arch-tabs`, each tab carries its `data-route`); every tab loads when shown; `showArchitectureView(on, tab)`, `currentArchTab()`, `initArchView({onApply})` (`onApply` sends an analysis option as a preview chat turn; `app.js` returns to the diagram view first, because the chat is hidden on the page) |
-| shell | `shell.js` (layer 7) | `setMainView(view, tab)`: which main view fills the work area (`state.mainView`: `diagram`, `requirements`, `architecture`), the chat scope of the requirements view, the hash and the `aria-current` marks of the rail and navigator entries; `initShell()`: delegated clicks on `[data-route]` set the hash, `hashchange` applies it, the first project shown opens a deep link, **Zum Diagramm**/**Zum Diagramm-Chat**, the rail's settings button |
+| shell | `shell.js` (layer 7) | `setMainView(view, tab)`: which main view fills the work area (`state.mainView`: `diagram`, `requirements`, `architecture`), the chat scope of the requirements view, the hash and the `aria-current` marks of the rail and navigator entries; `initShell()`: delegated clicks on `[data-route]` set the hash, `hashchange` applies it, the first project shown opens a deep link or permalink (`navigator.openLocation`, then the address is replaced by the in-app form), **Zum Diagramm**/**Zum Diagramm-Chat**, the rail's settings button |
 | | `topbar.js` | Menu behaviour of the top bar's menus (`initTopbar`) |
 | | `settings.js` | Opens and closes **Persönliche Einstellungen** (`initSettings`) |
 | | `appearance.js` | Skin selector: `applySkin`, `initAppearance()` ([Skins](#skins)) |
@@ -103,7 +103,7 @@ Stakeholder, Modell), **Prüfen & Assistent** (Projekt-Review, Projekt-Chat, Vor
 navigator overlays the workspace.
 
 The top bar is **slim** (design: [Command palette](../architecture/specs/command-palette.md), ADR-0197; it was a menu bar, ADR-0176):
-the brand, the navigator toggle **Projekte**, the search field `#palette-open` (opens the palette, shows `⌘K` on Apple platforms and
+the brand, the navigator toggle (sidebar icon, `#btn-navigator`), the search field `#palette-open` (opens the palette, shows `⌘K` on Apple platforms and
 `Strg K` elsewhere, only its icon below 1000 px), a spacer, **Undo** and **Redo**, the **⋯** menu (`#menu-more`), **Hilfe** and
 the user menu (`#user-menu`, label `#me` = the user's name or *Konto*: **Persönliche Einstellungen…** and, in token mode,
 **Abmelden**). **⋯** holds the former menus under the headings **Diagramm** (**Neu…**, **Importieren…**, **Chat leeren**,
@@ -223,7 +223,7 @@ Design: [Project navigator](../architecture/specs/project-navigator.md), ADR-005
 `tests/js/projects.test.mjs`, the navigator step of the e2e test.
 
 - **Project selector** `#project-select` (`projectOptionLabel`: title and diagram count) switches with
-  `openProject`. **+** (`#btn-project-new`) asks for a title and `POST /api/projects`; the menu
+  `openProject`. **+** (`#nav-new-menu`) opens a menu: **Diagramm…** (`#nav-new-diagram`, the new-diagram dialog) and **Abschnitt…** (`#nav-new-section`) in the open project, **Neues Projekt…** (`#btn-project-new`: asks for a title and `POST /api/projects`); `#btn-tree-new` (**+ Diagramm**) sits next to **+ Abschnitt** above the tree; the menu
   `#project-menu` renames (`PATCH {title}`), describes (`PATCH {description}`, shown in
   `#project-description`) and deletes (`DELETE` with `If-Match` of the shown `view.revision`, button disabled while
   the project has diagrams; then the remaining remembered or first project opens; see *Conditional deletes*).
@@ -262,6 +262,7 @@ another project shows what came along (`sharedmodel.carriedText(view.carried)`) 
 - The project menu also has **Exportieren** (`GET …/export` through `apiFetch`, saved under the
   name from `Content-Disposition`) and **Projekt importieren…** (`#import-project-file`,
   `POST /api/projects/import`, then the new project opens).
+- **Links** ([permalinks](../architecture/specs/permalinks.md), ADR-0212): `#btn-copy-link` (top-bar **⋯** menu) and `#btn-project-copy-link` (project menu) copy `navigator.currentLink(scope)`, also in the palette; `navigator.openLocation(project, diagram)` follows one (a project without a role answers 404: status line, nothing changes). Section rows are `.nav-sec` (not `.nav-section`, which is the grouped entry block of the navigator head).
 - `#btn-navigator` (`aria-expanded`) shows or hides the column. `setBusy` makes the navigator
   `inert` during a turn or a pending proposal.
 

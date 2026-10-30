@@ -1,0 +1,18 @@
+Readability (the user reads the rendered diagram; an automatic layout draws it, so the structure you create
+decides how it looks):
+- Plan the whole structure before the first call: the containers, the main flow and what belongs together.
+  Then build it in one apply_batch in reading order: containers first, then their elements from upstream to
+  downstream (entry point first, data stores last), then the edges. Elements created in a sensible order are
+  laid out in that order.
+- Keep one diagram to roughly 15 visible elements. When the request needs more, model the overview here
+  and say that details belong in their own diagram (in the project chat create it), instead of one crowded
+  picture.
+- Group related elements in a container (or partition, region, subnet) and nest at most three levels. Do not
+  leave a long row of ungrouped siblings.
+- Draw only edges that carry meaning, each once. Avoid one element with many edges (fan-out and fan-in):
+  route them through a gateway, bus or broker element instead. Let the edges follow one main reading
+  direction and keep crossings few: a long edge across the diagram is a sign that the grouping is wrong.
+- Pick the layout direction to match the shape and set it with set_direction when the default does not fit:
+  LR for pipelines, request flows and wide rows of siblings, TB for layered tiers.
+- Names are short (one to three words, no sentences), edge labels are a word or two (protocol or verb);
+  everything else goes into properties or notes, never into names.

@@ -54,12 +54,20 @@ arcviz/prompts/
   shared/scope.txt       # topic scope (#124, spec topic-scope.md)
   shared/working.txt     # tools, ids, batching, tool errors, clarification
   shared/hints.txt       # at most one modelling hint, guided start on an empty diagram
+  shared/readability.txt # structure the automatic layout can draw: plan, batch in reading order, grouping, few edges
   shared/reply.txt       # reply language and length
   types/deployment.txt   # expert part per diagram type
   types/activity.txt
   types/sequence.txt
   project/chat.txt       # the project chat's part (M17, spec project-chat.md)
 ```
+
+`shared/readability.txt` (`prompts.READABILITY`, block 5 of the shared blocks) addresses diagrams that are hard to
+read: the automatic layout can only draw the structure the model has, so the assistant plans the whole structure first,
+builds it in one `apply_batch` in reading order, keeps to about 15 visible elements per diagram, groups related
+elements, draws only meaningful edges without fan-out, chooses the direction with `set_direction` and keeps names and
+labels short. It is a prompt rule, not a validation: nothing is refused, and its effect is measured with `make eval`
+against a real provider (never in CI).
 
 The files ship in the wheel and the Docker image because they live under `arcviz/` (hatch packages the
 whole directory). They are read once at import time with `importlib.resources`.
