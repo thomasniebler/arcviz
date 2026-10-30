@@ -36,7 +36,7 @@ Routes (pure, `static/routes.js`):
 decode, or an empty one, makes the hash an ordinary route; a bad diagram id falls back to the project (`#/p/pr/d/` opens project `pr`). `permalink(route)` builds the hash.
 
 Following a link is refused, with a status message and the address of the view on screen restored (`syncRoute`), while
-a chat turn or a proposal locks navigation (`state.busy`) and while the Architektur page holds unsaved edits (a project
+a chat turn or a proposal locks navigation (`state.busy`) and while any Architektur tab holds unsaved edits (a project
 switch would leave the old project's form, still dirty, to be saved into the new one). A link that fails to open does
 the same. Otherwise `shell.apply` resolves a permalink through `navigator.openLocation(project, diagram)`: it reads the project
 (`GET /api/projects/{id}`); a failure (404 for a missing project and for one the caller has no role in alike) sets the
@@ -54,8 +54,9 @@ the palette (`diagram-copy-link`, `project-copy-link`); `navigator.currentLink(s
 
 The ids in a link are not secrets and the link grants nothing: `GET /api/projects/{id}` and every diagram route go
 through the guard, so a caller without a role gets the same 404 as for a missing id (no existence oracle,
-see the access matrix in [Personal workspaces](personal-workspaces.md)). Reverse proxies or the login redirect keep the fragment client-side; the
-fragment is never sent to the server, so it appears in no access log.
+see the access matrix in [Personal workspaces](personal-workspaces.md)). The fragment is never sent to the server, so it appears in no access log.
+Known limitation: a login redirect (`ARCVIZ_AUTH=token`, or a proxy login) may drop the fragment, so a link opened
+without a session lands on the remembered project; open the link again after signing in.
 
 ## Testing
 

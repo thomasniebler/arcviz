@@ -26,8 +26,8 @@ let current = ARCH_TABS[0];
 /** The tab that is (or was last) shown. */
 export function currentArchTab() { return current; }
 
-/** Whether the shown tab holds unsaved edits (a project switch would keep them in a form of the other project). */
-export function hasUnsavedEdits() { return DIRTY[current](); }
+/** Whether any tab holds unsaved edits (a project switch would keep them in a form of the other project). */
+export function hasUnsavedEdits() { return Object.values(DIRTY).some((isDirty) => isDirty()); }
 
 /** Whether the shown tab may be left: its editor holds no unsaved changes, or the user agreed to discard them. */
 export function confirmLeaveTab() { return confirmDiscard(DIRTY[current]()); }

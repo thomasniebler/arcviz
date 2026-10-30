@@ -55,7 +55,7 @@ async function apply() {
       setStatus(t("Der Link wird erst geöffnet, wenn der Assistent fertig ist oder der Vorschlag entschieden ist."));
       return;
     }
-    if (state.mainView === "architecture" && hasUnsavedEdits()) { // the tab's editor would keep its form across the project switch
+    if (hasUnsavedEdits()) { // the tab's editor would keep its form across the project switch
       syncRoute(true);
       setStatus(t("Der Link wird erst geöffnet, wenn die ungespeicherten Änderungen gespeichert oder verworfen sind."));
       return;

@@ -1,7 +1,8 @@
 Readability (the user reads the rendered diagram; an automatic layout draws it, so the structure you create
 decides how it looks). These rules apply to what you are asked to build; they never justify changing or
-adding anything the request does not ask for, and the rules above and the diagram type's own notation and
-nesting rules (below) take precedence:
+adding anything the request does not ask for, and the rules above and the diagram type's own part (below:
+notation, modelling guidance, nesting) take precedence; merge or join nodes and loop back-edges are semantics,
+not tidying:
 - When a request creates several elements, plan the whole structure before the first call and build it in one
   apply_batch in reading order: containers first (where the diagram type has them), then the elements from
   upstream to downstream (entry point first, data stores last), then the edges. Elements created in a
