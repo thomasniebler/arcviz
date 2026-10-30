@@ -197,4 +197,5 @@ Create a new ADR by copying `0000-template.md` to the next free number. Status v
 | [0208](0208-arc42-prose-for-unmodelled-sections.md) | Prose for the sections the model does not cover | Accepted |
 | [0209](0209-adr-assumptions-stored-and-suggested.md) | Assumptions and a falsification criterion are stored on the decision, suggested by the model and confirmed by a person | Accepted |
 | [0210](0210-adr-export-follows-madr.md) | The exported ADR follows MADR 4 | Accepted |
+| [0211](0211-arc42-gap-analysis.md) | The gap analysis is a deterministic check per arc42 section, with an optional model pass that only advises | Accepted |
 | [0212](0212-permalinks-are-hash-deep-links.md) | Permalinks are hash deep links that grant nothing | Accepted |

@@ -33,7 +33,7 @@ Routes (pure, `static/routes.js`):
 | `#/p/<project>/architecture/<tab>` | a tab of the Architektur page |
 
 `parseRoute` adds `project` (and `diagram`) to the route; ids are `encodeURIComponent`-escaped and an id that does not
-decode, or an empty one, makes the hash an ordinary route. `permalink(route)` builds the hash.
+decode, or an empty one, makes the hash an ordinary route; a bad diagram id falls back to the project (`#/p/pr/d/` opens project `pr`). `permalink(route)` builds the hash.
 
 While a chat turn or a proposal locks navigation (`state.busy`) a permalink is not followed: the address is cleared and the
 status line says so. Otherwise `shell.apply` resolves a permalink through `navigator.openLocation(project, diagram)`: it reads the project

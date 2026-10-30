@@ -63,11 +63,13 @@ arcviz/prompts/
 ```
 
 `shared/readability.txt` (`prompts.READABILITY`, block 5 of the shared blocks) addresses diagrams that are hard to
-read: the automatic layout can only draw the structure the model has, so the assistant plans the whole structure first,
-builds it in one `apply_batch` in reading order, keeps to about 15 visible elements per diagram, groups related
-elements, draws only meaningful edges without fan-out, chooses the direction with `set_direction` and keeps names and
-labels short. It is a prompt rule, not a validation: nothing is refused, and its effect is measured with `make eval`
-against a real provider (never in CI).
+read: the automatic layout can only draw the structure the model has, so for what is asked for the assistant plans the
+whole structure first, builds several new elements in one `apply_batch` in reading order, groups related new elements
+where the type has containers, adds only meaningful edges, picks the direction with `set_direction` where the type has
+that tool, and keeps names and labels short. It never overrides the modelling hints: it adds no elements to tidy edges,
+does not cut a request down or split a diagram (it may suggest a split once) and changes nothing that was not asked for.
+It is a prompt rule, not a validation. Its effect is not covered by the eval set yet (a follow-up: cases that count
+elements and crossings); it has to be judged on real diagrams.
 
 The files ship in the wheel and the Docker image because they live under `arcviz/` (hatch packages the
 whole directory). They are read once at import time with `importlib.resources`.

@@ -54,7 +54,7 @@ def test_shared_blocks_cover_persona_scope_rules_hints_and_reply():
     assert "UML 2.5.1" in prompts.PERSONA and "architect" in prompts.PERSONA
     assert "at most one" in prompts.MODELLING_HINTS and "empty diagram" in prompts.MODELLING_HINTS
     assert "language" in prompts.REPLY_STYLE
-    assert "apply_batch" in prompts.READABILITY and "set_direction" in prompts.READABILITY
+    assert "apply_batch" in prompts.READABILITY and "take precedence" in prompts.READABILITY
 
 
 @pytest.mark.parametrize("diagram_type", DIAGRAM_TYPES)
