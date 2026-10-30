@@ -3,9 +3,10 @@
 import { forbiddenText } from "./access.js";
 import { getLanguage, t } from "./i18n.js";
 
-/** Where a 401 sends the browser: the login page, coming back to the current page afterwards. */
+/** Where a 401 sends the browser: the login page, coming back to the current page afterwards, with its fragment (a
+ * permalink, spec: permalinks.md, is not lost at the login). */
 export function loginUrl(location) {
-  return `/login?next=${encodeURIComponent(location.pathname + location.search)}`;
+  return `/login?next=${encodeURIComponent(location.pathname + location.search + (location.hash || ""))}`;
 }
 
 /** `fetch` for the API: a 401 (authentication on, no or an expired session) goes to the login page. */

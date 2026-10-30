@@ -13,6 +13,7 @@ function fakeBrowser(status, body = {}) {
 
 test("the login URL brings the user back to the current page", () => {
   assert.equal(loginUrl({ pathname: "/", search: "?d=a b" }), "/login?next=%2F%3Fd%3Da%20b");
+  assert.equal(loginUrl({ pathname: "/", search: "", hash: "#/p/a/d/b" }), "/login?next=%2F%23%2Fp%2Fa%2Fd%2Fb"); // a permalink survives
 });
 
 test("a 401 sends the browser to the login page and rejects", async () => {

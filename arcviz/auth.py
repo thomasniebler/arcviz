@@ -225,7 +225,8 @@ def identify(config: AuthConfig, headers: Mapping[str, str]) -> Identity | None:
 
 
 def login_page(next_path: str, error: str | None = None) -> str:
-    """The login form of token mode (in the request language, no script, everything inline)."""
+    """The login form of token mode (in the request language, everything inline). Its one tiny script carries the
+    address fragment of the page (a permalink the server never sees) into `next`, so the login returns to it."""
     message = f'<p class="error" role="alert">{html.escape(error)}</p>' if error else ""
     title = html.escape(_("Arcviz – Anmelden"))
     label = html.escape(_("Zugangstoken"))
@@ -255,6 +256,10 @@ button {{ margin-top: 1rem; padding: .5rem 1rem; font-size: 1rem; background: #2
 <input type="hidden" name="next" value="{html.escape(next_path)}">
 <button type="submit">{button}</button>
 </form>
+<script>
+var h = location.hash, n = document.querySelector("input[name=next]");
+if (h.indexOf("#/") === 0 && n.value.indexOf("#") < 0) n.value += h;
+</script>
 </body>
 </html>
 """

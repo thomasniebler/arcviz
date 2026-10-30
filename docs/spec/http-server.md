@@ -80,7 +80,7 @@ share list; `GET /api/projects` adds the owner's
   `scope["state"]["arcviz_identity"]` (`off` and `token` mode: the admin identity) and, in proxy mode only, its id
   in `scope["state"]["arcviz_user"]` (in token mode everyone is the admin, so the rate limiter keys on the client
   address); without one it answers 401, or in token mode 303 to `/login?next=…` for a browser navigation. `/healthz`, `/readyz`, `/login`, `/logout` (and `/docs` with `ARCVIZ_AUTH_DOCS=public`)
-  are public. `GET /login` serves `auth.login_page` (token mode) or redirects; `POST /login` checks the
+  are public. `GET /login` serves `auth.login_page` (token mode; its inline script appends a `#/…` address fragment to `next`, so permalinks survive the login) or redirects; `POST /login` checks the
   token and sets the cookie `arcviz_session=<issued>.<HMAC-SHA256(token, issued)>` (HttpOnly,
   SameSite=Strict, 7 days, `Secure` per `ARCVIZ_COOKIE_SECURE`); `POST /logout` deletes it. Design:
   [Authentication](../architecture/specs/authentication.md).
