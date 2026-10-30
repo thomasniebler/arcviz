@@ -35,7 +35,8 @@ Routes (pure, `static/routes.js`):
 `parseRoute` adds `project` (and `diagram`) to the route; ids are `encodeURIComponent`-escaped and an id that does not
 decode, or an empty one, makes the hash an ordinary route. `permalink(route)` builds the hash.
 
-`shell.apply` resolves a permalink through `navigator.openLocation(project, diagram)`: it reads the project
+While a chat turn or a proposal locks navigation (`state.busy`) a permalink is not followed: the address is cleared and the
+status line says so. Otherwise `shell.apply` resolves a permalink through `navigator.openLocation(project, diagram)`: it reads the project
 (`GET /api/projects/{id}`); a failure (404 for a missing project and for one the caller has no role in alike) sets the
 status line and leaves the shown project, otherwise the project list is reloaded (a project shared after page load is
 there) and `loadDiagramList(diagram, project)` opens it. A diagram the project no longer holds opens the remembered one

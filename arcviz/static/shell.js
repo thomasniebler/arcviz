@@ -10,7 +10,9 @@ import { onDiagramSwitched } from "./diagram.js";
 import { onProjectShown, openLocation } from "./navigator.js";
 import { showRequirementView } from "./requirementview.js";
 import { formatRoute, parseRoute } from "./routes.js";
+import { t } from "./i18n.js";
 import { state } from "./state.js";
+import { setStatus } from "./ui.js";
 
 let scopeBeforeRequirements = "diagram";
 
@@ -48,6 +50,11 @@ export async function setMainView(view, tab) {
 async function apply() {
   const route = parseRoute(location.hash);
   if (route.project) { // a permalink (spec: permalinks.md): open what it names, then show the address in its in-app form
+    if (state.busy) { // a turn or a pending proposal locks navigation, like every other switch
+      setHash("", { replace: true });
+      setStatus(t("Der Link wird erst geöffnet, wenn der Assistent fertig ist oder der Vorschlag entschieden ist."));
+      return;
+    }
     const followed = await openLocation(route.project, route.diagram);
     if (!followed) { setHash("", { replace: true }); return; }
     setHash(formatRoute(route), { replace: true });
