@@ -3,7 +3,7 @@
 import { api, apiFetch } from "./api.js";
 import { renderOffscreen } from "./canvas.js";
 import { addMessage } from "./chatlog.js";
-import { $ } from "./dom.js";
+import { $, copyText } from "./dom.js";
 import { currentProject, loadDiagramList } from "./navigator.js";
 import { exportName } from "./format.js";
 import { carriedText } from "./sharedmodel.js";
@@ -85,22 +85,6 @@ function svgToPng(svgText, width, height, scale = 2) {
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(t("SVG konnte nicht gerastert werden."))); };
     img.src = url;
   });
-}
-
-/** Copy text to the clipboard; falls back to a hidden textarea + execCommand where the async
- * Clipboard API is unavailable (plain-HTTP deployments are not a secure context). */
-async function copyText(text) {
-  if (navigator.clipboard?.writeText) {
-    try { await navigator.clipboard.writeText(text); return; } catch { /* fall through */ }
-  }
-  const area = document.createElement("textarea");
-  area.value = text; area.setAttribute("readonly", "");
-  area.style.position = "fixed"; area.style.left = "-9999px";
-  document.body.appendChild(area);
-  area.select();
-  let ok = false;
-  try { ok = document.execCommand("copy"); } finally { area.remove(); }
-  if (!ok) throw new Error(t("Zwischenablage nicht verfügbar – Quelltext über „Quelltext“ anzeigen und manuell kopieren."));
 }
 
 async function runExport(kind) {

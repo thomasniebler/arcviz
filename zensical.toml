@@ -120,6 +120,7 @@ nav = [
       { "Documentation in the app" = "architecture/specs/docs-in-app.md" },
       { "UI skins" = "architecture/specs/ui-skins.md" },
       { "App shell" = "architecture/specs/app-shell.md" },
+      { "Permalinks" = "architecture/specs/permalinks.md" },
       { "Menu bar and personal settings" = "architecture/specs/personal-settings.md" },
       { "Internationalization" = "architecture/specs/internationalization.md" },
       { "Application services" = "architecture/specs/application-services.md" },

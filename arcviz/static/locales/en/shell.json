@@ -1,6 +1,4 @@
 {
-  "Projekte": "Projects",
-  "Projekt-Navigator ein-/ausblenden": "Show or hide the project navigator",
   "Befehle, Bereiche und Diagramme suchen": "Search commands, areas and diagrams",
   "Suchen oder Befehl …": "Search or command …",
   "Verlauf": "History",
@@ -441,5 +439,25 @@
   "Start fehlgeschlagen: {message}": "Start failed: {message}",
   "Architektur: Vision": "Architecture: vision",
   "Architektur: Dokumentation": "Architecture: documentation",
-  "Architektur: Lücken (arc42)": "Architecture: gaps (arc42)"
+  "Architektur: Lücken (arc42)": "Architecture: gaps (arc42)",
+  "+ Diagramm": "+ Diagram",
+  "Abschnitt…": "Section…",
+  "Das verlinkte Diagramm gibt es in diesem Projekt nicht (mehr).": "The linked diagram does not exist in this project (any more).",
+  "Der Link führt zu einem Projekt, das es nicht gibt oder für das dir die Freigabe fehlt.": "The link points to a project that does not exist or that has not been shared with you.",
+  "Diagramm…": "Diagram…",
+  "Im geöffneten Projekt": "In the open project",
+  "Link auf dieses Diagramm kopieren": "Copy link to this diagram",
+  "Link auf dieses Diagramm kopieren; er öffnet nur für Personen, für die das Projekt freigegeben ist": "Copy a link to this diagram; it opens only for people the project is shared with",
+  "Link auf dieses Projekt kopieren": "Copy link to this project",
+  "Link auf dieses Projekt kopieren; er öffnet nur für Personen, für die es freigegeben ist": "Copy a link to this project; it opens only for people it is shared with",
+  "Link kopieren": "Copy link",
+  "Link kopiert. Er funktioniert nur für Personen, für die das Projekt freigegeben ist.": "Link copied. It works only for people the project is shared with.",
+  "Navigator (Projekte, Abschnitte, Diagramme) ein-/ausblenden": "Show or hide the navigator (projects, sections, diagrams)",
+  "Navigator ein-/ausblenden": "Show or hide the navigator",
+  "Neu anlegen": "Create new",
+  "Neu anlegen: Diagramm oder Abschnitt im geöffneten Projekt, oder ein neues Projekt": "Create a diagram or section in the open project, or a new project",
+  "Neues Projekt…": "New project…",
+  "Der Link wird erst geöffnet, wenn der Assistent fertig ist oder der Vorschlag entschieden ist.": "The link opens only when the assistant has finished or the proposal is decided.",
+  "Der Link konnte nicht geöffnet werden: {message}": "The link could not be opened: {message}",
+  "Der Link wird erst geöffnet, wenn die ungespeicherten Änderungen gespeichert oder verworfen sind.": "The link opens only when the unsaved changes are saved or discarded."
 }

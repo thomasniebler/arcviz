@@ -3,14 +3,16 @@
 // navigator entries only set the hash; this module turns the hash into a view on every hash change and once after the
 // first project is shown, so a deep link such as `#/architecture/scenarios` opens its page. Views that change it from
 // code call `setMainView`, which keeps the hash in line.
-import { confirmLeaveTab, currentArchTab, showArchitectureView } from "./archview.js";
+import { confirmLeaveTab, currentArchTab, hasUnsavedEdits, showArchitectureView } from "./archview.js";
 import { setChatScope } from "./chat.js";
 import { $, setHash } from "./dom.js";
 import { onDiagramSwitched } from "./diagram.js";
-import { onProjectShown } from "./navigator.js";
+import { onProjectShown, openLocation } from "./navigator.js";
 import { showRequirementView } from "./requirementview.js";
 import { formatRoute, parseRoute } from "./routes.js";
+import { t } from "./i18n.js";
 import { state } from "./state.js";
+import { setStatus } from "./ui.js";
 
 let scopeBeforeRequirements = "diagram";
 
@@ -45,8 +47,28 @@ export async function setMainView(view, tab) {
   syncRoute(false);
 }
 
-function apply() {
+async function apply() {
   const route = parseRoute(location.hash);
+  if (route.project) { // a permalink (spec: permalinks.md): open what it names, then show the address in its in-app form
+    if (state.busy) { // a turn or a pending proposal locks navigation, like every other switch
+      syncRoute(true);
+      setStatus(t("Der Link wird erst geöffnet, wenn der Assistent fertig ist oder der Vorschlag entschieden ist."));
+      return;
+    }
+    if (hasUnsavedEdits()) { // the tab's editor would keep its form across the project switch
+      syncRoute(true);
+      setStatus(t("Der Link wird erst geöffnet, wenn die ungespeicherten Änderungen gespeichert oder verworfen sind."));
+      return;
+    }
+    let followed = false;
+    try {
+      followed = await openLocation(route.project, route.diagram);
+    } catch (err) {
+      setStatus(t("Der Link konnte nicht geöffnet werden: {message}", { message: err.message || err }));
+    }
+    if (!followed) { syncRoute(true); return; } // the address shows the view that is on screen again
+    setHash(formatRoute(route), { replace: true });
+  }
   return setMainView(route.view, route.tab);
 }
 

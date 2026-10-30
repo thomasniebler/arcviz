@@ -45,7 +45,7 @@ stay allowed. Enforcement is prompt-only; the eval set measures leakage.
 `arcviz/prompts/shared/scope.txt` becomes `prompts.TOPIC_SCOPE`, the second shared block:
 
 ```
-SHARED_BLOCKS = (PERSONA, TOPIC_SCOPE, WORKING_RULES, MODELLING_HINTS, REPLY_STYLE)
+SHARED_BLOCKS = (PERSONA, TOPIC_SCOPE, WORKING_RULES, MODELLING_HINTS, READABILITY, REPLY_STYLE)
 ```
 
 So it is part of every diagram type's prompt (and of any other prompt that composes the shared blocks),

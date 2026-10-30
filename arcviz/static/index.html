@@ -11,7 +11,7 @@
 <body>
   <header class="topbar">
     <div class="brand">Arcviz</div>
-    <button id="btn-navigator" type="button" aria-controls="navigator" aria-expanded="true" title="Projekt-Navigator ein-/ausblenden" data-i18n-title data-i18n>Projekte</button>
+    <button id="btn-navigator" type="button" aria-controls="navigator" aria-expanded="true" title="Navigator (Projekte, Abschnitte, Diagramme) ein-/ausblenden" aria-label="Navigator ein-/ausblenden" data-i18n-title data-i18n-aria-label><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/></svg></button>
     <button id="palette-open" type="button" class="topbar-search" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K" title="Befehle, Bereiche und Diagramme suchen" data-i18n-title>
       <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
       <span class="topbar-search-text" data-i18n>Suchen oder Befehl …</span>
@@ -29,6 +29,7 @@
       <div class="menu-items">
         <span class="menu-title" data-i18n>Diagramm</span>
         <button id="btn-new" title="Neues Diagramm im geöffneten Projekt anlegen" data-edit data-i18n-title data-i18n>Neu…</button>
+        <button id="btn-copy-link" title="Link auf dieses Diagramm kopieren; er öffnet nur für Personen, für die das Projekt freigegeben ist" data-i18n-title data-i18n>Link kopieren</button>
         <button id="btn-import" title="Diagramm aus einer exportierten JSON-Datei als neues Diagramm im geöffneten Projekt anlegen" data-edit data-i18n-title data-i18n>Importieren…</button>
         <input id="import-file" type="file" accept=".json,application/json" hidden>
         <span id="diagram-tools" class="tools">
@@ -103,10 +104,20 @@
         <span data-i18n>Projekt</span>
         <select id="project-select" title="Projekt wechseln" data-i18n-title></select>
       </label>
-      <button id="btn-project-new" type="button" title="Neues Projekt anlegen" aria-label="Neues Projekt" data-i18n-title data-i18n-aria-label>+</button>
+      <details id="nav-new-menu" class="menu nav-menu">
+        <summary title="Neu anlegen: Diagramm oder Abschnitt im geöffneten Projekt, oder ein neues Projekt" aria-label="Neu anlegen" data-i18n-title data-i18n-aria-label>+</summary>
+        <div class="menu-items">
+          <span class="menu-title" data-i18n>Im geöffneten Projekt</span>
+          <button id="nav-new-diagram" type="button" class="edit-only" data-i18n>Diagramm…</button>
+          <button id="nav-new-section" type="button" class="edit-only" data-i18n>Abschnitt…</button>
+          <hr>
+          <button id="btn-project-new" type="button" title="Neues Projekt anlegen" data-i18n-title data-i18n>Neues Projekt…</button>
+        </div>
+      </details>
       <details id="project-menu" class="menu nav-menu">
         <summary title="Projekt bearbeiten" aria-label="Projekt bearbeiten" data-i18n-title data-i18n-aria-label>⋯</summary>
         <div class="menu-items">
+          <button id="btn-project-copy-link" type="button" title="Link auf dieses Projekt kopieren; er öffnet nur für Personen, für die es freigegeben ist" data-i18n-title data-i18n>Link kopieren</button>
           <button id="btn-project-share" type="button" title="Für wen das Projekt freigegeben ist (nur der Besitzer gibt frei)" data-i18n-title data-i18n>Freigeben…</button>
           <button id="btn-project-rename" type="button" class="edit-only" data-i18n>Umbenennen…</button>
           <button id="btn-project-describe" type="button" class="edit-only" data-i18n>Beschreibung…</button>
@@ -142,7 +153,10 @@
     </div>
     <div class="nav-tree-head">
       <span class="muted" data-i18n>Abschnitte und Diagramme</span>
-      <button id="btn-section-new" type="button" title="Neuen Abschnitt auf oberster Ebene anlegen" class="edit-only" data-i18n-title data-i18n>+ Abschnitt</button>
+      <span class="nav-tree-actions">
+        <button id="btn-tree-new" type="button" title="Neues Diagramm im geöffneten Projekt anlegen" class="edit-only" data-i18n-title data-i18n>+ Diagramm</button>
+        <button id="btn-section-new" type="button" title="Neuen Abschnitt auf oberster Ebene anlegen" class="edit-only" data-i18n-title data-i18n>+ Abschnitt</button>
+      </span>
     </div>
     <ul id="nav-tree" class="nav-tree" role="tree" aria-label="Abschnitte und Diagramme" data-i18n-aria-label></ul>
   </aside>

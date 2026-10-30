@@ -5,10 +5,11 @@ import { api, apiFetch, ifMatch } from "./api.js";
 import { showChat } from "./chatlog.js";
 import { changeAuthor, changedBy, confirmedDelete } from "./conflicts.js";
 import { openDiagram, showDiagram } from "./diagram.js";
-import { $, el, option } from "./dom.js";
+import { $, copyText, el, option } from "./dom.js";
 import { N_, t } from "./i18n.js";
 import { nextDiagramId, pickDiagram, pickProject, projectOptionLabel, sectionChoices, siblingMove, treeRows } from "./projects.js";
 import { EMPTY_PROJECTS_TEXT, offerDemo, projectGroups, sharedLabel } from "./access.js";
+import { permalink } from "./routes.js";
 import { focusQuery, state } from "./state.js";
 import { TYPE_LABELS, templateChoices } from "./types.js";
 import { carriedText } from "./sharedmodel.js";
@@ -67,6 +68,38 @@ function showNoProjects() {
   emptyKind = "projects";
   setEmpty(true);
   for (const fn of projectHooks) fn(null);
+}
+
+/** Open the project and diagram a permalink names. A project the caller cannot see answers 404 exactly like a project
+ * that does not exist: the link then grants nothing and the shown project stays (spec: permalinks.md). Resolves to
+ * whether the link was followed. */
+export async function openLocation(projectId, diagramId) {
+  try {
+    await api(`/api/projects/${encodeURIComponent(projectId)}`);
+  } catch {
+    setStatus(t("Der Link führt zu einem Projekt, das es nicht gibt oder für das dir die Freigabe fehlt."));
+    return false;
+  }
+  if (projectId !== currentProject()) nav.projects = await api(projectListPath());
+  await loadDiagramList(diagramId, projectId);
+  if (diagramId && state.diagramId !== diagramId) setStatus(t("Das verlinkte Diagramm gibt es in diesem Projekt nicht (mehr)."));
+  return true;
+}
+
+/** The permalink (absolute URL) of the shown diagram, or of the open project when `scope` is "project". */
+export function currentLink(scope = "diagram") {
+  const project = currentProject();
+  if (!project) return null;
+  const route = scope === "diagram" && state.diagramId ? { project, diagram: state.diagramId } : { project, view: "diagram" };
+  return location.origin + location.pathname + location.search + permalink(route);
+}
+
+/** Copy a permalink to the clipboard and say so; the link opens only for people the project is shared with. */
+export async function copyLink(scope) {
+  const link = currentLink(scope);
+  if (!link) return;
+  await copyText(link);
+  setStatus(t("Link kopiert. Er funktioniert nur für Personen, für die das Projekt freigegeben ist."));
 }
 
 /** Switch to another project and open its remembered (or first) diagram. */
@@ -221,7 +254,7 @@ function renderTree() {
     li.dataset.count = String(row.count);
     const up = { disabled: siblingMove(row, -1) === null }, down = { disabled: siblingMove(row, 1) === null };
     if (row.kind === "section") {
-      li.className = `nav-row nav-section${row.empty ? " empty" : ""}`;
+      li.className = `nav-row nav-sec${row.empty ? " empty" : ""}`;
       li.dataset.sectionId = row.id;
       li.setAttribute("aria-expanded", String(!row.collapsed));
       const toggle = document.createElement("button");
@@ -455,7 +488,14 @@ export function initNavigator() {
   });
 
   $("project-select").addEventListener("change", () => guarded(() => openProject($("project-select").value)));
-  $("btn-project-new").addEventListener("click", () => guarded(createProject));
+  $("btn-project-new").addEventListener("click", () => { closeNewMenu(); guarded(createProject); });
+  $("btn-project-copy-link").addEventListener("click", () => { closeProjectMenu(); guarded(() => copyLink("project")); });
+  $("btn-copy-link").addEventListener("click", () => { $("menu-more").removeAttribute("open"); guarded(() => copyLink("diagram")); });
+  // the "+" menu next to the project select: everything that is created in (or besides) the open project
+  const closeNewMenu = () => $("nav-new-menu").removeAttribute("open");
+  $("nav-new-diagram").addEventListener("click", () => { closeNewMenu(); openNewDialog(); });
+  $("nav-new-section").addEventListener("click", () => { closeNewMenu(); $("btn-section-new").click(); });
+  $("btn-tree-new").addEventListener("click", () => openNewDialog());
   const closeProjectMenu = () => $("project-menu").removeAttribute("open");
   $("btn-project-rename").addEventListener("click", () => guarded(async () => {
     closeProjectMenu();

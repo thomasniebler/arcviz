@@ -1,5 +1,6 @@
 // Element lookup shared by the DOM modules. Nothing here runs at import time: `bindElements()` fills
 // `el` once the page is parsed (called first by app.js).
+import { t } from "./i18n.js";
 
 export const $ = (id) => document.getElementById(id);
 
@@ -33,4 +34,20 @@ export function setHash(hash, { replace = false } = {}) {
   if (current === hash) return;
   const url = location.pathname + location.search + hash;
   if (replace) history.replaceState(null, "", url); else history.pushState(null, "", url);
+}
+
+/** Copy text to the clipboard; falls back to a hidden textarea + execCommand where the async
+ * Clipboard API is unavailable (plain-HTTP deployments are not a secure context). */
+export async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    try { await navigator.clipboard.writeText(text); return; } catch { /* fall through */ }
+  }
+  const area = document.createElement("textarea");
+  area.value = text; area.setAttribute("readonly", "");
+  area.style.position = "fixed"; area.style.left = "-9999px";
+  document.body.appendChild(area);
+  area.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } finally { area.remove(); }
+  if (!ok) throw new Error(t("Zwischenablage nicht verfügbar – Quelltext über „Quelltext“ anzeigen und manuell kopieren."));
 }

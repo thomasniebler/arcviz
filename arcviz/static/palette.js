@@ -27,6 +27,7 @@ export const COMMANDS = [
   press("go-chat", N_("Projekt-Chat"), "Gehe zu", "btn-project-chat", "assistent chat projekt", { needs: "project" }),
 
   press("diagram-new", N_("Neues Diagramm …"), "Diagramm", "btn-new", "anlegen erstellen vorlage", { needs: "project" }),
+  press("diagram-copy-link", N_("Link auf dieses Diagramm kopieren"), "Diagramm", "btn-copy-link", "permalink teilen url adresse", { needs: "project" }),
   press("diagram-import", N_("Diagramm importieren …"), "Diagramm", "btn-import", "json datei laden", { needs: "project" }),
   press("diagram-clear-chat", N_("Chat dieses Diagramms leeren"), "Diagramm", "btn-clear-chat", "verlauf löschen"),
   press("diagram-delete", N_("Diagramm löschen"), "Diagramm", "btn-delete", "entfernen"),
@@ -50,6 +51,7 @@ export const COMMANDS = [
 
   press("project-new", N_("Neues Projekt …"), "Projekt", "btn-project-new", "anlegen erstellen"),
   press("project-share", N_("Projekt freigeben …"), "Projekt", "btn-project-share", "teilen zugriff viewer editor", { needs: "project" }),
+  press("project-copy-link", N_("Link auf dieses Projekt kopieren"), "Projekt", "btn-project-copy-link", "permalink teilen url adresse", { needs: "project" }),
   press("project-rename", N_("Projekt umbenennen …"), "Projekt", "btn-project-rename", "name", { needs: "project" }),
   press("project-describe", N_("Projektbeschreibung ändern …"), "Projekt", "btn-project-describe", "text", { needs: "project" }),
   press("project-export", N_("Projekt exportieren"), "Projekt", "btn-project-export", "herunterladen bundle sichern", { needs: "project" }),

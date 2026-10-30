@@ -673,11 +673,11 @@ try {
   const english = await browser.newPage({ locale: "en-US", viewport: { width: 1400, height: 900 } });
   await english.goto(base);
   await english.waitForSelector("#diagram svg", { timeout: 30000 });
-  check("an English browser gets English", (await english.getAttribute("html", "lang")) === "en" && (await english.textContent("#btn-navigator")) === "Projects");
+  check("an English browser gets English", (await english.getAttribute("html", "lang")) === "en" && (await english.getAttribute("#btn-navigator", "aria-label")) === "Show or hide the navigator");
   await openSettings(english);
   await english.selectOption("#language-select", "de");
   await english.waitForSelector("#diagram svg", { timeout: 30000 });
-  check("the language choice is stored and applies after the reload", (await english.getAttribute("html", "lang")) === "de" && (await english.textContent("#btn-navigator")) === "Projekte");
+  check("the language choice is stored and applies after the reload", (await english.getAttribute("html", "lang")) === "de" && (await english.getAttribute("#btn-navigator", "aria-label")) === "Navigator ein-/ausblenden");
   await english.close();
   // an insecure origin on which Chrome still exposes the API counts as unavailable, with its own reason
   const insecure = await browser.newPage({ locale: "de-DE", viewport: { width: 1400, height: 900 } });
@@ -1075,6 +1075,8 @@ try {
     await page.click("#new-form button[type=submit]");
     await page.waitForFunction((t) => document.getElementById("diagram-title").textContent === t, title, { timeout: 15000 });
   };
+  await page.click("#nav-new-menu summary");
+  check("the + menu offers diagram, section and project", (await page.isVisible("#nav-new-diagram")) && (await page.isVisible("#nav-new-section")) && (await page.isVisible("#btn-project-new")));
   await page.click("#btn-project-new");
   await enterName("Webshop");
   await page.waitForSelector("#empty-project:not(.hidden)", { timeout: 15000 });
@@ -1157,6 +1159,18 @@ try {
   await page.click("#btn-navigator");
   check("the navigator can be hidden", (await page.isHidden("#navigator")) && (await page.getAttribute("#btn-navigator", "aria-expanded")) === "false");
   await page.click("#btn-navigator");
+  // permalinks (spec: docs/architecture/specs/permalinks.md): the link names project and diagram and opens them again
+  await page.click("#menu-more summary");
+  await page.evaluate(() => { Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (text) => { window.__permalink = text; } } }); });
+  await page.click("#btn-copy-link");
+  const permalinkText = await page.evaluate(() => window.__permalink);
+  check("the copied link is a permalink of the open diagram", permalinkText?.endsWith(`#/p/${encodeURIComponent(webshop)}/d/${encodeURIComponent(zahlungen)}`), permalinkText);
+  await page.evaluate((h) => { location.hash = h; }, `#/p/${encodeURIComponent(webshop)}/d/${encodeURIComponent(zahlungen)}`);
+  await page.waitForFunction(() => location.hash === "", null, { timeout: 10000 });
+  check("a permalink opens its diagram and settles to the in-app address", (await page.inputValue("#project-select")) === webshop && (await currentDiagram(page)) === zahlungen);
+  await page.evaluate(() => { location.hash = "#/p/unknown-0000000000/d/x"; });
+  await page.waitForFunction(() => location.hash === "", null, { timeout: 10000 });
+  check("a permalink to a project the caller cannot see changes nothing and says so", (await page.inputValue("#project-select")) === webshop && (await page.textContent("#status")).includes("Freigabe"));
   // project export and import (spec: docs/architecture/specs/project-exchange.md)
   await page.click("#project-menu summary");
   const [bundleDownload] = await Promise.all([page.waitForEvent("download", { timeout: 15000 }), page.click("#btn-project-export")]);
@@ -1671,6 +1685,7 @@ try {
   await alice.waitForSelector("#diagram svg", { timeout: 30000 });
   check("the admin sees the existing data among her own projects", (await alice.textContent("#me")) === "Alice" && (await alice.getAttribute("#project-select optgroup", "label")) === "Meine Projekte");
   const aliceBefore = await alice.inputValue("#project-select");
+  await alice.click("#nav-new-menu summary");
   await alice.click("#btn-project-new");
   await askedName(alice, "Plattform");
   await alice.waitForFunction((before) => document.getElementById("project-select").value !== before && document.getElementById("empty-text").textContent.includes("keine Diagramme"), aliceBefore, { timeout: 15000 });

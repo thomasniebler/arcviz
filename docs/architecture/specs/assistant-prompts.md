@@ -54,12 +54,22 @@ arcviz/prompts/
   shared/scope.txt       # topic scope (#124, spec topic-scope.md)
   shared/working.txt     # tools, ids, batching, tool errors, clarification
   shared/hints.txt       # at most one modelling hint, guided start on an empty diagram
+  shared/readability.txt # structure the automatic layout can draw: plan, batch in reading order, grouping, few edges
   shared/reply.txt       # reply language and length
   types/deployment.txt   # expert part per diagram type
   types/activity.txt
   types/sequence.txt
   project/chat.txt       # the project chat's part (M17, spec project-chat.md)
 ```
+
+`shared/readability.txt` (`prompts.READABILITY`, block 5 of the shared blocks) addresses diagrams that are hard to
+read: the automatic layout can only draw the structure the model has, so for what is asked for the assistant plans the
+whole structure first, builds several new elements in one `apply_batch` in reading order, groups related new elements
+where the type has containers, adds only meaningful edges, picks the direction with `set_direction` where the type has
+that tool, and keeps names and labels short. It never overrides the modelling hints or the type's own part (notation, modelling guidance, nesting): it adds no elements to tidy edges,
+does not cut a request down or split a diagram (it may suggest a split once) and changes nothing that was not asked for.
+It is a prompt rule, not a validation. Its effect is not covered by the eval set yet (a follow-up: cases that count
+elements and crossings); it has to be judged on real diagrams.
 
 The files ship in the wheel and the Docker image because they live under `arcviz/` (hatch packages the
 whole directory). They are read once at import time with `importlib.resources`.
@@ -68,7 +78,7 @@ whole directory). They are read once at import time with `importlib.resources`.
 
 | Name | Meaning |
 |---|---|
-| `PERSONA`, `TOPIC_SCOPE`, `WORKING_RULES`, `MODELLING_HINTS`, `REPLY_STYLE` | the shared blocks (stripped text, no placeholders) |
+| `PERSONA`, `TOPIC_SCOPE`, `WORKING_RULES`, `MODELLING_HINTS`, `READABILITY`, `REPLY_STYLE` | the shared blocks (stripped text, no placeholders) |
 | `SHARED_BLOCKS` | the shared blocks in prompt order |
 | `EXPERT_PARTS: dict[str, str]` | diagram type → expert part; may contain the placeholder `{kinds}` |
 | `STATE_HEADING` | `"Current state:"`, the line before the summary |
@@ -93,7 +103,7 @@ table in `docs/architecture/index.md` gets a row.
 ### Prompt order and caching
 
 ```
-PERSONA · TOPIC_SCOPE · WORKING_RULES · MODELLING_HINTS · REPLY_STYLE · <expert part of the type> · Current state: <summary>
+PERSONA · TOPIC_SCOPE · WORKING_RULES · MODELLING_HINTS · READABILITY · REPLY_STYLE · <expert part of the type> · Current state: <summary>
 ```
 
 The shared blocks come first, so every type (and a future project chat) shares the same leading text; the
@@ -104,7 +114,7 @@ an identical system block, which is what the provider's `cache_control` on the s
 The project chat (M17, [project chat](project-chat.md)) uses the same leading blocks:
 
 ```
-PERSONA · TOPIC_SCOPE · WORKING_RULES · MODELLING_HINTS · REPLY_STYLE · PROJECT_PART · Project: <title, description, structure> · Active diagram: <expert part of its type> · Current state: <summary>
+PERSONA · TOPIC_SCOPE · WORKING_RULES · MODELLING_HINTS · READABILITY · REPLY_STYLE · PROJECT_PART · Project: <title, description, structure> · Active diagram: <expert part of its type> · Current state: <summary>
 ```
 
 so it declines off-topic requests like the diagram chat, and everything up to `PROJECT_PART` is one
