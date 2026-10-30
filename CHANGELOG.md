@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/thomasniebler/arcviz/compare/v0.5.0...v0.6.0) (2026-10-30)
+
+
+### Features
+
+* ADR testability and MADR export, arc42 gap analysis, readable Architektur editors ([#15](https://github.com/thomasniebler/arcviz/issues/15)) ([72745af](https://github.com/thomasniebler/arcviz/commit/72745af53994852a66625314466f2c7458b2e48d)), closes [#12](https://github.com/thomasniebler/arcviz/issues/12) [#13](https://github.com/thomasniebler/arcviz/issues/13) [#14](https://github.com/thomasniebler/arcviz/issues/14)
+* **ui:** permalinks, new-item menu, navigator fixes and readability prompts ([#17](https://github.com/thomasniebler/arcviz/issues/17)) ([17021a2](https://github.com/thomasniebler/arcviz/commit/17021a2eb9ab2b0231e6b2a070cc12f0f0aec478))
+
+
+### Bug Fixes
+
+* **auth:** permalinks survive the login ([#18](https://github.com/thomasniebler/arcviz/issues/18)) ([615bced](https://github.com/thomasniebler/arcviz/commit/615bced2cbed4678cae2e9b9d5ea55b247be5934))
+
 ## [0.5.0](https://github.com/thomasniebler/arcviz/compare/v0.4.2...v0.5.0) (2026-10-26)
 
 
