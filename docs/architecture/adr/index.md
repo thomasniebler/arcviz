@@ -199,3 +199,11 @@ Create a new ADR by copying `0000-template.md` to the next free number. Status v
 | [0210](0210-adr-export-follows-madr.md) | The exported ADR follows MADR 4 | Accepted |
 | [0211](0211-arc42-gap-analysis.md) | The gap analysis is a deterministic check per arc42 section, with an optional model pass that only advises | Accepted |
 | [0212](0212-permalinks-are-hash-deep-links.md) | Permalinks are hash deep links that grant nothing | Accepted |
+| [0213](0213-model-is-the-source-of-truth.md) | The project model is the source of truth; diagrams are views | Proposed |
+| [0214](0214-model-documents.md) | One structure document and one document per behaviour, versioned like diagrams | Proposed |
+| [0215](0215-views-resolve-to-a-projection.md) | A view resolves to today's `Diagram` as a read-only projection | Proposed |
+| [0216](0216-relations-shown-by-default.md) | Relations among shown elements are shown unless hidden | Proposed |
+| [0217](0217-view-operations-and-removal-scope.md) | View operations keep the tool vocabulary; a removal names its scope | Proposed |
+| [0218](0218-change-sets.md) | Change sets make one edit across documents undoable | Proposed |
+| [0219](0219-agent-model-writes-per-project.md) | Agents write the model directly or through proposals, per project | Proposed |
+| [0220](0220-migration-into-the-model.md) | Existing diagrams are migrated into the model at start-up | Proposed |
