@@ -555,5 +555,7 @@ def test_a_recheck_reads_the_revision_only(world, monkeypatch):
     ada.diagrams.apply_operation("orders", "add_node", {"name": "Cache", "kind": "service"}, "add")
     loads.clear()
     fresh = vic.recheck(watch)
+    # model first: the revision includes the fingerprint of the resolved view (`<backend>~<fingerprint>`), so reading
+    # it is one `read_latest` (the resolve), never a `load`/`load_with_revision` of the diagram
+    assert loads == ["read_latest"]
     assert fresh is not None and fresh.revision == store.read_revision("orders") != watch.revision
-    assert loads == []

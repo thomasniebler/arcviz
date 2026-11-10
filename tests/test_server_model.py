@@ -41,6 +41,8 @@ def lifelines(client, diagram_id: str) -> list[dict]:
 
 
 def test_elements_crud(shop):
+    # model first: the template nodes of the three diagrams are project elements too
+    before = {e["id"] for e in shop.get("/api/projects/shop/model").json()["elements"]}
     r = shop.post("/api/projects/shop/elements", json={"name": "Order Service", "description": "Bestellungen"})
     assert r.status_code == 201
     assert r.json()["element"] == {
@@ -50,25 +52,27 @@ def test_elements_crud(shop):
         "description": "Bestellungen",
         "parent": None,
     }
-    assert [e["id"] for e in r.json()["model"]["elements"]] == ["order-service"]
-    shop.post("/api/projects/shop/elements", json={"name": "Shop", "kind": "system", "id": "shop-system"})
+    assert {e["id"] for e in r.json()["model"]["elements"]} == before | {"order-service"}
+    shop.post("/api/projects/shop/elements", json={"name": "Shop System", "kind": "system", "id": "shop-system"})
     r = shop.patch("/api/projects/shop/elements/order-service", json={"description": "Neu", "parent": "shop-system"})
     assert r.status_code == 200 and r.json()["element"]["parent"] == "shop-system"
     assert r.json()["element"]["description"] == "Neu"
     r = shop.patch("/api/projects/shop/elements/order-service", json={"parent": None})
     assert r.json()["element"]["parent"] is None
     model = shop.get("/api/projects/shop/model").json()
-    assert model["project"] == "shop" and len(model["elements"]) == 2
+    assert model["project"] == "shop" and len(model["elements"]) == len(before) + 2
     r = shop.delete("/api/projects/shop/elements/shop-system")
     assert r.status_code == 200 and r.json()["element"]["element"] == "shop-system"
-    assert [e["id"] for e in r.json()["model"]["elements"]] == ["order-service"]
+    assert {e["id"] for e in r.json()["model"]["elements"]} == before | {"order-service"}
 
 
 def test_config_describes_the_model(client):
     config = client.get("/api/config").json()
     kinds = config["project_model"]["element_kinds"]
-    assert kinds == ["actor", "system", "subsystem", "component", "node", "data"]
-    assert set(config["diagram_types"]["sequence"]["linkable"]["lifeline"]) == set(kinds)
+    # model first: ELEMENT_KINDS gained interface, use_case and package (the nodes of class/use case/component views)
+    m18 = ["actor", "system", "subsystem", "component", "node", "data"]
+    assert kinds == [*m18, "interface", "use_case", "package"]
+    assert set(config["diagram_types"]["sequence"]["linkable"]["lifeline"]) == set(m18)
     assert config["diagram_types"]["activity"]["linkable"]["data_store_node"] == ["data"]
     assert "opaque_action" not in config["diagram_types"]["activity"]["linkable"]
     assert config["diagram_types"]["deployment"]["linkable"]["database"] == ["data", "component"]
@@ -78,13 +82,18 @@ def test_the_elements_alone_come_from_the_project_document(shop):
     shop.post("/api/projects/shop/elements", json={"name": "Order Service", "description": "x"})
     r = shop.get("/api/projects/shop/elements")
     assert r.status_code == 200
-    assert r.json() == {
-        "project": "shop",
-        "elements": [
-            {"id": "order-service", "name": "Order Service", "kind": "component", "description": "x", "parent": None}
-        ],
-        "relations": [],  # M25 (spec: model-relations.md)
+    body = r.json()
+    assert sorted(body) == ["elements", "project", "relations"] and body["project"] == "shop"
+    assert body["relations"] == []  # M25 (spec: model-relations.md)
+    # model first: the template nodes are elements as well; the added one comes as stored, without usages
+    assert body["elements"][-1] == {
+        "id": "order-service",
+        "name": "Order Service",
+        "kind": "component",
+        "description": "x",
+        "parent": None,
     }
+    assert all("usages" not in e for e in body["elements"])
     assert shop.get("/api/projects/nope/elements").status_code == 404
 
 
@@ -104,8 +113,10 @@ def test_link_unlink_and_promote_across_the_three_diagram_types(shop):
     service = next(i for i, n in nodes(shop, "platform").items() if n["kind"] == "service")
     r = shop.post("/api/diagrams/platform/link", json={"view": service, "element": "Order Service"})
     assert r.status_code == 200, r.text
-    assert nodes(shop, "platform")[service]["ref"] == "order-service"
-    assert nodes(shop, "platform")[service]["name"] == "Order Service"
+    # model first: a linked node becomes the element, so it carries the element's id from now on
+    assert service not in nodes(shop, "platform")
+    assert nodes(shop, "platform")["order-service"]["ref"] == "order-service"
+    assert nodes(shop, "platform")["order-service"]["name"] == "Order Service"
     assert r.json()["result"]["touched"] == [service]
     assert r.json()["versions"][-1]["label"].startswith("Mit Element")
 
@@ -122,14 +133,17 @@ def test_link_unlink_and_promote_across_the_three_diagram_types(shop):
     assert sorted(u["diagram"] for u in kunde["usages"]) == ["checkout", "order"]
     assert {u["type"] for u in kunde["usages"]} == {"activity", "sequence"}
 
-    r = shop.post("/api/diagrams/checkout/unlink", json={"view": lifeline["id"]})
-    assert r.status_code == 200 and "ref" not in lifelines(shop, "checkout")[0]
+    # model first: a lifeline always stands for an element, so an unlink cannot take effect; it must not pretend to
+    # (no version that changes nothing) and the lifeline keeps its element
+    count = len(versions(shop, "checkout"))
+    shop.post("/api/diagrams/checkout/unlink", json={"view": lifeline["id"]})
+    assert lifelines(shop, "checkout")[0]["ref"] == "kunde"
+    assert len(versions(shop, "checkout")) == count
 
+    # model first: every lifeline already is an element, so there is nothing left to promote
     other = next(lf for lf in lifelines(shop, "checkout") if not lf["actor"])
     r = shop.post("/api/diagrams/checkout/promote", json={"view": other["id"], "description": "Webshop"})
-    assert r.status_code == 201, r.text
-    assert r.json()["element"]["name"] == other["name"] and r.json()["element"]["kind"] == "component"
-    assert next(lf for lf in lifelines(shop, "checkout") if lf["id"] == other["id"])["ref"] == r.json()["element"]["id"]
+    assert r.status_code == 400 and "already represents" in r.json()["detail"], r.text
 
 
 def test_link_errors(shop):
@@ -142,16 +156,24 @@ def test_link_errors(shop):
     assert shop.post("/api/diagrams/order/unlink", json={"view": action}).status_code == 400
     assert shop.post("/api/diagrams/order/promote", json={"view": action}).status_code == 400
     service = next(i for i, n in nodes(shop, "platform").items() if n["kind"] == "service")
+    before = shop.get("/api/projects/shop/model").json()["elements"]
     r = shop.post("/api/diagrams/platform/promote", json={"view": service, "kind": "actor"})
-    assert r.status_code == 400 and shop.get("/api/projects/shop/model").json()["elements"][0]["id"] == "db"
+    # model first: the template nodes are elements too, so "nothing created" is "the model is unchanged"
+    assert r.status_code == 400 and shop.get("/api/projects/shop/model").json()["elements"] == before
 
 
-def test_a_linked_view_element_is_renamed_through_the_model_only(shop):
+def test_renaming_a_linked_view_element_renames_the_element(shop):
+    """Model first: the refusal of ADR-0071 is gone; the view element is the element, so a rename renames it."""
     shop.post("/api/projects/shop/elements", json={"name": "Order Service"})
     service = next(i for i, n in nodes(shop, "platform").items() if n["kind"] == "service")
     shop.post("/api/diagrams/platform/link", json={"view": service, "element": "order-service"})
-    r = shop.post("/api/diagrams/platform/ops", json={"op": "update_node", "args": {"id": service, "name": "X"}})
-    assert r.status_code == 400 and "update_element" in r.json()["detail"]
+    r = shop.post(
+        "/api/diagrams/platform/ops", json={"op": "update_node", "args": {"id": "order-service", "name": "X"}}
+    )
+    assert r.status_code == 200, r.text
+    assert nodes(shop, "platform")["order-service"]["name"] == "X"
+    names = {e["id"]: e["name"] for e in shop.get("/api/projects/shop/model").json()["elements"]}
+    assert names["order-service"] == "X"
 
 
 def test_sections_link_to_elements(shop):
@@ -196,7 +218,8 @@ def linked(shop):
         r = shop.post(f"/api/diagrams/{diagram_id}/link", json={"view": view, "element": "order-service"})
         assert r.status_code == 200, r.text
     shop.patch("/api/projects/shop/sections/bestellung", json={"element": "order-service"})
-    shop.views = {"platform": service, "order": partition, "checkout": lifeline}
+    # model first: the linked deployment node became the element and carries its id; behaviour parts keep theirs
+    shop.views = {"platform": "order-service", "order": partition, "checkout": lifeline}
     return shop
 
 
@@ -215,15 +238,15 @@ def test_a_rename_reaches_every_view_and_the_section(linked):
     counts = {d: len(versions(linked, d)) for d in linked.views}
     r = linked.patch("/api/projects/shop/elements/order-service", json={"name": "Bestellservice"})
     assert r.status_code == 200
-    assert sorted(r.json()["propagated"]) == ["checkout", "order", "platform"] and r.json()["failed"] == []
+    # model first: every view resolves the name from the model, so nothing is propagated and no diagram is written
+    assert r.json()["propagated"] == [] and r.json()["failed"] == []
     for diagram_id, view in linked.views.items():
         assert view_name(linked, diagram_id, view) == "Bestellservice"
-        history = versions(linked, diagram_id)
-        assert len(history) == counts[diagram_id] + 1
-        assert history[-1]["label"] == "Element „Bestellservice“ umbenannt"
+        assert len(versions(linked, diagram_id)) == counts[diagram_id]
     project = linked.get("/api/projects/shop").json()["project"]
     assert project["sections"][0]["title"] == "Bestellservice"
-    usages = r.json()["model"]["elements"][0]["usages"]
+    usages = next(e for e in r.json()["model"]["elements"] if e["id"] == "order-service")["usages"]
+    assert sorted(u["diagram"] for u in usages) == ["checkout", "order", "platform"]
     assert {u["name"] for u in usages} == {"Bestellservice"}
 
 
@@ -234,19 +257,23 @@ def test_a_description_changes_no_diagram(linked):
     assert {d: len(versions(linked, d)) for d in linked.views} == counts
 
 
-def test_sync_repairs_drift_and_writes_nothing_when_consistent(linked):
+def test_an_undo_leaves_no_drift_for_sync_to_repair(linked):
+    """Model first: drift is impossible by construction. The rename wrote no diagram version, so an undo in platform
+    takes back the link (the node shows its former element again); the other views keep the model's name and the
+    sync finds nothing to write."""
     linked.patch("/api/projects/shop/elements/order-service", json={"name": "Bestellservice"})
-    assert linked.post("/api/diagrams/platform/undo").status_code == 200  # the old name is back: drift
-    assert view_name(linked, "platform", linked.views["platform"]) == "Order Service"
+    assert linked.post("/api/diagrams/platform/undo").status_code == 200
+    assert (
+        "order-service" not in nodes(linked, "platform") and nodes(linked, "platform")["frontend"]["ref"] == "frontend"
+    )
+    assert {d: view_name(linked, d, linked.views[d]) for d in ("order", "checkout")} == {
+        "order": "Bestellservice",
+        "checkout": "Bestellservice",
+    }
     counts = {d: len(versions(linked, d)) for d in linked.views}
     r = linked.post("/api/projects/shop/model/sync")
-    assert r.status_code == 200 and r.json()["changed"] == ["platform"] and r.json()["failed"] == []
-    assert view_name(linked, "platform", linked.views["platform"]) == "Bestellservice"
-    assert versions(linked, "platform")[-1]["label"] == "Modell abgeglichen"
-    again = linked.post("/api/projects/shop/model/sync").json()
-    assert again["changed"] == []
-    assert len(versions(linked, "platform")) == counts["platform"] + 1
-    assert {d: len(versions(linked, d)) for d in ("order", "checkout")} == {d: counts[d] for d in ("order", "checkout")}
+    assert r.status_code == 200 and r.json()["changed"] == [] and r.json()["failed"] == []
+    assert {d: len(versions(linked, d)) for d in linked.views} == counts
 
 
 def test_a_kind_change_must_suit_every_view(linked):
@@ -256,19 +283,24 @@ def test_a_kind_change_must_suit_every_view(linked):
     assert r.status_code == 200 and r.json()["element"]["kind"] == "system"
 
 
-def test_deleting_an_element_unlinks_its_views_and_keeps_them(linked):
+def test_deleting_an_element_that_behaviour_parts_stand_for_is_refused(linked):
+    """Model first (ADR-0213): a partition or lifeline always stands for an element, so the element cannot go while
+    one stands for it; once they are gone it can, and the structure view stops showing it."""
     r = linked.delete("/api/projects/shop/elements/order-service")
-    assert r.status_code == 200 and sorted(r.json()["unlinked"]) == ["checkout", "order", "platform"]
-    for diagram_id, view in linked.views.items():
-        assert view_name(linked, diagram_id, view) == "Order Service"  # the view element stays
-        assert versions(linked, diagram_id)[-1]["label"] == "Element „Order Service“ entfernt"
-    assert "ref" not in nodes(linked, "platform")[linked.views["platform"]]
-    assert all("ref" not in lf for lf in lifelines(linked, "checkout"))
-    assert linked.get("/api/projects/shop/model").json()["elements"] == []
+    assert r.status_code == 400 and "order" in r.json()["detail"] and "checkout" in r.json()["detail"]
+    assert any(e["id"] == "order-service" for e in linked.get("/api/projects/shop/model").json()["elements"])
+    linked.post("/api/diagrams/order/ops", json={"op": "remove_node", "args": {"id": linked.views["order"]}})
+    lifeline = linked.views["checkout"]
+    linked.post("/api/diagrams/checkout/ops", json={"op": "remove_lifeline", "args": {"id": lifeline}})
+    r = linked.delete("/api/projects/shop/elements/order-service")
+    assert r.status_code == 200, r.text
+    assert "order-service" not in nodes(linked, "platform")
     assert "element" not in linked.get("/api/projects/shop").json()["project"]["sections"][0]
 
 
-def test_propagation_reports_diagrams_it_could_not_write(store):
+def test_a_rename_needs_no_diagram_write_and_a_removal_waits_for_busy_diagrams(store):
+    """Model first: a rename is one project write that every view resolves (a busy diagram is no obstacle any more);
+    the removal still unlinks the views first and keeps the element while a diagram keeps changing (ADR-0072)."""
     from arcviz.ports import ConflictError
     from arcviz.templates import create_from_template
 
@@ -282,6 +314,7 @@ def test_propagation_reports_diagrams_it_could_not_write(store):
     models.add_element("shop", "Order Service")
     for diagram_id in ("a", "b"):
         models.link(diagram_id, service, "order-service")
+    names = lambda: {d: diagrams.get(d).nodes["order-service"].name for d in ("a", "b")}  # noqa: E731
 
     real = diagrams.apply_if_changed
 
@@ -292,15 +325,14 @@ def test_propagation_reports_diagrams_it_could_not_write(store):
 
     diagrams.apply_if_changed = busy_b  # type: ignore[method-assign]
     change = models.update_element("shop", "order-service", name="Bestellservice")
-    assert change.propagated == ["a"] and change.failed == ["b"]
-    assert models.model("shop").elements[0].name == "Bestellservice"  # the model is authoritative
-    with pytest.raises(ConflictError):
-        models.remove_element("shop", "order-service")
-    assert models.model("shop").elements[0].id == "order-service"  # kept: b still links it
+    # model first: nothing to propagate, both views show the new name although b is busy
+    assert change.propagated == [] and change.failed == []
+    assert names() == {"a": "Bestellservice", "b": "Bestellservice"}
+    # model first: removing it writes no structure view either (they hold only its id), so a busy one cannot stop it
     diagrams.apply_if_changed = real  # type: ignore[method-assign]
-    assert models.sync("shop").changed == ["b"]
-    diagrams.delete("a")  # a diagram deleted meanwhile is skipped
-    assert models.remove_element("shop", "order-service").unlinked == ["b"]
+    assert models.sync("shop").changed == []  # no drift to repair
+    models.remove_element("shop", "order-service")
+    assert "order-service" not in diagrams.get("a").nodes and "order-service" not in diagrams.get("b").nodes
 
 
 # ---- review of #154: one write per request, one version per diagram ---------------------------------------------
@@ -338,22 +370,6 @@ def test_an_unchanged_name_reaches_no_diagram(linked):
     assert {d: len(versions(linked, d)) for d in linked.views} == counts
 
 
-def test_sync_writes_one_version_per_diagram(linked):
-    linked.post("/api/projects/shop/elements", json={"name": "Datenbank", "kind": "data"})
-    database = next(i for i, n in nodes(linked, "platform").items() if n["kind"] == "database")
-    linked.post("/api/diagrams/platform/link", json={"view": database, "element": "datenbank"})
-    linked.patch("/api/projects/shop/elements/order-service", json={"name": "Bestellservice"})
-    linked.patch("/api/projects/shop/elements/datenbank", json={"name": "Orders DB"})
-    linked.post("/api/diagrams/platform/undo")
-    linked.post("/api/diagrams/platform/undo")  # both names drifted in platform
-    before = len(versions(linked, "platform"))
-    r = linked.post("/api/projects/shop/model/sync")
-    assert r.json()["changed"] == ["platform"]
-    assert len(versions(linked, "platform")) == before + 1
-    assert view_name(linked, "platform", linked.views["platform"]) == "Bestellservice"
-    assert view_name(linked, "platform", database) == "Orders DB"
-
-
 def test_moving_a_diagram_to_another_project_relinks_its_views(linked):
     """Review of #154: element ids are only unique within a project, so a moved view must never keep a ref that names
     another element there; since #153 (ADR-0161) the element comes along under a new id and the view is relinked."""
@@ -363,10 +379,12 @@ def test_moving_a_diagram_to_another_project_relinks_its_views(linked):
     assert within.status_code == 200
     assert nodes(linked, "order")[linked.views["order"]]["ref"] == "order-service"  # same project: kept
     r = linked.post("/api/projects/shop/diagrams/platform/move", json={"project": "other"})
-    assert r.status_code == 200
-    node = nodes(linked, "platform")[linked.views["platform"]]
+    assert r.status_code == 200, r.text
+    # model first: the node is the carried element, so it carries the new id; every element of the view comes along
+    assert linked.views["platform"] not in nodes(linked, "platform")
+    node = nodes(linked, "platform")["order-service-2"]
     assert node["ref"] == "order-service-2" and node["name"] == "Order Service"
-    assert r.json()["carried"]["elements"]["copied"] == [{"id": "order-service", "as": "order-service-2"}]
+    assert {"id": "order-service", "as": "order-service-2"} in r.json()["carried"]["elements"]["copied"]
     assert [v["label"] for v in versions(linked, "platform")[-2:]] == [
         "Verknüpfungen angepasst (anderes Projekt)",
         "Verknüpfungen übernommen (anderes Projekt)",
@@ -377,14 +395,17 @@ def test_moving_a_diagram_to_another_project_relinks_its_views(linked):
     assert any(lf.get("ref") for lf in lifelines(linked, "checkout"))  # unknown target: nothing changed
 
 
-def test_importing_a_single_diagram_keeps_its_links_only_with_its_model(linked):
-    """Since #153 (ADR-0161) the export carries the model; a document without it drops its links (ADR-0079)."""
+def test_importing_a_single_diagram_keeps_its_links_with_or_without_its_model(linked):
+    """Since #153 (ADR-0161) the export carries the model. Model first: a document without it no longer drops its
+    links (ADR-0079): every node becomes an element of the project, merged with the one of the same name."""
     document = linked.get("/api/diagrams/platform/export").json()
     assert document["diagram"]["nodes"][linked.views["platform"]]["ref"] == "order-service"
     r = linked.post("/api/diagrams/import", json={"document": document, "project": "shop"})
-    assert r.status_code == 201
+    assert r.status_code == 201, r.text
     assert r.json()["diagram"]["nodes"][linked.views["platform"]]["ref"] == "order-service"  # the same element
     del document["model"]
     r = linked.post("/api/diagrams/import", json={"document": document, "project": "shop"})
-    assert r.status_code == 201
-    assert all("ref" not in n for n in r.json()["diagram"]["nodes"].values())
+    assert r.status_code == 201, r.text
+    elements = {e["id"] for e in linked.get("/api/projects/shop/model").json()["elements"]}
+    assert all(n["ref"] == i and i in elements for i, n in r.json()["diagram"]["nodes"].items())
+    assert r.json()["diagram"]["nodes"]["order-service"]["name"] == "Order Service"  # the same element

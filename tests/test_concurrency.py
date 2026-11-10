@@ -210,7 +210,9 @@ def test_restore_and_snapshot_are_retried(client, store, path, body):
     assert r.status_code in (200, 201) and fired
     newest = store.list_versions("demo")[-1]
     assert newest.version == r.json()["version"]["version"]
-    assert store.load_version("demo", newest.version)[1] == store.load("demo")
+    # model first: a resolved latest carries the resolver's private state (reserved ids, ...), a snapshot does not;
+    # their content must be the same
+    assert store.load_version("demo", newest.version)[1].model_dump() == store.load("demo").model_dump()
 
 
 def test_undo_is_retried_and_undoes_the_newest_change(client, store):

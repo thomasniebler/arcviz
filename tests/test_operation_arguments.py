@@ -141,6 +141,7 @@ def client(store, demo):
 
 def test_rest_rejects_ill_typed_arguments_with_400_and_writes_nothing(client, store):
     before = store.load("demo")
+    versions = len(store.list_versions("demo"))  # model first: the start-up conversion of `demo` adds a version
     for args in ({"name": 42}, {"name": "x", "properties": ["a"]}):
         r = client.post("/api/diagrams/demo/ops", json={"op": "add_node", "args": args})
         assert r.status_code == 400 and r.json()["detail"].startswith("Invalid arguments for add_node: ")
@@ -148,7 +149,7 @@ def test_rest_rejects_ill_typed_arguments_with_400_and_writes_nothing(client, st
         "/api/diagrams/demo/ops", json={"op": "update_node", "args": {"id": "idp", "name": "changed", "kind": 42}}
     )
     assert r.status_code == 400
-    assert store.load("demo") == before and len(store.list_versions("demo")) == 1
+    assert store.load("demo") == before and len(store.list_versions("demo")) == versions
 
 
 # ---- agent ---------------------------------------------------------------------------

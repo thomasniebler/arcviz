@@ -41,7 +41,8 @@ def test_link_a_matching_relation_after_drawing_an_edge(services):  # noqa: F811
     models.add_relation("shop", "communicates", "gateway", "orders")
     provider = ScriptedProvider(
         [
-            tool_round(call("add_edge", "c1", source="service-a", target="api-gateway", kind="dependency")),
+            # model first: the linked nodes are the elements, so their ids are the element ids
+            tool_round(call("add_edge", "c1", source="orders", target="gateway", kind="dependency")),
             tool_round(call("link_relation", "c2", id="e7", relation="r1")),
             done(),
         ]

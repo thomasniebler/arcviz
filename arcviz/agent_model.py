@@ -430,6 +430,7 @@ class ModelTools:
         self.models = models
         self.project_id = project_id
         self.propose = propose
+        self.previous_names: dict[str, str | None] = {}  # view id -> its name before link_element renamed it
 
     def prompt(self) -> str | None:
         """The project's elements and relations for the system prompt (`NO_ELEMENTS` while it has none); None when the
@@ -627,9 +628,9 @@ class ModelTools:
 
         def take_back(target: Diagram) -> dict[str, Any] | ToolResult:
             found = find_view(target, view_id)
-            if found is None or found.ref != element_id:
+            if found is None or found.ref != element_id or not self.previous_names.get(view_id):
                 return _error(call, "nothing to take back")
-            return operations.apply(target, "unlink_element", {"id": view_id})
+            return operations.apply(target, "unlink_element", {"id": view_id, "name": self.previous_names.get(view_id)})
 
         return problem, take_back
 
@@ -652,7 +653,10 @@ class ModelTools:
 
         def change(target: Diagram) -> dict[str, Any] | ToolResult:
             try:
-                return operations.apply(target, "link_element", link_args)
+                applied = operations.apply(target, "link_element", link_args)
+                # a take-back restores the name the view had (model first: by that name it is its old element again)
+                self.previous_names[link_args["id"]] = applied["result"].get("renamed_from")
+                return applied
             except operations.OperationError as exc:
                 return _error(call, str(exc))
             except Exception as exc:  # a defect: `apply` restored the diagram; keep the turn alive

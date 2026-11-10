@@ -71,7 +71,9 @@ def test_list_components_filters_and_bounds(root):
         "parent": None,
         "code_links": 1,
     }
-    assert [c["id"] for c in tools(root).list_components("shop", kind="data")["components"]] == ["orders-db", "orders-db-2"]
+    # model first: the demo's database (orders-db-2) and its queue (events) are data elements too
+    data = tools(root).list_components("shop", kind="data")["components"]
+    assert [c["id"] for c in data] == ["orders-db", "orders-db-2", "events"]
     assert [c["id"] for c in tools(root).list_components("shop", query="LIFECYCLE")["components"]] == ["orders"]
     limited = tools(root).list_components("shop", limit=2)
     assert len(limited["components"]) == 2 and limited["truncated"] is True and limited["total"] == 12

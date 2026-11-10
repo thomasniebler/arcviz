@@ -68,8 +68,14 @@ def is_view(diagram: Diagram) -> bool:
     return diagram.shows is not None
 
 
+# Deployment containers that group rather than run things: packages, never execution nodes (`deployed_on` hosts).
+_GROUPING = frozenset({"deployment", "vnet", "subnet", "region", "group"})
+
+
 def category(diagram_type: str, view_kind: str) -> str:
     """The abstract element kind a node of this kind stands for."""
+    if diagram_type == "deployment" and view_kind in _GROUPING:
+        return "package"
     kinds = linkable_kinds(diagram_type, view_kind)
     if kinds:
         return kinds[0]
@@ -156,6 +162,7 @@ def resolve(stored: Diagram, project: Project | None) -> Diagram:
         out = stored.model_copy(deep=True)
         _apply_names(out, project)
         out._legacy = _unconverted(stored, project)
+    out._resolved = not out._legacy  # a full document (not yet in the model) can still be linked and unlinked
     out._reserved = _reserved(project)
     out._edge_floor = _edge_floor(project)
     if out.type in STRUCTURE_TYPES:
@@ -175,12 +182,10 @@ def _resolve_structure(stored: Diagram, project: Project) -> Diagram:
     catalog = kinds_for(stored.type)
     kinds = {i: k for i in shown if (k := view_kind(elements[i], stored.type)) is not None}
     out = stored.model_copy(update={"nodes": {}, "edges": [], "shows": None}, deep=True)
+    containers = {i for i, k in kinds.items() if k in catalog.container_kinds}
     for element_id, kind in kinds.items():
         element = elements[element_id]
-        parent = element.parent if element.parent in kinds else None
-        if parent is not None and kinds[parent] not in catalog.container_kinds:
-            parent = None
-        out.nodes[element_id] = _node(element, kind, parent)
+        out.nodes[element_id] = _node(element, kind, shown_ancestor(element, elements, containers))
     profile = profile_of(out.type)
     for connection in shown_connections(project, stored, set(kinds)):
         edge = _edge(connection, out.type)
@@ -196,9 +201,28 @@ def _unconverted(stored: Diagram, project: Project) -> bool:
     if stored.type in STRUCTURE_TYPES:
         return True
     known = {e.id for e in project.elements}
-    if stored.interaction is not None and any(lf.ref not in known for lf in stored.interaction.lifelines):
+
+    def open_part(ref: str | None, kind: str, name: str) -> bool:
+        return ref not in known and not (ref is None and _unfitting_namesake(stored.type, kind, name, project, {}))
+
+    if stored.interaction is not None and any(
+        open_part(lf.ref, LIFELINE, lf.name) for lf in stored.interaction.lifelines
+    ):
         return True
-    return any(adoptable(stored.type, n.kind) and n.ref not in known for n in stored.nodes.values())
+    return any(adoptable(stored.type, n.kind) and open_part(n.ref, n.kind, n.name) for n in stored.nodes.values())
+
+
+def shown_ancestor(element: Element, elements: dict[str, Element], shown: set[str]) -> str | None:
+    """The nearest container of the element (its parent, else that one's parent, …) that the view shows: a part of a
+    container the view hides sits in the next container it shows (hiding is no move, ADR-0217)."""
+    seen = {element.id}
+    current = element.parent
+    while current is not None and current not in seen:
+        if current in shown:
+            return current
+        seen.add(current)
+        current = elements[current].parent if current in elements else None
+    return None
 
 
 def _apply_names(diagram: Diagram, project: Project) -> None:
@@ -235,6 +259,10 @@ def decompose(edited: Diagram, previous: Diagram | None, project: Project) -> De
     else:
         result = _decompose_behaviour(edited, project)
     result.model_changed = project.model_dump(mode="json", exclude={"updated_at"}) != before
+    from . import projects as project_ops
+
+    if result.created and len(project.elements) > project_ops.MAX_ELEMENTS:
+        raise OperationError(f"A project holds at most {project_ops.MAX_ELEMENTS} model elements.")
     return result
 
 
@@ -281,6 +309,13 @@ def _decompose_structure(edited: Diagram, previous: Diagram | None, project: Pro
     taken = _reserved(project) | set(edited.nodes)
     for node in edited.nodes.values():
         element = _element_for(node.id, node.name, node.ref, project, claimed)
+        if element is None and any(
+            name_key(e.name) == name_key(node.name) for e in project.elements if e.id in claimed
+        ):
+            raise OperationError(
+                f"Another node of this diagram stands for the element '{node.name.strip()}' already; an element is "
+                "shown once per diagram (names are unique in the project)."
+            )
         if element is None:
             wanted = node.ref if node.ref and slugify(node.ref) == node.ref else node.id  # a link names the id
             element_id = (
@@ -294,9 +329,9 @@ def _decompose_structure(edited: Diagram, previous: Diagram | None, project: Pro
             created.append(element_id)
         claimed[element.id] = node.id
         node_to_element[node.id] = element.id
-    # elements this edit stopped showing without deleting them: the parts that moved up in the view keep their
-    # container in the model (hiding is no move, ADR-0217)
-    hidden_now = (_previously_shown(previous, project) - set(node_to_element.values())) - edited._removals
+    by_id = {e.id: e for e in project.elements}
+    catalog = kinds_for(diagram_type)
+    shown_containers = {node_to_element[n.id] for n in edited.nodes.values() if n.kind in catalog.container_kinds}
     for node in edited.nodes.values():
         element = next(e for e in project.elements if e.id == node_to_element[node.id])
         name = _check_name(node.name)
@@ -320,10 +355,10 @@ def _decompose_structure(edited: Diagram, previous: Diagram | None, project: Pro
         if len(description) > MAX_ELEMENT_DESCRIPTION:
             raise OperationError(f"A note holds at most {MAX_ELEMENT_DESCRIPTION} characters.")
         element.description = description
-        if node.parent is not None and element.parent not in hidden_now:
-            element.parent = node_to_element.get(node.parent, element.parent)
-        elif element.parent in node_to_element.values():
-            element.parent = None  # moved out of a container this view shows
+        # The view draws the nearest shown container; only a different one is a move (hiding is none, ADR-0217)
+        drawn = node_to_element.get(node.parent) if node.parent is not None else None
+        if drawn != shown_ancestor(element, by_id, shown_containers):
+            element.parent = drawn
     shown = [node_to_element[n] for n in edited.nodes]
     previously_shown = _previously_shown(previous, project)
     for element_id in previously_shown - set(shown):
@@ -407,6 +442,16 @@ def _remove_element(project: Project, element_id: str) -> None:
         project_ops.apply(project, "remove_element", {"element": element_id})
 
 
+def _unfitting_namesake(diagram_type: str, kind: str, name: str, project: Project, claimed: dict[str, str]) -> bool:
+    """Whether an unlinked part's name belongs to an element it cannot stand for (or one another part stands for):
+    then it is not merged (a take-back stays taken back, ADR-0128) and no second element of that name is created."""
+    wanted = name_key(name)
+    same = next((e for e in project.elements if name_key(e.name) == wanted), None)
+    if same is None:
+        return False
+    return same.kind not in linkable_kinds(diagram_type, kind)
+
+
 def _decompose_behaviour(edited: Diagram, project: Project) -> Decomposed:
     """Behaviour views keep their content; the parts that stand for elements are elements (created when new) and give
     them their names and notes."""
@@ -422,10 +467,12 @@ def _decompose_behaviour(edited: Diagram, project: Project) -> Decomposed:
     for node in stored.nodes.values():
         if adoptable(stored.type, node.kind):
             parts.append((node, node.kind, category(stored.type, node.kind)))
-    for part, _kind, default in parts:
+    for part, kind, default in parts:
         part_id, name = part.id, part.name  # type: ignore[attr-defined]
         ref = part.ref  # type: ignore[attr-defined]
-        element = _element_for(part_id, name, ref, project, claimed)
+        if ref is None and _unfitting_namesake(stored.type, kind, name, project, claimed):
+            continue  # a link taken back (the element's kind does not fit): the part stays unlinked
+        element = _element_for(part_id, name, ref, project, {})  # several parts may stand for one element
         if element is None:
             element_id = _new_element_id(project, name, taken)
             taken.add(element_id)

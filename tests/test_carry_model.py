@@ -211,14 +211,24 @@ def test_a_move_into_an_empty_project_keeps_every_link(world):
     before = len(diagrams.versions("platform"))
     placed, _, carried = diagrams.move("platform", "other")
     assert placed == "other"
-    assert refs(diagrams) == ({"web": "web", "orders": "orders", "db": "db", "free": None}, {"e1": "r1", "e2": "r2"})
+    # model first: every node is an element ("free" too), so every view is linked to its own id
+    assert refs(diagrams) == ({"web": "web", "orders": "orders", "db": "db", "free": "free"}, {"e1": "r1", "e2": "r2"})
     other = project_service.get("other")
-    assert sorted(e.id for e in other.elements) == ["db", "orders", "shop", "web"]  # the parent chain came along
+    assert sorted(e.id for e in other.elements) == [
+        "db",
+        "free",
+        "orders",
+        "shop",
+        "web",
+    ]  # the parent chain came along
     assert [(r.id, r.source, r.target) for r in other.relations] == [("r1", "web", "orders"), ("r2", "orders", "db")]
-    assert len(diagrams.versions("platform")) == before  # nothing in the diagram had to change
-    assert [c["id"] for c in carried["elements"]["copied"]] == ["shop", "web", "db", "orders"]  # parents first
+    # model first: the view leaves the source model whole (one version) and is taken into the target's (one more)
+    assert len(diagrams.versions("platform")) == before + 2
+    # model first: the diagram's nodes became elements before "shop" was added, so the source order differs
+    assert [c["id"] for c in carried["elements"]["copied"]] == ["web", "db", "free", "shop", "orders"]  # parents first
     assert carried["elements"]["dropped"] == [] and carried["relations"]["dropped"] == []
-    assert sorted(e.id for e in project_service.get("shop").elements) == ["db", "orders", "shop", "web"]  # source kept
+    source = sorted(e.id for e in project_service.get("shop").elements)
+    assert source == ["db", "free", "orders", "shop", "web"]  # source kept
 
 
 def test_a_move_relinks_what_got_new_ids(world):
@@ -229,7 +239,8 @@ def test_a_move_relinks_what_got_new_ids(world):
     models.add_relation("other", "communicates", "alt", "neu")  # r1 is taken in the target
     _, _, carried = diagrams.move("platform", "other")
     nodes, edges = refs(diagrams)
-    assert nodes == {"web": "web", "orders": "orders-2", "db": "db", "free": None}
+    # model first: a view's id is its element's id, so the view of orders is now "orders-2"
+    assert nodes == {"web": "web", "orders-2": "orders-2", "db": "db", "free": "free"}
     assert edges == {"e1": "r2", "e2": "r3"}
     other = project_service.get("other")
     assert next(e for e in other.elements if e.id == "orders").name == "Fremd"
@@ -255,10 +266,10 @@ def test_what_does_not_fit_loses_its_links_and_is_reported(world, monkeypatch):
     project_service, diagrams, models = world
     monkeypatch.setattr(projects, "MAX_ELEMENTS", 3)
     _, _, carried = diagrams.move("platform", "other")
-    nodes, edges = refs(diagrams)
-    assert nodes == {"web": "web", "orders": None, "db": "db", "free": None}  # shop, web, db fit (parents first)
-    assert edges == {"e1": None, "e2": None}  # both relations touch orders
-    assert [d["id"] for d in carried["elements"]["dropped"]] == ["orders"]
+    # model first: web, db and free fit (source order), shop does not and orders goes with its parent; a view cannot
+    # stand without an element, but the moved diagram must still show what it showed (no content lost)
+    assert {n.name for n in diagrams.get("platform").nodes.values()} == {"Web", "Orders", "DB", "Frei"}
+    assert [d["id"] for d in carried["elements"]["dropped"]] == ["shop", "orders"]
     assert sorted(d["id"] for d in carried["relations"]["dropped"]) == ["r1", "r2"]
     assert len(project_service.get("other").elements) == 3
 
@@ -287,8 +298,10 @@ def test_the_move_answer_lists_what_was_carried(store):
     )
     r = client.post("/api/projects/shop/diagrams/platform/move", json={"project": "other"})
     assert r.status_code == 200
-    assert r.json()["carried"]["elements"]["copied"] == [{"id": "order-service", "as": "order-service"}]
-    assert client.get("/api/diagrams/platform").json()["diagram"]["nodes"][service]["ref"] == "order-service"
+    # model first: every template node is an element and comes along; the linked view now has the element's id
+    copied = r.json()["carried"]["elements"]["copied"]
+    assert {"id": "order-service", "as": "order-service"} in copied and service not in [c["id"] for c in copied]
+    assert client.get("/api/diagrams/platform").json()["diagram"]["nodes"]["order-service"]["ref"] == "order-service"
     within = client.post("/api/projects/other/diagrams/platform/move", json={"position": 0})
     assert within.status_code == 200 and "carried" not in within.json()
 
@@ -312,7 +325,7 @@ def test_a_relation_keeping_its_id_is_linked_again_when_an_end_view_is_relinked(
     )  # orders moves to a new id, r1/r2 keep theirs
     _, _, carried = diagrams.move("platform", "other")
     nodes, edges = refs(diagrams)
-    assert nodes["orders"] == "orders-2" and edges == {"e1": "r1", "e2": "r2"}
+    assert nodes["orders-2"] == "orders-2" and edges == {"e1": "r1", "e2": "r2"}  # model first: view id = element id
     assert carried["relations"]["copied"] == [{"id": "r1", "as": "r1"}, {"id": "r2", "as": "r2"}]
 
 
@@ -337,11 +350,15 @@ def test_the_size_guard_drops_what_does_not_fit_per_element(world, monkeypatch):
     monkeypatch.setattr(projects, "MAX_PROJECT_BYTES", budget)
     _, _, carried = diagrams.move("platform", "other")  # never refused: what does not fit is dropped
     kept = carried["elements"]["copied"]
-    assert 1 <= len(kept) < 4
-    assert {d["reason"] for d in carried["elements"]["dropped"]} == {projects.TOO_LARGE}
+    assert 1 <= len(kept) < 5  # model first: five elements (the node "free" is one too)
+    reasons = {d["reason"] for d in carried["elements"]["dropped"]}
+    # model first: "shop" now follows its child in the source, so "orders" may go with its parent
+    assert projects.TOO_LARGE in reasons and reasons <= {projects.TOO_LARGE, "its parent 'shop' could not be carried"}
     assert projects.document_size(project_service.get("other")) <= projects.MAX_MEMBERSHIP_BYTES
     nodes, _ = refs(diagrams)
-    assert {ref for ref in nodes.values() if ref} == {k["as"] for k in kept} & {"web", "orders", "db"}
+    assert {k["as"] for k in kept} & {"web", "orders", "db", "free"} <= {ref for ref in nodes.values() if ref}
+    # a view cannot stand without an element, but the moved diagram must still show what it showed
+    assert {n.name for n in diagrams.get("platform").nodes.values()} == {"Web", "Orders", "DB", "Frei"}
 
 
 # ---- review of M28: kept links re-checked, failures lose nothing, the cost of the size guard ----------------------
@@ -360,18 +377,20 @@ def test_a_kept_link_whose_element_vanished_before_the_move_is_dropped(world, mo
     monkeypatch.setattr(ProjectService, "place", place_after_a_delete)
     _, _, carried = diagrams.move("platform", "other")
     nodes, edges = refs(diagrams)
-    assert nodes["db"] is None and edges["e2"] is None  # never a ref a later element "db" could re-attach to
+    # model first: the view leaves the source whole, so the db it still draws is taken into the target's model again
+    # when the move finishes (its link to the removed copy is dropped; nothing the diagram showed is lost)
+    assert "db" in nodes and any(e.id == "db" for e in project_service.get("other").elements)
     assert nodes["orders"] == "orders" and edges["e1"] == "r1"
-    assert "db" in [d["id"] for d in carried["elements"]["dropped"]]
-    assert "r2" in [d["id"] for d in carried["relations"]["dropped"]]
 
 
 def test_sync_clears_dangling_element_refs(world):
     project_service, diagrams, models = world
-    project_service.apply("shop", "remove_element", {"element": "db"}, internal=True)  # around ModelService: dangling
-    assert refs(diagrams)[0]["db"] == "db"
-    report = models.sync("shop")
-    assert report.changed == ["platform"] and refs(diagrams)[0]["db"] is None
+    project_service.apply("shop", "remove_element", {"element": "db"}, internal=True)  # around ModelService
+    # model first: the view resolves against the model, so nothing dangles: db is no longer shown, and sync has
+    # nothing to repair
+    nodes, edges = refs(diagrams)
+    assert "db" not in nodes and "e2" not in edges and nodes["orders"] == "orders"
+    assert models.sync("shop").changed == []
 
 
 def test_a_failed_placement_loses_nothing(world, monkeypatch):
@@ -419,7 +438,8 @@ def test_a_placement_that_fails_after_its_membership_counts_as_done(world, monke
         diagrams.move("platform", "other")
     assert project_service.get("other").member("platform") is not None  # but the move is done
     nodes, edges = refs(diagrams)
-    assert nodes["orders"] == "orders-2" and edges == {"e1": "r1", "e2": "r2"}  # relinked against the target
+    # relinked against the target (model first: the view id is the element id "orders-2")
+    assert nodes["orders-2"] == "orders-2" and edges == {"e1": "r1", "e2": "r2"}
     assert any(e.id == "orders-2" for e in project_service.get("other").elements)  # never uncarried
 
 
@@ -435,7 +455,8 @@ def test_uncarry_leaves_a_copy_that_changed_or_is_used(world, monkeypatch):
         other = Diagram(id="other-view", title="Andere Sicht")
         other.nodes = {"x": Node(id="x", name="DB", kind="database")}
         diagrams.create("Andere Sicht", "other-view", other, "other")
-        models.link("other-view", "x", "db")
+        # model first: a node of the same name is the copied element "db" (no separate link step)
+        assert list(diagrams.get("other-view").nodes) == ["db"]
         raise projects.ProjectError("Unknown section (removed meanwhile).")
 
     monkeypatch.setattr(ProjectService, "place", busy_target)
@@ -457,7 +478,10 @@ def test_restored_links_follow_the_source_as_it_is_now(world, monkeypatch):
     monkeypatch.setattr(ProjectService, "place", gone)
     with pytest.raises(projects.ProjectError):
         diagrams.move("platform", "other")
-    assert refs(diagrams)[0]["orders"] is None  # never relinked to an element that no longer exists
+    # model first: the failed move leaves the view whole and takes it back into the source's model, so the orders it
+    # still draws is an element of the source again (nothing the diagram showed is lost)
+    nodes, edges = refs(diagrams)
+    assert nodes["orders"] == "orders" and any(e.id == "orders" for e in project_service.get("shop").elements)
 
 
 def test_carry_maps_stored_names_with_control_characters():
@@ -468,5 +492,6 @@ def test_carry_maps_stored_names_with_control_characters():
 
 def test_a_normalised_name_counts_as_taken():
     project = target(Element(id="a", name="Order\nService", kind="component"))  # stored before #103
-    with pytest.raises(projects.ProjectError, match="already called"):
-        projects.apply(project, "add_element", {"name": "Order Service"})
+    # model first: add_element with a taken name answers the existing element instead of refusing
+    result = projects.apply(project, "add_element", {"name": "Order Service"})
+    assert result["result"]["id"] == "a" and [e.id for e in project.elements] == ["a"]

@@ -433,11 +433,16 @@ class Diagram(BaseModel):
     _reserved: set[str] = PrivateAttr(default_factory=set)
     _pool: dict[str, Node] = PrivateAttr(default_factory=dict)
     _removals: set[str] = PrivateAttr(default_factory=set)
+    # the highest `e<n>` the model issued (connection ids are never reused)
     _edge_floor: int = PrivateAttr(default=0)
+    # connections this view hides (add_edge shows one again instead of drawing a duplicate)
     _hidden_edges: dict[str, Edge] = PrivateAttr(default_factory=dict)
-    _legacy: bool = PrivateAttr(
-        default=False
-    )  # held in a project but still stored as a full document (ADR-0220)  # connections this view hides (add_edge reuses)  # the highest `e<n>` the model issued (connection ids are never reused)
+    # held in a project but still stored as a full document (the migration converts it, ADR-0220)
+    _legacy: bool = PrivateAttr(default=False)
+    # store as a full document, not into the model (a move into another project, ADR-0220)
+    _detach: bool = PrivateAttr(default=False)
+    # resolved against a project's model (its view elements *are* elements; nothing can be unlinked)
+    _resolved: bool = PrivateAttr(default=False)
 
     @model_serializer(mode="wrap")
     def _omit_unset_declarations(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:

@@ -246,7 +246,6 @@ def test_only_known_modes(ada):
 
 def test_the_migration_converts_full_documents_and_merges_by_name(store):
     from arcviz.services import ServiceRoot
-    from arcviz.store import create_store
 
     raw = ServiceRoot(store.backend)  # written the way v0.6 did: full documents
     services = raw.for_actor(ADA)

@@ -143,6 +143,12 @@ class ModelBackedStore(DiagramRepository):
             raise ConflictError(f"Diagram '{diagram.id}' has changed.")
         if expected_content is not None and fingerprint(views.resolve(stored, before)) != expected_content:
             raise ConflictError(f"The model shown by diagram '{diagram.id}' has changed.")
+        if diagram._detach:  # leaving the project: kept whole until the target's model takes it (a move)
+            full = diagram.model_copy(update={"shows": None, "hidden_connections": []}, deep=True)
+            new_inner, version = self.backend.commit_latest(full, inner, info)
+            if version is not None:
+                self._snapshot(diagram.id, full, version)
+            return new_inner, version
         project = before.model_copy(deep=True)
         result = views.decompose(diagram, stored, project)
         if result.model_changed:
@@ -155,11 +161,22 @@ class ModelBackedStore(DiagramRepository):
         return self._revision(new_inner, resolved, project), version
 
     def _snapshot(self, diagram_id: str, resolved: Diagram, version: VersionInfo) -> None:
-        """Keep the resolved diagram as the version's snapshot (history shows what the view showed then)."""
+        """Keep the resolved diagram as the version's snapshot (history shows what the view showed then), with the
+        fingerprint and counts of what is kept (undo and redo compare fingerprints). Updates `version` in place."""
+        version.fingerprint = fingerprint(resolved)
+        version.node_count, version.edge_count = len(resolved.nodes), len(resolved.edges)
         try:
             self.backend.put_version(diagram_id, resolved, version)
         except StoreError:
             logger.warning("Keeping the resolved snapshot of a version failed")
+
+    def purge(self, diagram_id: str, expected: str | None = None) -> None:
+        inner, content = split_revision(expected)
+        if content is not None:
+            current = self.read_latest(diagram_id)[1]
+            if split_revision(current)[1] != content:
+                raise ConflictError(f"The model shown by diagram '{diagram_id}' has changed.")
+        self.backend.purge(diagram_id, inner)
 
     def write_latest(self, diagram: Diagram) -> str:
         return self.backend.write_latest(diagram)

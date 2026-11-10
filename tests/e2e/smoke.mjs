@@ -464,8 +464,11 @@ try {
   await page.click("#insp-close");
   await nodeOf("events").click({ force: true });
   await page.waitForSelector("#inspector:not(.hidden)", { timeout: 10000 });
-  acceptNextDialog = true;
+  // model first (ADR-0217): removing asks whether to hide it here or delete it from the project model
   await page.click("#insp-delete");
+  await page.waitForSelector("#removal-dialog[open]", { timeout: 10000 });
+  check("removal asks hide or delete", (await page.textContent("#removal-dialog")).includes("Nur in dieser Ansicht ausblenden"));
+  await page.click('#removal-dialog button[value="model"]');
   await page.waitForFunction(() => document.getElementById("inspector").classList.contains("hidden"), null, { timeout: 10000 });
   // the re-render is asynchronous; wait for the element to disappear from the SVG
   // (textContent is unusable here: Mermaid's embedded CSS contains "pointer-events")
@@ -710,7 +713,7 @@ try {
   await page.click("#exp-mmd");
   await page.waitForFunction(() => window.__copied != null, null, { timeout: 10000 });
   const copied = await page.evaluate(() => window.__copied);
-  check("mermaid source copied for the focused view", copied.startsWith("flowchart TB") && copied.includes("class n_idp stub"));
+  check("mermaid source copied for the focused view", copied.startsWith("flowchart TB") && copied.includes("class n_idp stub"), copied);
   check("export menu closed after use", (await page.getAttribute("#export-menu", "open")) === null);
 
   // 7. layout direction: a model change through POST /ops, versioned and used by every render
@@ -813,11 +816,11 @@ try {
   await page.fill("#new-title", "Review");
   await page.selectOption("#new-template", "demo");
   await page.click("#new-form button[type=submit]");
-  await page.waitForFunction(() => document.getElementById("diagram-title").textContent === "Review" && document.querySelector('#diagram svg g.node[id*="flowchart-n_orders_db-"]'), null, { timeout: 15000 });
+  await page.waitForFunction(() => document.getElementById("diagram-title").textContent === "Review" && document.querySelector('#diagram svg g.node[id*="flowchart-n_orders_db"]'), null, { timeout: 15000 });
   await page.click("#btn-review");
-  await page.waitForSelector('#review li.finding[data-finding="database-without-replication:orders-db"]', { timeout: 10000 });
+  await page.waitForSelector('#review li.finding[data-finding^="database-without-replication:orders-db"]', { timeout: 10000 });
   check("review panel lists the rule finding", (await page.locator("#review li.finding").count()) === 1 && (await page.textContent("#review-list")).includes("Risiken"));
-  await page.click('#review li.finding[data-finding="database-without-replication:orders-db"]');
+  await page.click('#review li.finding[data-finding^="database-without-replication:orders-db"]');
   check("selecting a finding highlights its element", (await page.locator("#diagram svg g.review-hit").count()) === 1 && (await page.locator('#diagram svg g.review-hit[id*="n_orders_db"]').count()) === 1);
   await page.click("#review-run-llm");
   await page.waitForSelector('#review li.finding[data-finding="llm-1"]', { timeout: 15000 });
@@ -831,11 +834,11 @@ try {
   // applying a suggestion is a propose-mode turn (spec: docs/architecture/specs/review-suggestions.md)
   const reviewVersions = await page.locator("#version-select option").count();
   check("strengths offer nothing to apply", (await page.locator('#review li.finding.sev-info .finding-apply').count()) === 0);
-  await page.click('#review li.finding[data-finding="database-without-replication:orders-db"] .finding-apply');
+  await page.click('#review li.finding[data-finding^="database-without-replication:orders-db"] .finding-apply');
   await page.waitForSelector("#btn-proposal-apply", { timeout: 30000 });
   check("the suggestion is sent as the user's instruction", (await page.locator(".msg.user").last().textContent()).startsWith("Setze diesen Vorschlag aus dem Architektur-Review um: Füge für die Datenbank „orders-db“"));
   check("applying a suggestion previews it as a proposal", (await page.locator(".msg.assistant .diff li").allTextContents()).join("|") === "+ orders-db-replica (database) in prod-deployment|+ Kante orders-db → orders-db-replica");
-  check("nothing saved while the suggestion is pending", (await page.locator("#version-select option").count()) === reviewVersions && (await page.isDisabled('#review li.finding[data-finding="database-without-replication:orders-db"] .finding-apply')));
+  check("nothing saved while the suggestion is pending", (await page.locator("#version-select option").count()) === reviewVersions && (await page.isDisabled('#review li.finding[data-finding^="database-without-replication:orders-db"] .finding-apply')));
   await page.click("#btn-proposal-apply");
   await page.waitForSelector('#review li.finding[data-finding="replicated-database:orders-db:e7"]', { timeout: 15000 });
   check("confirmed suggestion saved as one version", (await page.locator("#version-select option").count()) === reviewVersions + 1);

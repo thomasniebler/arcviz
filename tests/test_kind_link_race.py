@@ -55,7 +55,8 @@ def test_a_kind_change_landing_between_the_links_read_and_its_write_undoes_the_l
     monkeypatch.setattr(ModelService, "link_args", kind_change_after_reading)
     r = shop.post("/api/diagrams/order/link", json={"view": partition, "element": "order-service"})
     assert r.status_code == 400 and "data" in r.json()["detail"], r.text
-    assert "ref" not in nodes(shop, "order")[partition]  # the link was taken back
+    # model first: a partition always stands for an element, so a take-back leaves it standing for another one
+    assert nodes(shop, "order")[partition].get("ref") != "order-service"  # the link was taken back
     assert element(shop, "order-service")["kind"] == "data"
     review = shop.get("/api/projects/shop/checks").json()
     assert not [f for f in review["findings"] if f.get("rule") == "incompatible-element-link"]
@@ -101,7 +102,8 @@ def test_the_agents_link_is_taken_back_when_the_kind_changed_meanwhile(store, mo
     assert response.status_code == 200
     results = [line for line in response.text.splitlines() if '"tool_result"' in line]
     assert results and '"is_error": true' in results[0]
-    assert "ref" not in nodes(app_client, "order")[partition]
+    # model first: a partition always stands for an element, so a take-back leaves it standing for another one
+    assert nodes(app_client, "order")[partition].get("ref") != "order-service"
 
 
 def test_a_rejected_update_leaves_nothing_behind_also_not_its_rename(shop, monkeypatch):
@@ -293,7 +295,8 @@ def test_a_rest_link_that_cannot_be_confirmed_is_taken_back(shop, monkeypatch):
     monkeypatch.setattr(ModelService, "link_problem", unreadable)
     r = shop.post("/api/diagrams/order/link", json={"view": partition, "element": "order-service"})
     assert r.status_code == 400 and "could not be read to confirm" in r.json()["detail"], r.text
-    assert "ref" not in nodes(shop, "order")[partition]
+    # model first: a partition always stands for an element, so a take-back leaves it standing for another one
+    assert nodes(shop, "order")[partition].get("ref") != "order-service"
 
 
 def test_a_rest_take_back_is_retried_and_a_lasting_failure_is_reported(shop, monkeypatch):
@@ -317,7 +320,8 @@ def test_a_rest_take_back_is_retried_and_a_lasting_failure_is_reported(shop, mon
     monkeypatch.setattr(DiagramService, "update", flaky_update)
     r = shop.post("/api/diagrams/order/link", json={"view": partition, "element": "order-service"})
     assert r.status_code == 400 and "taken back" in r.json()["detail"] and "could not" not in r.json()["detail"]
-    assert "ref" not in nodes(shop, "order")[partition]  # the retry took it back
+    # model first: a partition always stands for an element, so a take-back leaves it standing for another one
+    assert nodes(shop, "order")[partition].get("ref") != "order-service"  # the retry took it back
 
     failures["left"] = 99  # keeps failing
     r = shop.post("/api/diagrams/order/link", json={"view": partition, "element": "order-service"})
@@ -360,7 +364,8 @@ def test_a_kind_only_update_never_writes_other_fields_back(shop, monkeypatch):
             [
                 (
                     "update_element",
-                    {"element": "order-service", "name": "Bestellungen", "description": "neu", "kind": None},
+                    # model first: "Bestellungen" is taken by the template's data store element; names are unique
+                    {"element": "order-service", "name": "Bestellannahme", "description": "neu", "kind": None},
                 )
             ],
             internal=True,
@@ -370,4 +375,4 @@ def test_a_kind_only_update_never_writes_other_fields_back(shop, monkeypatch):
     r = shop.patch("/api/projects/shop/elements/order-service", json={"kind": "data"})
     assert r.status_code == 400, r.text
     after = element(shop, "order-service")
-    assert (after["kind"], after["name"], after["description"]) == ("component", "Bestellungen", "neu")
+    assert (after["kind"], after["name"], after["description"]) == ("component", "Bestellannahme", "neu")

@@ -35,6 +35,7 @@ from .model import (
 )
 from .plantuml_text import MAX_PLANTUML_NESTING, TooDeep
 from .plantuml_text import plain as _plain
+from .views import STRUCTURE_TYPES
 from .project_model import (
     MAX_DRIVER_DESCRIPTION,
     MAX_DRIVER_TITLE,
@@ -211,7 +212,7 @@ def _ref_errors(diagram: Diagram) -> list[str]:
             continue
         if not view.ref or slugify(view.ref) != view.ref:
             errors.append(f"'{view.id}' has an invalid element reference '{view.ref}'")
-        elif not linkable_kinds(diagram.type, view.kind):
+        elif not linkable_kinds(diagram.type, view.kind) and diagram.type not in STRUCTURE_TYPES:  # model first
             errors.append(f"'{view.id}' («{view.kind}») cannot represent a project element")
     # relations (spec: model-relations.md): links only on connections that can show one, between linked views
     for connection in view_connections(diagram):

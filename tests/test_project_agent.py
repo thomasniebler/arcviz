@@ -392,9 +392,17 @@ def test_a_diagram_moved_to_another_project_cannot_be_opened(services, store):
 
 
 def test_a_diagram_moved_away_during_the_turn_is_not_edited_any_more(services, store):
+    diagrams, projects = services
+
+    def move() -> None:
+        # model first: a view resolves against its project's model, so the move must carry the elements along
+        # (DiagramService.move, ADR-0161); a bare membership change would leave the view showing nothing
+        projects.create("Other", "other")
+        diagrams.move("demo", "other")
+
     provider = HookedProvider(
         [tool_round(add_service("one", "c1")), tool_round(add_service("two", "c2")), done()],
-        hooks={1: lambda: _move_to_other_project(services, "demo")},
+        hooks={1: move},
     )
     events = run(make_agent(provider, services), active="demo")
     first, second = results(events)

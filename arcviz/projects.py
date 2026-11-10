@@ -753,8 +753,8 @@ def add_element(
     same = next((e for e in project.elements if name_key(e.name) == name_key(name)), None)
     if same is not None and id in (None, same.id):
         # Model first (ADR-0213): diagrams create elements as they are drawn, so adding one that exists under this
-        # name (and id) is the same element: it takes the kind, description and parent given, nothing is duplicated.
-        same.kind = kind
+        # name (and id) is the same element: it keeps its kind (its views draw it), takes a description and parent
+        # given, and nothing is duplicated.
         if description.strip():
             same.description = description.strip()
         if parent_id is not None and parent_id != same.id:

@@ -243,7 +243,9 @@ def test_filtered_project_queries(root):
 
 def test_model_writes_need_editor_and_write_nothing_before(root, store):
     vic = as_(root, "vic").models
-    assert "svc" in [e.id for e in vic.model("shop").elements]  # reading is fine (model first: the nodes are elements too)
+    assert "svc" in [
+        e.id for e in vic.model("shop").elements
+    ]  # reading is fine (model first: the nodes are elements too)
     node = next(n.id for n in store.load("orders").nodes.values() if n.kind == "service")
     for write in (
         lambda: vic.add_element("shop", "X"),

@@ -206,7 +206,13 @@ def test_public_operations_exclude_membership_changes():
     assert "remove_diagram" not in projects.PUBLIC_OPERATIONS
     assert not set(projects.ELEMENT_OPERATIONS) & set(projects.PUBLIC_OPERATIONS)  # the model service's
     assert not set(projects.RELATION_OPERATIONS) & set(projects.PUBLIC_OPERATIONS)
-    internal = {"add_diagram", "remove_diagram", "set_agent_writes", *projects.ELEMENT_OPERATIONS, *projects.RELATION_OPERATIONS}
+    internal = {
+        "add_diagram",
+        "remove_diagram",
+        "set_agent_writes",
+        *projects.ELEMENT_OPERATIONS,
+        *projects.RELATION_OPERATIONS,
+    }
     assert set(projects.PUBLIC_OPERATIONS) | internal == set(projects.OPERATIONS)
 
 

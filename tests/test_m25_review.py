@@ -97,8 +97,8 @@ def test_relation_and_element_ids_are_at_most_64_characters():
 
 
 def test_the_worst_case_project_of_the_budget_fits_the_cosmos_item():
-    """The arithmetic of the spec's size budget: 500 relations and 500 elements (#212) with every field at its bound in
-    three-byte characters, 1 000 memberships and sections."""
+    """The arithmetic of the spec's size budget: 500 relations and 1000 elements (#212, model first) with every field at
+    its bound in three-byte characters, 1 000 memberships and sections."""
     wide = "€"  # three bytes in UTF-8
     project = Project(id="p" * 64, title="Projekt")
     project.elements = [
@@ -134,8 +134,21 @@ def test_the_worst_case_project_of_the_budget_fits_the_cosmos_item():
         for i in range(1000)
     ]
     assert project.integrity_errors() == []
-    size = len(json.dumps(project.model_dump(mode="json"), ensure_ascii=False).encode("utf-8"))
-    assert size < 2_000_000, size
+
+    def item_size() -> int:
+        return len(json.dumps(project.model_dump(mode="json"), ensure_ascii=False).encode("utf-8"))
+
+    # model first (ADR-0214): 1000 elements with 2000-character notes no longer fit the item at their bounds; the
+    # byte guard refuses such a document before it reaches the store, and every document it admits fits the item
+    assert item_size() > 2_000_000
+    with pytest.raises(ProjectError, match="too large"):
+        projects.check_document_size(project, None)
+    while projects.document_size(project) > projects.MAX_PROJECT_BYTES:
+        del project.elements[-50:]
+        kept = {e.id for e in project.elements}
+        project.relations = [r for r in project.relations if {r.source, r.target} <= kept]
+    projects.check_document_size(project, None)
+    assert project.integrity_errors() == [] and item_size() < 2_000_000, item_size()
 
 
 # ---- 3. relation ids are never reused ---------------------------------------------------------------------------

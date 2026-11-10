@@ -52,14 +52,18 @@ def test_every_kind_of_version_records_its_author(root, store):
     assert store.list_versions("orders")[1].author == "ed"
 
 
-def test_propagated_model_changes_record_who_renamed(root, store):
+def test_a_propagated_rename_writes_no_version_in_the_view(root, store):
     ada = root.for_actor(ADA)
     element = ada.models.add_element("shop", "Bezahlung")
     node = next(n.id for n in store.load("flow").nodes.values() if n.kind == "service")
     ada.models.link("flow", node, element.id)
+    before = store.list_versions("flow")
     root.for_actor(ED).models.update_element("shop", element.id, name="Zahlung")
-    assert store.list_versions("flow")[-1].author_name == "Ed Editor"
-    assert store.list_versions("flow")[-2].author_name == "Ada Lovelace"  # the link
+    # model first (ADR-0213): the view stores only which elements it shows, so a rename is a change of the project
+    # model alone; the view shows it at once and no propagated version (with its author) is written any more
+    assert store.list_versions("flow") == before
+    assert store.list_versions("flow")[-1].author_name == "Ada Lovelace"  # the link
+    assert store.load("flow").nodes[element.id].name == "Zahlung"
 
 
 def test_a_chat_turn_records_its_author_on_the_version_and_the_transcript(root, store):

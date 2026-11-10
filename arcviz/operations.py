@@ -320,9 +320,13 @@ def update_node(
             )
         _check_kind_change(diagram, node, new_kind)
         # A linked node may only become a kind that can stand for every element kind its current kind can: the
-        # linked element's kind is one of those (the link checked it), and it is not known here.
-        if node.ref is not None and not set(linkable_kinds(diagram.type, node.kind)) <= set(
-            linkable_kinds(diagram.type, new_kind)
+        # linked element's kind is one of those (the link checked it), and it is not known here. Model first
+        # (ADR-0213): in a diagram resolved against its project the node *is* the element, whose kind follows the
+        # node's (the repository updates it), so only a diagram outside a project still refuses.
+        if (
+            node.ref is not None
+            and not diagram._resolved
+            and not set(linkable_kinds(diagram.type, node.kind)) <= set(linkable_kinds(diagram.type, new_kind))
         ):
             raise OperationError(
                 f"'{node.id}' represents the project element '{node.ref}', and a «{new_kind}» may not be able to "
@@ -730,12 +734,26 @@ def link_element(diagram: Diagram, id: str, element: str, name: str, element_kin
     }
 
 
-def unlink_element(diagram: Diagram, id: str) -> dict[str, Any]:
-    """The node or lifeline no longer represents a project element; it keeps its name."""
+def unlink_refusal(diagram: Diagram, id: str) -> str | None:
+    """Why a person or an assistant cannot unlink in this diagram (model first, ADR-0213: in a diagram resolved against
+    its project every view element *is* an element), else None. Moves, imports and take-backs still unlink."""
+    if not diagram._resolved:
+        return None
+    return (
+        f"'{id}' is a project element: every node and lifeline of a diagram in a project stands for one. Hide it "
+        "here (remove with scope view), rename it, or show another element instead (show_element)."
+    )
+
+
+def unlink_element(diagram: Diagram, id: str, name: str | None = None) -> dict[str, Any]:
+    """The node or lifeline no longer represents a project element; it keeps its name. Model first (ADR-0213): in a
+    diagram resolved against its project every view element *is* an element, so there is nothing to unlink."""
     target = _view_target(diagram, id)
     if target.ref is None:
         raise OperationError(f"'{target.id}' does not represent a project element.")
     element, target.ref = target.ref, None
+    if name is not None and name.strip():  # a take-back gives the view the name it had before the link
+        target.name = name.strip()
     unlinked = _unlink_connections(diagram, [target.id])
     _touch(diagram)
     return {

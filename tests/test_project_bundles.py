@@ -129,11 +129,17 @@ def test_deleting_a_diagram_succeeds_when_the_membership_cleanup_fails(services,
 
 def test_a_bundle_without_model_is_written_as_before(services):
     diagrams, projects, bundles = services
-    _shop(diagrams, projects)
-    bundle = bundles.export("shop")
+    # model first: every node of a structure diagram is a project element, so only a project without such diagrams
+    # has no model any more
+    projects.create("Leer", "empty")
+    projects.apply("empty", "add_section", {"title": "Backend"})
+    bundle = bundles.export("empty")
     assert bundle["schema_version"] == 1
     assert "elements" not in bundle["project"]
     assert all("element" not in s for s in bundle["project"]["sections"])
+    _shop(diagrams, projects)
+    shop = bundles.export("shop")
+    assert shop["schema_version"] == 2 and "service-a" in [e["id"] for e in shop["project"]["elements"]]
 
 
 def test_the_model_round_trips_with_its_links(services):
@@ -154,16 +160,20 @@ def test_the_model_round_trips_with_its_links(services):
 
     bundle = bundles.export("shop")
     assert bundle["schema_version"] == 2
-    assert [e["id"] for e in bundle["project"]["elements"]] == ["shop", "backend"]
+    # model first: the views' nodes and lifelines are elements too ("Shop" is the checkout lifeline's element)
+    elements = {e["id"]: e for e in bundle["project"]["elements"]}
+    assert {"shop", "backend", "service-a", "kunde"} <= set(elements) and elements["backend"]["parent"] == "shop"
     assert bundle["project"]["sections"][0]["element"] == "backend"
     created = bundles.import_bundle(bundle)
     assert [e.model_dump() for e in created.elements] == [e.model_dump() for e in projects.get("shop").elements]
     assert created.sections[0].element == "backend"
     imported = {m.diagram: diagrams.get(m.diagram) for m in created.diagrams}
-    assert imported["demo-2"].nodes[node.id].ref == "backend"
+    # model first: the linked view now has the element's id
+    assert node.id not in imported["demo-2"].nodes and imported["demo-2"].nodes["backend"].ref == "backend"
     assert imported["checkout-2"].interaction.lifelines[1].ref == "shop"
     usages = {e.id: sorted(u.diagram for u in e.usages) for e in models.model(created.id).elements}
-    assert usages == {"shop": ["checkout-2"], "backend": ["demo-2"]}
+    assert usages["shop"] == ["checkout-2"] and usages["backend"] == ["demo-2"]
+    assert usages["service-a"] == ["demo-2", "second-2"]
 
 
 def test_bundles_with_an_invalid_model_are_refused(services):
@@ -182,14 +192,17 @@ def test_bundles_with_an_invalid_model_are_refused(services):
         bundles.import_bundle(bundle)
 
 
-def test_dangling_refs_are_kept_on_import(services):
+def test_dangling_refs_are_resolved_by_name_on_import(services):
     diagrams, projects, bundles = services
     _shop(diagrams, projects)
     bundle = bundles.export("shop")
     node = next(iter(bundle["diagrams"][0]["diagram"]["nodes"]))
     bundle["diagrams"][0]["diagram"]["nodes"][node]["ref"] = "gone"
     created = bundles.import_bundle(bundle)
-    assert diagrams.get(created.diagrams[0].diagram).nodes[node].ref == "gone"
+    # model first (replaces "dangling refs are kept"): a node always stands for an element; one whose link names no
+    # element of the bundle merges into the element of its name
+    shown = diagrams.get(created.diagrams[0].diagram).nodes[node]
+    assert shown.ref == node and "gone" not in [e.id for e in projects.get(created.id).elements]
 
 
 # ---- relations (spec: model-relations.md, ADR-0135) ------------------------------------------------------------
