@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.6.0](https://github.com/thomasniebler/arcviz/compare/v0.5.0...v0.6.0) (2026-11-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* diagram documents of structure types are stored as views; elements and connections live in the project model.
+
+### Features
+
+* ADR testability and MADR export, arc42 gap analysis, readable Architektur editors ([#15](https://github.com/thomasniebler/arcviz/issues/15)) ([72745af](https://github.com/thomasniebler/arcviz/commit/72745af53994852a66625314466f2c7458b2e48d)), closes [#12](https://github.com/thomasniebler/arcviz/issues/12) [#13](https://github.com/thomasniebler/arcviz/issues/13) [#14](https://github.com/thomasniebler/arcviz/issues/14)
+* model first, diagrams are views of the project model ([#23](https://github.com/thomasniebler/arcviz/issues/23)) ([212b279](https://github.com/thomasniebler/arcviz/commit/212b279ba1d9d23ebc5b6db088ee448325695130))
+* **ui:** permalinks, new-item menu, navigator fixes and readability prompts ([#17](https://github.com/thomasniebler/arcviz/issues/17)) ([17021a2](https://github.com/thomasniebler/arcviz/commit/17021a2eb9ab2b0231e6b2a070cc12f0f0aec478))
+
+
+### Bug Fixes
+
+* **auth:** permalinks survive the login ([#18](https://github.com/thomasniebler/arcviz/issues/18)) ([615bced](https://github.com/thomasniebler/arcviz/commit/615bced2cbed4678cae2e9b9d5ea55b247be5934))
+
+
+### Documentation
+
+* **architecture:** model-first design, diagrams as views of the project model ([#22](https://github.com/thomasniebler/arcviz/issues/22)) ([f5af761](https://github.com/thomasniebler/arcviz/commit/f5af7616a8d2b3349468fe5a94e0e4fbfb49a899))
+
 ## [0.5.0](https://github.com/thomasniebler/arcviz/compare/v0.4.2...v0.5.0) (2026-10-26)
 
 
