@@ -377,6 +377,12 @@ def _decompose_structure(edited: Diagram, previous: Diagram | None, project: Pro
         if source is None or target is None:
             continue
         connection = next((c for c in project.connections if c.id == edge.id), None)
+        if (
+            connection is not None
+            and not edited._resolved
+            and (connection.source, connection.target) != (source, target)
+        ):
+            connection = None  # a full document's edge ids are its own: an id taken by another connection is no match
         if connection is None:
             connection_id = edge.id if edge.id not in connection_ids else _next_connection_id(project)
             connection = Connection(id=connection_id, kind=edge.kind, source=source, target=target)

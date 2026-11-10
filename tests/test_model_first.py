@@ -293,3 +293,48 @@ def test_a_delete_with_the_current_etag_is_accepted(client):
     op(client, a, "add_node", name="API", kind="service")
     etag = client.get(f"/api/diagrams/{a}").headers["etag"]
     assert client.delete(f"/api/diagrams/{a}", headers={"If-Match": etag}).status_code == 204
+
+
+def test_legacy_edges_with_the_same_local_id_stay_two_connections():
+    project = _project()
+    one = Diagram(
+        id="one",
+        title="One",
+        nodes={"a": Node(id="a", name="A", kind="service"), "b": Node(id="b", name="B", kind="service")},
+        edges=[Edge(id="e1", source="a", target="b", label="one")],
+    )
+    two = Diagram(
+        id="two",
+        title="Two",
+        nodes={"c": Node(id="c", name="C", kind="service"), "d": Node(id="d", name="D", kind="service")},
+        edges=[Edge(id="e1", source="c", target="d", label="two")],
+    )
+    views.decompose(one, one, project)
+    views.decompose(two, two, project)
+    assert sorted((c.source, c.target, c.label) for c in project.connections) == [("a", "b", "one"), ("c", "d", "two")]
+
+
+def test_a_partition_removed_with_scope_model_deletes_its_element():
+    project = _project()
+    project.elements.append(views.Element(id="shop", name="Shop", kind="system"))
+    diagram = Diagram(
+        id="flow",
+        title="Flow",
+        type="activity",
+        nodes={"lane": Node(id="lane", name="Shop", kind="activity_partition", ref="shop")},
+    )
+    resolved = views.resolve(diagram, project)
+    apply(resolved, "remove_node", {"id": "lane", "scope": "model"})
+    views.decompose(resolved, diagram, project)
+    assert project.elements == []
+
+
+def test_deleting_through_a_diagram_is_refused_while_a_lifeline_stands_for_it(client):
+    d, s = new(client, "Deploy"), new(client, "Flow", "sequence")
+    op(client, d, "add_node", name="Orders API", kind="service")
+    op(client, s, "add_lifeline", name="Orders API")
+    r = client.post(
+        f"/api/diagrams/{d}/ops", json={"op": "remove_node", "args": {"id": "orders-api", "scope": "model"}}
+    )
+    assert r.status_code == 400 and "behaviour diagrams" in r.json()["detail"]
+    assert any(e["id"] == "orders-api" for e in model(client)["elements"])

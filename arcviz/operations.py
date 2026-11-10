@@ -386,6 +386,7 @@ def remove_node(diagram: Diagram, id: str, cascade: bool = False, scope: str = "
         for child in children:
             child.parent = node.parent
     removed_set = set(removed)
+    elements = [diagram.nodes[i].ref or i for i in removed if i in diagram.nodes]  # what they stand for (scope model)
     for node_id in removed:
         diagram.nodes.pop(node_id, None)
     removed_edges = [e.id for e in diagram.edges if e.source in removed_set or e.target in removed_set]
@@ -399,7 +400,7 @@ def remove_node(diagram: Diagram, id: str, cascade: bool = False, scope: str = "
                     f"Cannot remove '{node.id}' and keep its content: {exc} Move the content out first, or use cascade."
                 ) from exc
     if scope == "model":
-        diagram._removals.update(removed)
+        diagram._removals.update(elements)
     _touch(diagram)
     return {
         "removed_nodes": removed,

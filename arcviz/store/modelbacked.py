@@ -19,6 +19,7 @@ from typing import Any
 
 from .. import views
 from ..model import Diagram, fingerprint
+from ..operations import OperationError
 from ..ports import ConflictError, StoreError, VersionInfo
 from ..projects import Project, check_document_size
 from .base import DiagramRepository
@@ -115,6 +116,34 @@ class ModelBackedStore(DiagramRepository):
         check_document_size(project, before)
         self.backend.commit_project(project, revision)  # ConflictError: the caller's update retries
 
+    def _refuse_represented(self, project: Project, diagram_id: str, removed: list[str]) -> None:
+        """A deletion from the model through a diagram (scope "model") is refused while a lifeline, partition or data
+        store of another diagram stands for the element, like `ModelService.remove_element` (ADR-0213)."""
+        gone = {e for e in removed if not any(c.id == e for c in project.connections)}
+        if not gone:
+            return
+        found: list[str] = []
+        for member in project.diagrams:
+            if member.diagram == diagram_id:
+                continue
+            try:
+                other, _rev = self.backend.read_latest(member.diagram)
+            except StoreError:
+                continue
+            if views.is_view(other):
+                continue
+            refs = {n.ref for n in other.nodes.values()}
+            if other.interaction is not None:
+                refs |= {lf.ref for lf in other.interaction.lifelines}
+            hit = sorted(gone & {r for r in refs if r})
+            if hit:
+                found.append(f"{other.title} ({other.id}): {', '.join(hit)}")
+        if found:
+            raise OperationError(
+                f"Represented in behaviour diagrams: {'; '.join(found)}. Remove those lifelines or partitions first, or "
+                "hide the element here (scope view)."
+            )
+
     def create_latest(self, diagram: Diagram, info: VersionInfo) -> tuple[str, VersionInfo]:
         located = self.project_of(diagram.id)
         if located is None:
@@ -151,6 +180,7 @@ class ModelBackedStore(DiagramRepository):
             return new_inner, version
         project = before.model_copy(deep=True)
         result = views.decompose(diagram, stored, project)
+        self._refuse_represented(project, diagram.id, result.removed)
         if result.model_changed:
             self._write_model(project, before, project_revision)
         new_inner, version = self.backend.commit_latest(result.stored, inner, info)
