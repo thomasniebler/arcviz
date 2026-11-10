@@ -332,6 +332,10 @@ def _decompose_structure(edited: Diagram, previous: Diagram | None, project: Pro
     by_id = {e.id: e for e in project.elements}
     catalog = kinds_for(diagram_type)
     shown_containers = {node_to_element[n.id] for n in edited.nodes.values() if n.kind in catalog.container_kinds}
+    if previous is not None and is_view(previous):
+        # the parts were drawn against the containers the view showed before this edit: a container shown just now
+        # (show_element) does not move them in the model, the next resolution puts them into it
+        shown_containers &= set(previous.shows or [])
     for node in edited.nodes.values():
         element = next(e for e in project.elements if e.id == node_to_element[node.id])
         name = _check_name(node.name)

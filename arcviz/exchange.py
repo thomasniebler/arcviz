@@ -35,7 +35,6 @@ from .model import (
 )
 from .plantuml_text import MAX_PLANTUML_NESTING, TooDeep
 from .plantuml_text import plain as _plain
-from .views import STRUCTURE_TYPES
 from .project_model import (
     MAX_DRIVER_DESCRIPTION,
     MAX_DRIVER_TITLE,
@@ -60,6 +59,7 @@ from .project_model import (
 )
 from .projects import Project, Section
 from .requirement_model import RequirementBox
+from .views import STRUCTURE_TYPES
 
 FORMAT = "arcviz-diagram"
 SCHEMA_VERSION = 2  # the newest version this Arcviz reads and writes

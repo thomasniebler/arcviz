@@ -277,3 +277,19 @@ def test_the_migration_converts_full_documents_and_merges_by_name(store):
         for d in [store.backend.read_latest(m.diagram)[0] for m in project.diagrams]
     }
     assert len(diagrams["One"].edges) == 1 and diagrams["Two"].edges == []  # Two never drew it: hidden there
+
+
+def test_a_container_hidden_and_shown_again_holds_its_parts_again(client):
+    a = new(client, "A")
+    op(client, a, "add_node", name="K8s", kind="cluster")
+    op(client, a, "add_node", name="API", kind="service", parent="k8s")
+    op(client, a, "remove_node", id="k8s")  # hidden here: the part sits at the top while its container is not shown
+    op(client, a, "show_element", element="k8s")
+    assert get(client, a).nodes["api"].parent == "k8s"
+
+
+def test_a_delete_with_the_current_etag_is_accepted(client):
+    a = new(client, "A")
+    op(client, a, "add_node", name="API", kind="service")
+    etag = client.get(f"/api/diagrams/{a}").headers["etag"]
+    assert client.delete(f"/api/diagrams/{a}", headers={"If-Match": etag}).status_code == 204

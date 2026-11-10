@@ -68,9 +68,13 @@ def test_removing_an_element_shown_in_an_activity_diagram_with_relations(world):
     models.add_element("shop", "Kunde", "actor", element_id="kunde")
     models.link("ablauf", partition, "shop")
     models.add_relation("shop", "communicates", "kunde", "shop")
+    # model first: a partition stands for the element, so removing it is refused until no partition does
+    with pytest.raises(ProjectError, match="behaviour diagrams"):
+        models.remove_element("shop", "shop")
+    for node in [n.id for n in diagrams.get("ablauf").nodes.values() if n.ref == "shop"]:
+        diagrams.apply_operation("ablauf", "remove_node", {"id": node}, "Bahn entfernt")
     removal = models.remove_element("shop", "shop")  # clear_relation is no activity operation: never sent there
-    assert removal.unlinked == ["ablauf"] and models.relations("shop") == []
-    assert diagrams.get("ablauf").nodes[partition].ref is None
+    assert removal.unlinked == [] and models.relations("shop") == []
 
 
 # ---- 2. bounded ids -------------------------------------------------------------------------------------------

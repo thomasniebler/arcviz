@@ -37,6 +37,14 @@ every project pass through unchanged.
   again; `show_element(element, parent?)` shows an existing element (structure types).
 - Renaming a view element renames the element.
 
+## Linking and removing
+
+- `link_element` makes a view element that element; unlinking is refused in a project for people and assistants
+  (`operations.unlink_refusal`), the inspector offers to point a node at another element instead.
+- Removing an element from the model is refused while a lifeline, partition or data store stands for it.
+- A rename writes no diagram; `add_element` with an existing name returns that element.
+- Moving a diagram into another project keeps it whole (`Diagram._detach`) and then takes it into the target model.
+
 ## Agents
 
 The chat assistants may remove with scope `model` only in a preview turn. MCP tools `create_component`,

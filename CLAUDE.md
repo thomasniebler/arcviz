@@ -253,6 +253,19 @@ and project views use the store primitive `diagram_infos(ids)`; `tests/test_loca
 cross-partition query. Stores implement five project primitives (file
 `projects/<id>.json`, sqlite table `projects`, Cosmos item `project` in partition `project:<id>`).
 
+**Model first** (spec `docs/architecture/specs/model-first.md`, as-implemented `docs/spec/model-first.md`, ADR-0213..0220;
+supersedes the linking parts below where they disagree): the project model is the source of truth. `store/modelbacked.py`
+`ModelBackedStore` wraps every backend (`create_store`; the test `store` fixture is wrapped too, `store.backend` is the bare
+one): reads resolve a diagram against the model of the project holding it (`views.resolve`), writes split it back
+(`views.decompose`: project first, then the view). A structure view (deployment, class, use case, component) stores only
+`shows` + `hidden_connections`; every node is an `Element` (`notation`, `properties`, notes as `description`), every edge a
+`Project.connections` entry, drawn wherever both ends are shown unless hidden. Behaviour diagrams keep their content; their
+lifelines/partitions/data stores always stand for elements. Revisions are `<backend>~<fingerprint>`. `remove_*` take
+`scope` (`view` default, `model` deletes; the chat only in preview turns, the UI asks every time), `show_element` shows an
+existing element, renames rename the element, adoption is off. MCP model tools write when `Project.agent_writes` is
+`direct` (owner: `PUT /api/projects/{pid}/agent-writes`), else propose. `services/model_first.migrate_to_model` converts
+full documents at start-up.
+
 **Shared project model** (M18; spec `docs/architecture/specs/shared-project-model.md`, case study
 `shared-project-model-case-study.md`, as-implemented `docs/spec/projects.md#shared-model`, ADR-0070..0078):
 `Project.elements` (`project_model.Element`: id, name, abstract kind of `ELEMENT_KINDS`, description, parent;

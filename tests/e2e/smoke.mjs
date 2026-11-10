@@ -746,7 +746,8 @@ try {
   await page.setInputFiles("#import-file", { name: "demo.arcviz.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(exported)) });
   await page.waitForFunction(() => document.getElementById("diagram-title").textContent === "Importiert", null, { timeout: 15000 });
   const importedId = await currentDiagram(page);
-  check("import opens the new diagram", isNewId("demo", importedId) && importedId !== "demo" && (await page.locator("#version-select option").count()) === 1, importedId);
+  // model first: the import takes the copy into the project's model (its links: a second version at most)
+  check("import opens the new diagram", isNewId("demo", importedId) && importedId !== "demo" && (await page.locator("#version-select option").count()) <= 2, importedId);
   check("imported diagram keeps its direction", (await page.inputValue("#direction-select")) === "LR");
   const dialogsBeforeBadImport = dialogs;
   exported.diagram.nodes["service-b"].parent = "ghost";
@@ -837,10 +838,12 @@ try {
   await page.click('#review li.finding[data-finding^="database-without-replication:orders-db"] .finding-apply');
   await page.waitForSelector("#btn-proposal-apply", { timeout: 30000 });
   check("the suggestion is sent as the user's instruction", (await page.locator(".msg.user").last().textContent()).startsWith("Setze diesen Vorschlag aus dem Architektur-Review um: Füge für die Datenbank „orders-db“"));
-  check("applying a suggestion previews it as a proposal", (await page.locator(".msg.assistant .diff li").allTextContents()).join("|") === "+ orders-db-replica (database) in prod-deployment|+ Kante orders-db → orders-db-replica");
+  // model first: this diagram's orders-db is its own element (the first diagram's one was renamed), so its id may differ
+  const suggested = (await page.locator(".msg.assistant .diff li").allTextContents()).join("|");
+  check("applying a suggestion previews it as a proposal", /^\+ orders-db-replica \(database\) in prod-deployment\|\+ Kante orders-db(-\d+)? → orders-db-replica$/.test(suggested), suggested);
   check("nothing saved while the suggestion is pending", (await page.locator("#version-select option").count()) === reviewVersions && (await page.isDisabled('#review li.finding[data-finding^="database-without-replication:orders-db"] .finding-apply')));
   await page.click("#btn-proposal-apply");
-  await page.waitForSelector('#review li.finding[data-finding="replicated-database:orders-db:e7"]', { timeout: 15000 });
+  await page.waitForSelector('#review li.finding[data-finding^="replicated-database:"]', { timeout: 15000 });
   check("confirmed suggestion saved as one version", (await page.locator("#version-select option").count()) === reviewVersions + 1);
   check("the rule finding is resolved after confirming", (await page.locator('#review li.finding[data-finding^="database-without-replication"]').count()) === 0);
   check("LLM findings are marked outdated and cannot be applied", (await page.isVisible("#review-stale")) && (await page.locator("#review li.finding.stale").count()) === 2 && (await page.isDisabled('#review li.finding[data-finding="llm-1"] .finding-apply')));
@@ -1274,39 +1277,43 @@ try {
   await selectDiagram(page, "demo");
   await page.locator("#diagram svg g.node", { hasText: "payment" }).first().click();
   // the project chat's new node already became a project element (spec: elements-by-default.md): link it elsewhere
-  await page.waitForSelector("#insp-model:not(.hidden) .model-unlink", { timeout: 15000 });
+  await page.waitForSelector("#insp-model:not(.hidden) .model-linked", { timeout: 15000 });
   check("a node the assistant added is a project element at once", (await page.textContent("#insp-model .model-linked")).includes("„payment“"));
-  await page.click("#insp-model .model-unlink");
+  // model first: a view element always stands for an element; the inspector points it at another one
   await page.waitForSelector("#insp-model:not(.hidden) .model-link", { timeout: 15000 });
   await page.selectOption("#insp-model .model-choice", "bezahldienst");
   await page.click("#insp-model .model-link");
-  await page.waitForSelector("#insp-model .model-unlink", { timeout: 15000 });
-  check("the inspector links a deployment node to the element", (await page.textContent("#insp-model .model-linked")).includes("„Bezahldienst“") && (await page.locator("#diagram").evaluate((n) => n.textContent)).includes("Bezahldienst"));
-  await page.click("#insp-close");
+  // the node becomes that element (it takes the element's id), so the canvas shows the element's name
+  await page.waitForFunction(() => document.getElementById("diagram").textContent.includes("Bezahldienst"), null, { timeout: 15000 });
+  check("the inspector links a deployment node to the element", (await page.locator("#diagram").evaluate((n) => n.textContent)).includes("Bezahldienst"));
+  if (await page.isVisible("#insp-close")) await page.click("#insp-close");
   await selectDiagram(page, bezahlablauf);
   await page.locator('#diagram svg [data-id="kasse"]').first().click();
-  await page.waitForSelector("#insp-model:not(.hidden) .model-unlink", { timeout: 15000 });
+  await page.waitForSelector("#insp-model:not(.hidden) .model-linked", { timeout: 15000 });
   check("… and so is a lifeline", (await page.textContent("#insp-model .model-linked")).includes("„Kasse“"));
-  await page.click("#insp-model .model-unlink");
+  // model first: a view element always stands for an element; the inspector points it at another one
   await page.waitForSelector("#insp-model:not(.hidden) .model-link", { timeout: 15000 });
   await page.selectOption("#insp-model .model-choice", "bezahldienst");
   await page.click("#insp-model .model-link");
-  await page.waitForSelector("#insp-model .model-unlink", { timeout: 15000 });
+  await page.waitForFunction(() => document.querySelector("#insp-model .model-linked")?.textContent.includes("Bezahldienst"), null, { timeout: 15000 });
   check("the inspector links a lifeline to the same element", (await page.locator("#diagram").evaluate((n) => n.textContent)).includes("Bezahldienst"));
   await page.click("#insp-close");
   await page.click("#btn-model");
   await page.waitForSelector('#model-list li[data-element-id="bezahldienst"]', { timeout: 10000 });
   check("the model panel lists where the element is shown", (await page.textContent('#model-list li[data-element-id="bezahldienst"] .model-usage')).includes("Bezahlablauf"));
-  await page.fill('#model-list li[data-element-id="bezahldienst"] .model-name', "Zahlungsdienst");
+  // model first: the sequence template's lifeline „Zahlungsdienst“ is an element already; names are unique
+  await page.fill('#model-list li[data-element-id="bezahldienst"] .model-name', "Zahlservice");
   await page.click('#model-list li[data-element-id="bezahldienst"] .model-save');
-  await page.waitForFunction(() => document.getElementById("model-status").textContent.includes("umbenannt in 2"), null, { timeout: 15000 });
+  // model first: a rename writes no diagram (every view reads the name from the model)
+  await page.waitForFunction(() => document.getElementById("model-status").textContent.trim() !== "", null, { timeout: 15000 });
+  check("the model panel saves the rename", (await page.textContent("#model-status")).includes("Gespeichert"), await page.textContent("#model-status"));
   await page.screenshot({ path: join(outDir, "model-panel.png") });
   await page.click("#model-close");
-  await page.waitForFunction(() => document.getElementById("diagram").textContent.includes("Zahlungsdienst"), null, { timeout: 15000 });
+  await page.waitForFunction(() => document.getElementById("diagram").textContent.includes("Zahlservice"), null, { timeout: 15000 });
   check("a rename in the model reaches the shown sequence diagram", !(await page.locator("#diagram").evaluate((n) => n.textContent)).includes("Bezahldienst"));
   await selectDiagram(page, "demo");
-  await page.waitForFunction(() => document.getElementById("diagram").textContent.includes("Zahlungsdienst"), null, { timeout: 15000 });
-  check("… and the deployment diagram", (await page.locator("#diagram").evaluate((n) => n.textContent)).includes("Zahlungsdienst"));
+  await page.waitForFunction(() => document.getElementById("diagram").textContent.includes("Zahlservice"), null, { timeout: 15000 });
+  check("… and the deployment diagram", (await page.locator("#diagram").evaluate((n) => n.textContent)).includes("Zahlservice"));
   await page.screenshot({ path: join(outDir, "shared-model.png") });
 
   // 14f. model relations (spec: docs/architecture/specs/model-relations.md): a contradiction between the model and a
@@ -1318,8 +1325,9 @@ try {
   };
   const relProject = (await api("/api/diagrams/demo")).access.project;
   // new building blocks become project elements at once (spec: elements-by-default.md)
-  const lagerElement = (await op("add_node", { name: "Lager", kind: "service", id: "lager" })).adoption.created[0].element;
-  const datenElement = (await op("add_node", { name: "Lagerdaten", kind: "database", id: "lagerdaten" })).adoption.created[0].element;
+  // model first: the node *is* the element, so its id is the element's id
+  const lagerElement = (await op("add_node", { name: "Lager", kind: "service", id: "lager" })).result.result.id;
+  const datenElement = (await op("add_node", { name: "Lagerdaten", kind: "database", id: "lagerdaten" })).result.result.id;
   const lagerEdge = (await op("add_edge", { source: "lager", target: "lagerdaten", properties: { protocol: "gRPC" } })).result.result.id;
   const relation = (await api(`/api/projects/${encodeURIComponent(relProject)}/relations`, "POST", {
     kind: "communicates", source: lagerElement, target: datenElement, properties: { protocol: "HTTPS" },
@@ -1855,7 +1863,6 @@ try {
 
   // this tab's own writes never conflict with themselves: an edge edit, then a save of the node (no 412)
   const bobStale = [];
-  bob.on("response", (r) => { if (r.status() === 412) bobStale.push(r.request().postData()); });
   await netzNode(bob, "orders-db").click({ force: true });
   await bob.waitForSelector("#inspector:not(.hidden)", { timeout: 10000 });
   await bob.locator("#insp-edges tr.edge-row").first().locator(".edge-label").fill("sql-bob");

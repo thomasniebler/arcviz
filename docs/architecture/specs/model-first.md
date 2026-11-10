@@ -435,7 +435,20 @@ The first stage keeps the model where it is and puts the whole split into one pl
    per diagram type (`notation`); `views.view_kind` maps an abstract kind to a view kind for types it has no notation
    for yet.
 5. Element names are unique per project, so a new view element merges with the element of the same name whatever
-   its kind.
+   its kind; an element is shown once per diagram (a second node of that name is refused). `add_element` with the name
+   of an existing element returns that element (its kind unchanged).
+6. **Linking.** `link_element` makes the view element that element (a structure node takes the element's id).
+   Unlinking is refused for people and assistants in a project (`operations.unlink_refusal`; the inspector offers to
+   point a node at another element instead); moves, imports and take-backs still unlink. A take-back of an invalid
+   link restores the name the view had, so it stands for its previous element again.
+7. **Removing an element** through the model (panel, REST, agents) is refused while a lifeline, partition or data store
+   stands for it; structure views just stop showing it. A rename writes no diagram (nothing is propagated).
+8. **Moving a diagram to another project** writes the view as a full document first (`Diagram._detach`), moves the
+   membership, then takes it into the target's model (`DiagramService._into_model`): nothing it showed is lost, also
+   when the target cannot take every element (it then stays a full document until the migration takes it). A move
+   writes up to two more versions than before.
+9. Deployment grouping containers (`deployment`, `vnet`, `subnet`, `region`, `group`) become `package` elements, never
+   execution `node`s, so they do not count as `deployed_on` hosts.
 
 ## Decisions
 

@@ -284,7 +284,15 @@ async function renderModelSection(id) {
     hint.className = "muted model-hint";
     hint.textContent = t("Der Name kommt aus dem Projektmodell: eine Umbenennung hier erreicht jedes Diagramm, das das Element zeigt.");
     section.appendChild(hint);
-    actions.appendChild(modelButton(t("Verknüpfung lösen"), () => linkAction("unlink", { view: id }), "small model-unlink"));
+    // Model first (ADR-0213): a view element always stands for an element; it can stand for another one instead.
+    const others = linkChoices(model, kinds).filter((c) => c.value !== shown.ref);
+    if (others.length) {
+      const select = document.createElement("select");
+      select.className = "model-choice";
+      select.setAttribute("aria-label", t("Projektelement"));
+      for (const c of others) select.appendChild(option(c.value, c.label));
+      actions.append(select, modelButton(t("Verknüpfen"), () => linkAction("link", { view: id, element: select.value }), "small model-link"));
+    }
     hiddenMarkers(section, model, shown.ref);
   } else {
     const choices = linkChoices(model, kinds);
@@ -803,7 +811,7 @@ export function initInspector() {
     const change = elementUpdate(found.kind, found.element, elementValues());
     if (change) change.args = touchedArgs(change.args); // never a field the user did not change
     if (!change || Object.keys(change.args).length === 1) { showElementError(""); return; }
-    if (found.element.ref && "name" in change.args) { // a linked lifeline is renamed through the model
+    if (found.element.ref && "name" in change.args && !state.projectId) { // model first: in a project the write renames the element
       if (!(await renameThroughModel(found.element.ref, change.args.name))) return;
       delete change.args.name;
       if (Object.keys(change.args).length === 1) { reopenInspector(); return; }
@@ -842,7 +850,9 @@ export function initInspector() {
     const name = insp.name.value.trim();
     const kind = insp.kind.value;
     const description = insp.description.value.trim();
-    const throughModel = Boolean(node.ref && name && name !== node.name); // a linked node is renamed through the model
+    // Model first (ADR-0213): renaming the node renames its element, through the diagram's own write (with If-Match);
+    // the element route stays for diagrams outside a project.
+    const throughModel = Boolean(node.ref && name && name !== node.name && !state.projectId);
     if (throughModel && !(await renameThroughModel(node.ref, name))) return;
     const noteChanged = description !== (node.description || "");
     if ((name !== node.name && !throughModel) || kind !== node.kind || changedProps || noteChanged) {
