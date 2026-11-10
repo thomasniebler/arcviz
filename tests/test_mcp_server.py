@@ -136,6 +136,11 @@ def test_the_handshake_and_the_tool_list(client):
         "add_stakeholder",
         "update_stakeholder",
         "propose_architecture_items",
+        "create_component",
+        "update_component",
+        "create_relation",
+        "show_in_diagram",
+        "hide_in_diagram",
     }
     assert tools["get_component"]["inputSchema"]["required"] == ["project", "component"]
     assert "write token" in tools["propose_change"]["description"]

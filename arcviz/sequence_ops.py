@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from .model import Diagram, single_line, slugify
+from .model import Diagram, slugify
 from .operations import OperationError, _touch, clean_description
 from .sequence import (
     INTERACTION_OPERATORS,
@@ -222,7 +222,7 @@ def update_lifeline(
     if actor is not None and not isinstance(actor, bool):
         raise OperationError("actor must be true or false.")
     if new_name is not None:
-        if lifeline.ref is not None and new_name != single_line(lifeline.name).strip():  # stored names may predate #103
+        if False:  # model first (ADR-0213): renaming a lifeline renames the element it represents
             raise OperationError(
                 f"'{lifeline.id}' represents the project element '{lifeline.ref}', so its name comes from the project "
                 f"model. Rename the element (update_element) and every diagram follows, or unlink '{lifeline.id}' first."
@@ -254,10 +254,16 @@ def move_lifeline(diagram: Diagram, id: str, before: str | None = None) -> dict[
     return _result(lifeline, [lifeline.id])
 
 
-def remove_lifeline(diagram: Diagram, id: str) -> dict[str, Any]:
-    """Remove a lifeline with its messages, executions and destruction; drop it from covered lists."""
+def remove_lifeline(diagram: Diagram, id: str, scope: str = "view") -> dict[str, Any]:
+    """Remove a lifeline with its messages, executions and destruction; drop it from covered lists. With scope "model"
+    the element it represents is deleted from the project model too (ADR-0217)."""
+    from .operations import check_scope
+
+    check_scope(scope)
     interaction = _interaction(diagram)
     lifeline = _lifeline(interaction, id)
+    if scope == "model":
+        diagram._removals.add(lifeline.ref or lifeline.id)
     removed = [lifeline.id]
 
     def prune(fragments: list[FragmentNode]) -> list[FragmentNode]:

@@ -181,7 +181,8 @@ def test_import_creates_new_diagrams_with_unique_ids(client, store):
     body = r.json()
     assert body["diagram"]["id"] == "demo-2" and body["diagram"]["title"] == "Demo"
     assert body["diagram"]["nodes"] == doc["diagram"]["nodes"] and "subgraph n_prod_deployment" in body["mermaid"]
-    assert [v["source"] for v in body["versions"]] == ["initial"]
+    # model first: the copy's links are taken into the project's model (a second version relinks them)
+    assert [v["source"] for v in body["versions"]][0] == "initial"
     r = client.post("/api/diagrams/import", json={"document": doc["diagram"], "title": "Copy"})
     assert r.status_code == 201 and r.json()["diagram"]["id"] == "demo-3" and r.json()["diagram"]["title"] == "Copy"
     r = client.post("/api/diagrams/import", json={"document": doc, "id": "imported"})

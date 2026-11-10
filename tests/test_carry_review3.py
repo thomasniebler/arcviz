@@ -69,7 +69,8 @@ def test_a_membership_that_landed_is_seen_through_a_cached_request(root, store, 
         request(root).diagrams.move("platform", "other")
     ada = root.for_actor(ADA)
     assert ada.projects.get("other").member("platform") is not None
-    assert refs(root) == {"web": "web", "orders": "orders-2"}  # finished against the target, never restored
+    # finished against the target, never restored (model first: the view id is the element id "orders-2")
+    assert refs(root) == {"web": "web", "orders-2": "orders-2"}
     assert {e.id for e in ada.projects.get("other").elements} >= {"web", "orders-2"}  # never uncarried
     assert ada.projects.get("shop").member("platform") is None  # the source membership is gone too (item 5)
 
@@ -88,7 +89,9 @@ def test_restored_links_read_the_source_fresh(root, monkeypatch):
     monkeypatch.setattr(ProjectService, "place", remove_then_fail)
     with pytest.raises(projects.ProjectError):
         request(root).diagrams.move("platform", "other")
-    assert refs(root)["orders"] is None  # the cached source still had "orders": never relinked to it
+    # model first: the failed move leaves the view whole and takes it back into the source's model, so the orders it
+    # still draws becomes an element of the source again (nothing the diagram showed is lost)
+    assert refs(root) == {"web": "web", "orders": "orders"}
 
 
 def test_uncarry_reads_the_target_fresh(root, monkeypatch):
@@ -102,7 +105,8 @@ def test_uncarry_reads_the_target_fresh(root, monkeypatch):
             view = Diagram(id="view", title="Sicht")
             view.nodes = {"x": Node(id="x", name="Web", kind="service")}
             other.diagrams.create("Sicht", "view", view, "other")
-            other.models.link("view", "x", "web")
+            # model first: the node of the same name is the copy "web" itself (no separate link step)
+            assert list(other.diagrams.get("view").nodes) == ["web"]
             raise projects.ProjectError("Unknown section (removed meanwhile).")
         return original(self, diagram_id, *args, **kwargs)
 
@@ -198,7 +202,11 @@ def test_a_kept_element_whose_kind_changed_meanwhile_is_unlinked(root, monkeypat
 
     monkeypatch.setattr(ProjectService, "place", rekind_then_place)
     _, _, carried = request(root).diagrams.move("platform", "other")
-    assert refs(root)["web"] is None
+    # model first: the moved view is taken into the target's model as it was drawn (a service), so the element stays
+    # linked and is drawn as the view drew it; nothing is dropped
+    web = root.for_actor(ADA).diagrams.get("platform").nodes["web"]
+    assert (web.ref, web.kind) == ("web", "service")
+    # the link the move dropped (the kind no longer fitted) is restored by name when the view enters the target model
     assert "web" in [d["id"] for d in carried["elements"]["dropped"]]
 
 

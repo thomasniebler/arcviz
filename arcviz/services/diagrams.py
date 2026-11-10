@@ -447,9 +447,12 @@ class DiagramService:
         relink = _Relink()
 
         def adjust(diagram: Diagram) -> Change[None] | None:
+            diagram._resolved = False  # it leaves the source model whole: its links are plain references now
             relink.plan(diagram, carried)
-            if not relink.unlink(diagram):
-                return None
+            relink.unlink(diagram)
+            # Model first (ADR-0213): the view leaves the source model whole (nodes, edges, notes), so nothing is lost
+            # whatever the target can take; the write after the membership takes it into the target's model.
+            diagram._detach = True
             return Change(diagram, None, label="Verknüpfungen angepasst (anderes Projekt)")
 
         adjusted = False
@@ -468,6 +471,7 @@ class DiagramService:
                 if adjusted:
                     self._restore_links(diagram_id, relink, source.project.id)
                 self._uncarry(target, carried)
+                self._into_model(diagram_id)  # back into the source's model (it left it whole)
                 raise
             # the membership is written (a later step of `place` failed): the move is done. Finish it against the
             # target, then report the failure; the repair (reconcile) drops a leftover membership in the source.
@@ -475,6 +479,7 @@ class DiagramService:
             self._publish({"type": "access", "diagram": diagram_id})
             projects = self._projects
             self._update(diagram_id, _checked(relink, lambda: projects.fresh(target), carried))
+            self._into_model(diagram_id)
             try:  # the source membership goes too, so the model service of the source no longer touches the diagram
                 projects.withdraw(diagram_id, source.project.id, source.member.added_at)
             except Exception:
@@ -484,7 +489,18 @@ class DiagramService:
         # read after the membership: a copy removed before it is caught here, one removed later by the model service
         projects = self._projects
         self._update(diagram_id, _checked(relink, lambda: projects.fresh(target), carried))
+        self._into_model(diagram_id)
         return (*placed, carried.report())
+
+    def _into_model(self, diagram_id: str) -> None:
+        """Take a diagram that is still a full document into its project's model (model first, ADR-0220); a model
+        that cannot take it now (the size guard) leaves it whole, for the migration at the next start."""
+        try:
+            self._update(
+                diagram_id, lambda d: Change(d, None, label="Ins Projektmodell übernommen") if d._legacy else None
+            )
+        except (StoreError, operations.OperationError) as exc:
+            logger.warning("A moved diagram stays a full document for now (%s)", type(exc).__name__)
 
     def _restore_links(self, diagram_id: str, relink: _Relink, source_id: str) -> None:
         """Best effort after a failed move: link the views and connections again as before the move, against the source

@@ -12,6 +12,7 @@ from hypothesis import settings
 from arcviz import ports
 from arcviz.llm.base import ChatMessage, LLMProvider, ModelReply, TextDelta, ToolCall, ToolResult, ToolSpec
 from arcviz.model import BUILTIN_KINDS, use_kinds
+from arcviz.store import create_store
 from arcviz.store.file import FileStore
 from arcviz.store.sqlite import SqliteStore
 from arcviz.templates import demo_diagram
@@ -94,13 +95,14 @@ def close_loops() -> Iterator[None]:
 
 @pytest.fixture(params=["file", "sqlite"])
 def store(request, tmp_path):
-    """Every agent/server test runs against the file and the sqlite backend."""
+    """Every agent/server test runs against the file and the sqlite backend, wrapped like `create_store` wraps them:
+    diagrams are views of their project's model (spec: model-first.md). `store.backend` is the bare backend."""
     if request.param == "sqlite":
         repo = SqliteStore(tmp_path / "data" / "arcviz.sqlite3")
-        yield repo
+        yield create_store(backend=repo)
         repo.close()
         return
-    yield FileStore(tmp_path / "data")
+    yield create_store(backend=FileStore(tmp_path / "data"))
 
 
 @pytest.fixture

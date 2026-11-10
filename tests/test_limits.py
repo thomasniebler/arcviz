@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from arcviz import exchange, limits
 from arcviz.llm.base import ModelReply
 from arcviz.operations import MAX_BATCH
+from arcviz.project_model import MAX_ELEMENT_DESCRIPTION, MAX_ELEMENT_NAME
 from arcviz.server import create_app
 from tests.conftest import ScriptedProvider
 
@@ -30,9 +31,10 @@ def op_body(name: str) -> dict:
 def test_a_body_over_the_limit_is_413_and_writes_nothing(store, demo, monkeypatch):
     client = app_client(store, monkeypatch, ARCVIZ_MAX_BODY_BYTES="200")
     big = op_body("x" * 300)
+    before = len(store.list_versions("demo"))  # model first: the start-up conversion of `demo` adds a version
     r = client.post("/api/diagrams/demo/ops", json=big)
     assert r.status_code == 413 and r.json()["detail"] == "Request body too large (max 200 bytes)."
-    assert len(store.list_versions("demo")) == 1
+    assert len(store.list_versions("demo")) == before
     assert client.post("/api/diagrams/demo/ops", json=op_body("small")).status_code == 200
 
 
@@ -96,7 +98,11 @@ def test_an_oversized_batch_stays_a_400_operation_error(client_default):
 
 def test_zero_disables_a_size_limit(store, demo, monkeypatch):
     client = app_client(store, monkeypatch, ARCVIZ_MAX_BODY_BYTES="0", ARCVIZ_MAX_CHAT_CHARS="0")
-    assert client.post("/api/diagrams/demo/ops", json=op_body("z" * 5000)).status_code == 200
+    # model first: a node is a project element, so its name is bounded (MAX_ELEMENT_NAME); its note carries the bulk
+    body = op_body("z" * MAX_ELEMENT_NAME)
+    body["args"]["description"] = "z" * MAX_ELEMENT_DESCRIPTION
+    assert len(json.dumps(body)) > 2000
+    assert client.post("/api/diagrams/demo/ops", json=body).status_code == 200
 
 
 def test_config_reports_the_limits(store, demo, monkeypatch):

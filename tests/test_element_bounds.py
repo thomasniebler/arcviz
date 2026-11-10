@@ -87,7 +87,10 @@ def test_imports_shorten_oversize_element_texts_and_say_so():
     cut."""
     p = project()
     p.elements.append(Element(id="long", name=LONG_NAME, description=LONG_DESCRIPTION))
-    p.elements.append(Element(id="wide", name=" " + "W" * 150 + " ", description="w" * 1000))
+    # model first: MAX_ELEMENT_DESCRIPTION rose to 2000 (notes live on the element), so "wide" needs a longer text
+    p.elements.append(
+        Element(id="wide", name=" " + "W" * 150 + " ", description="w" * (MAX_ELEMENT_DESCRIPTION + 1000))
+    )
     projects.apply(p, "add_section", {"title": "Lang"})
     p.sections[0].element = "long"
     bundle = exchange.parse_project(exchange.export_project(p, []))
@@ -158,11 +161,21 @@ def at_bounds(char: str) -> Project:
     return p
 
 
-def test_ascii_and_typical_german_projects_at_their_bounds_fit_the_guard_with_margin():
-    assert document_size(at_bounds("x")) < 0.75 * MAX_PROJECT_BYTES
+def test_a_full_project_at_its_bounds_meets_the_guard_and_typical_notes_fit_with_margin():
+    """Model first (ADR-0214): MAX_ELEMENTS (1000) and MAX_ELEMENT_DESCRIPTION (2000, the notes) no longer fit the
+    budget together at their worst case; the byte guard is what bounds the project then, refusing it cleanly. With
+    notes of the length the bound had before (300 characters) a full project still fits with the old margins."""
+    full = at_bounds("x")
+    assert document_size(full) > MAX_PROJECT_BYTES and full.integrity_errors() == []
+    with pytest.raises(ProjectError, match="too large"):
+        check_document_size(full, None)
+    ascii_notes = at_bounds("x")
+    for element in ascii_notes.elements:
+        element.description = "x" * 300
+    assert document_size(ascii_notes) < 0.75 * MAX_PROJECT_BYTES
     german = at_bounds("x")
     for element in german.elements:  # about one character in twenty is an umlaut or ß (six bytes when escaped)
-        element.description = ("Ablaufsteuerung für Zahlungen " * 10)[:MAX_ELEMENT_DESCRIPTION]
+        element.description = ("Ablaufsteuerung für Zahlungen " * 10)[:300]
         element.name = element.name[:5] + ("Größenprüfung " * 8)[: MAX_ELEMENT_NAME - 5]
     assert document_size(german) < 0.9 * MAX_PROJECT_BYTES
 
@@ -196,11 +209,14 @@ def test_an_oversize_stored_project_is_never_locked(store):
 
 
 def sized(below: int) -> Project:
-    """The default project at the three-byte worst case, cut down (relations removed) to just below `below` bytes."""
+    """The default project at the three-byte worst case, cut down to just below `below` bytes: relations removed,
+    then (model first: 1000 elements with 2000-character notes exceed every budget alone) the last elements."""
     p = at_bounds("€")
     p.id, p.diagrams = DEFAULT_PROJECT_ID, []
-    while document_size(p) >= below:
+    while document_size(p) >= below and p.relations:
         p.relations.pop()
+    while document_size(p) >= below:
+        p.elements.pop()
     return p
 
 

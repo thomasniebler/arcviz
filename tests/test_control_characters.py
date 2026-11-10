@@ -165,8 +165,9 @@ def test_a_stored_name_with_control_characters_is_not_a_rename():
     d.nodes["a"] = Node(id="a", name="Order\nService", kind="service", ref="order-service")  # stored before #103
     ok(d, "update_node", id="a", name="Order\nService", description="unchanged name, new note")
     assert d.nodes["a"].name == "Order Service"
-    with pytest.raises(operations.OperationError, match="represents the project element"):
-        operations.apply(d, "update_node", {"id": "a", "name": "Other"})
+    # model first (ADR-0213): renaming a linked node renames its element (no ADR-0071 refusal any more)
+    ok(d, "update_node", id="a", name="Other")
+    assert (d.nodes["a"].name, d.nodes["a"].ref) == ("Other", "order-service")
 
 
 def test_a_stored_lifeline_name_with_control_characters_is_not_a_rename():

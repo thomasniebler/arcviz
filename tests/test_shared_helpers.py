@@ -147,7 +147,8 @@ def test_a_link_taken_back_is_neither_recorded_nor_kept_in_both_agents(store, mo
     assert results[0]["is_error"] and "could not be taken back" not in results[0]["content"]
     assert events[-1]["operations"] == [] and not events[-1]["error"]
     if outcome == "written":
-        assert "ref" not in nodes(client, "order")[partition]
+        # model first: a partition always stands for an element, so a take-back leaves it standing for another one
+        assert nodes(client, "order")[partition].get("ref") != "order-service"
 
 
 @pytest.mark.parametrize("scope", ["diagram", "project"])

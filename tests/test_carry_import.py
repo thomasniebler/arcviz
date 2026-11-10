@@ -70,7 +70,8 @@ def imported(client, document: dict, project: str) -> dict:
 
 def test_the_export_carries_the_referenced_model(client):
     model = export(client)["model"]
-    assert [e["id"] for e in model["elements"]] == ["shop", "web", "orders", "db"]  # the parent of orders too
+    # model first: the import made the nodes elements before "shop" was added, so they come first (project order)
+    assert [e["id"] for e in model["elements"]] == ["web", "orders", "db", "shop"]  # the parent of orders too
     assert [r["id"] for r in model["relations"]] == ["r1", "r2"]  # r3 ends at an element the diagram does not show
     assert export(client)["schema_version"] == exchange.DEPLOYMENT_SCHEMA_VERSION  # an optional key, no new version
 
@@ -86,7 +87,8 @@ def test_an_import_into_another_project_keeps_the_links(client):
     nodes = answer["diagram"]["nodes"]
     assert {i: n.get("ref") for i, n in nodes.items()} == {"web": "web", "orders": "orders", "db": "db"}
     assert [e.get("ref") for e in answer["diagram"]["edges"]] == ["r1", "r2"]
-    assert [c["id"] for c in answer["carried"]["elements"]["copied"]] == ["shop", "web", "db", "orders"]
+    # model first: source order is web, orders, db, shop; parents still before their children
+    assert [c["id"] for c in answer["carried"]["elements"]["copied"]] == ["web", "db", "shop", "orders"]
     model = client.get("/api/projects/other/model").json()
     assert sorted(e["id"] for e in model["elements"]) == ["db", "orders", "shop", "web"]
     assert [r["id"] for r in model["relations"]] == ["r1", "r2"]
@@ -95,7 +97,8 @@ def test_an_import_into_another_project_keeps_the_links(client):
 def test_an_import_into_the_same_project_maps_everything(client):
     answer = imported(client, export(client), "shop")
     assert {n.get("ref") for n in answer["diagram"]["nodes"].values()} == {"web", "orders", "db"}
-    assert [m["id"] for m in answer["carried"]["elements"]["mapped"]] == ["shop", "web", "db", "orders"]
+    # model first: source order is web, orders, db, shop; parents still before their children
+    assert [m["id"] for m in answer["carried"]["elements"]["mapped"]] == ["web", "db", "shop", "orders"]
     assert answer["carried"]["relations"]["mapped"] == [{"id": "r1", "as": "r1"}, {"id": "r2", "as": "r2"}]
     assert len(client.get("/api/projects/shop/model").json()["elements"]) == 5  # nothing copied
 
@@ -103,8 +106,9 @@ def test_an_import_into_the_same_project_maps_everything(client):
 def test_an_import_relinks_what_got_new_ids(client):
     client.post("/api/projects/other/elements", json={"name": "Alt", "id": "orders"})
     answer = imported(client, export(client), "other")
-    assert answer["diagram"]["nodes"]["orders"]["ref"] == "orders-2"
-    assert answer["diagram"]["nodes"]["orders"]["name"] == "Orders"
+    # model first: a view's id is its element's id, so the view of orders is now "orders-2"
+    assert answer["diagram"]["nodes"]["orders-2"]["ref"] == "orders-2"
+    assert answer["diagram"]["nodes"]["orders-2"]["name"] == "Orders"
     assert {"id": "orders", "as": "orders-2"} in answer["carried"]["elements"]["copied"]
     assert [e.get("ref") for e in answer["diagram"]["edges"]] == ["r1", "r2"]
 
@@ -113,13 +117,21 @@ def test_a_document_without_a_model_drops_its_links_and_says_so(client):
     document = export(client)
     del document["model"]
     answer = imported(client, document, "other")
-    assert all("ref" not in n for n in answer["diagram"]["nodes"].values())
+    # model first: every node becomes an element of the target (by name), but none of the source's model comes
+    # along (no parent, no relations): the relation links are dropped
+    assert {i: n.get("ref") for i, n in answer["diagram"]["nodes"].items()} == {
+        "web": "web",
+        "orders": "orders",
+        "db": "db",
+    }
     assert all("ref" not in e for e in answer["diagram"]["edges"])
     dropped = answer["carried"]["elements"]["dropped"]
     assert sorted(d["id"] for d in dropped) == ["db", "orders", "web"]
     assert {d["reason"] for d in dropped} == {"the document carries no model"}
     assert [d["id"] for d in answer["carried"]["relations"]["dropped"]] == ["r1", "r2"]
-    assert client.get("/api/projects/other/model").json()["elements"] == []
+    elements = client.get("/api/projects/other/model").json()["elements"]
+    assert [(e["id"], e["parent"]) for e in elements] == [("web", None), ("orders", None), ("db", None)]
+    assert client.get("/api/projects/other/model").json()["relations"] == []
 
 
 def test_a_document_without_links_reports_nothing(client):
@@ -154,7 +166,7 @@ def test_the_embedded_model_is_validated(model, message):
 
 def test_an_invalid_model_refuses_the_import(client):
     document = export(client)
-    document["model"]["elements"][0]["kind"] = "planet"
+    next(e for e in document["model"]["elements"] if e["id"] == "shop")["kind"] = "planet"  # model first: not first
     r = client.post("/api/diagrams/import", json={"document": document, "project": "other"})
     assert r.status_code == 400 and "model: element 'shop' has unknown kind 'planet'" in r.json()["detail"]
 
@@ -166,7 +178,8 @@ def test_bundles_keep_their_documents_as_they_were(client):
 
 def test_an_embedded_model_is_shortened_like_a_bundle(client):
     document = export(client)
-    document["model"]["elements"][1]["name"] = "W" * 150  # web, exported by a release before M26's bounds
+    web = next(e for e in document["model"]["elements"] if e["id"] == "web")  # model first: the order changed
+    web["name"] = "W" * 150  # exported by a release before M26's bounds
     r = client.post("/api/diagrams/import", json={"document": document, "project": "other"})
     assert r.status_code == 201, r.text
     answer = r.json()
@@ -214,8 +227,14 @@ def test_a_copy_removed_before_the_create_is_unlinked_even_when_prelinked(client
 
     monkeypatch.setattr(DiagramService, "import_new", remove_first)
     answer = imported(client, export(client), "other")
-    assert "ref" not in answer["diagram"]["nodes"]["db"]
-    assert "db" in [d["id"] for d in answer["carried"]["elements"]["dropped"]]
+    # model first: a view cannot stand without an element, so the create makes a new element for the node (id = its
+    # link); the relation that went with the removed copy is gone and reported, the view's connection is unlinked
+    assert answer["diagram"]["nodes"]["db-2"]["name"] == "DB"
+    edges = {e["id"]: e.get("ref") for e in answer["diagram"]["edges"]}
+    assert edges == {"e1": "r1", "e2": None}
+    assert "r2" in [d["id"] for d in answer["carried"]["relations"]["dropped"]]
+    model = client.get("/api/projects/other/model").json()
+    assert "r2" not in [r["id"] for r in model["relations"]]
 
 
 def test_a_blank_title_on_import_gets_a_default_and_a_warning(client):

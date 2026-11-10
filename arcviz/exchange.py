@@ -59,6 +59,7 @@ from .project_model import (
 )
 from .projects import Project, Section
 from .requirement_model import RequirementBox
+from .views import STRUCTURE_TYPES
 
 FORMAT = "arcviz-diagram"
 SCHEMA_VERSION = 2  # the newest version this Arcviz reads and writes
@@ -211,7 +212,7 @@ def _ref_errors(diagram: Diagram) -> list[str]:
             continue
         if not view.ref or slugify(view.ref) != view.ref:
             errors.append(f"'{view.id}' has an invalid element reference '{view.ref}'")
-        elif not linkable_kinds(diagram.type, view.kind):
+        elif not linkable_kinds(diagram.type, view.kind) and diagram.type not in STRUCTURE_TYPES:  # model first
             errors.append(f"'{view.id}' («{view.kind}») cannot represent a project element")
     # relations (spec: model-relations.md): links only on connections that can show one, between linked views
     for connection in view_connections(diagram):

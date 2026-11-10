@@ -41,6 +41,7 @@ from ..project_model import (
 )
 from ..project_model import references as view_refs
 from ..projects import CODE_REF_OPERATIONS, DRIVER_OPERATIONS, Project, ProjectError
+from ..views import STRUCTURE_TYPES
 from .access import Forbidden
 from .adoption import Adopter, adopted_views, adopting, without_taken_back
 from .diagrams import DiagramService
@@ -382,12 +383,7 @@ class ModelService:
             self._verify_kind(project_id, target, written)
         updated = self.element(project_id, target.id)
         change = ElementChange(updated)
-        if results[0]["result"]["renamed_from"] is not None:  # only a real rename reaches the diagrams
-            change.propagated, change.failed = self._propagate(
-                [d.id for d in diagrams if view_refs(d, updated.id)],
-                [("sync_element", {"element": updated.id, "name": updated.name})],
-                f"Element „{updated.name}“ umbenannt",
-            )
+        # Model first (ADR-0213): every view reads the name from the model, so a rename writes no diagram.
         return change
 
     def _verify_kind(self, project_id: str, before: Element, written: dict[str, Any]) -> None:
@@ -468,15 +464,23 @@ class ModelService:
         if target is None:
             known = known_elements(project.elements)
             raise ProjectError(f"Unknown element '{element}' in project '{project_id}'. Elements: {known}.")
+        # Model first (ADR-0213): a lifeline, partition or data store always stands for an element, so the removal is
+        # refused while one stands for this one; structure views simply stop showing it (they hold only its id).
+        parts = [
+            f"{d.title} ({d.id}): {', '.join(v.id for v in view_refs(d, target.id))}"
+            for _, d in members
+            if d.type not in STRUCTURE_TYPES and view_refs(d, target.id)
+        ]
+        if parts:
+            raise ProjectError(
+                f"Element '{target.id}' is represented in behaviour diagrams: {'; '.join(parts)}. Remove those "
+                "lifelines or partitions first."
+            )
         relations = [r.id for r in project.relations if target.id in (r.source, r.target)]  # removed with it
         steps: list[tuple[str, dict[str, Any]]] = [("clear_relation", {"relation": r}) for r in relations]
-        clear = ("clear_element", {"element": target.id})
         label = f"Element „{target.name}“ entfernt"
-        affected = [d for _, d in members if view_refs(d, target.id) or any(_mentions(d, r) for r in relations)]
-        # relation steps only where the type carries relation refs (an activity diagram has no clear_relation)
-        unlinked, failed = self._propagate([d.id for d in affected if _carries(d)], [*steps, clear], label)
-        others = self._propagate([d.id for d in affected if not _carries(d)], [clear], label)
-        unlinked, failed = unlinked + others[0], failed + others[1]
+        affected = [d for _, d in members if _carries(d) and any(_mentions(d, r) for r in relations)]
+        unlinked, failed = self._propagate([d.id for d in affected], steps, label) if steps else ([], [])
         if failed:
             raise ConflictError(
                 f"Diagram(s) {', '.join(failed)} kept changing; element '{target.id}' was not removed. Try again."
@@ -665,7 +669,10 @@ class ModelService:
         updated = self._diagrams.apply_operation(
             diagram_id, "link_element", args, f"Mit Element „{args['name']}“ verknüpft", expected
         )
-        linked = find_view(updated.diagram, args["id"])
+        # model first: the view becomes the element, so it may carry the element's id now
+        linked = find_view(updated.diagram, args["id"]) or find_view(updated.diagram, args["element"])
+        if linked is not None:
+            args["id"] = linked.id
         try:
             problem = self.link_problem(
                 project_id, args["element"], updated.diagram.type, linked.kind if linked else ""
@@ -677,7 +684,8 @@ class ModelService:
             )
         if problem is None:
             return updated
-        if not self._take_back(diagram_id, args["id"], args["element"]):
+        previous = updated.result.get("result", {}).get("renamed_from") if isinstance(updated.result, dict) else None
+        if not self._take_back(diagram_id, args["id"], args["element"], previous):
             logger.warning("A link that cannot stand for its element could not be taken back; the review reports it")
             raise ProjectError(not_taken_back(problem))
         raise ProjectError(problem)
@@ -698,16 +706,18 @@ class ModelService:
             )
         return None
 
-    def _take_back(self, diagram_id: str, view: str, element_id: str) -> bool:
+    def _take_back(self, diagram_id: str, view: str, element_id: str, previous: str | None = None) -> bool:
         """Unlink `view` again (one version), only while it still stands for `element_id`; retried. True when the link
         is gone (also when somebody else unlinked it or the diagram was deleted), False when it could not be written."""
 
         def change(diagram: Diagram) -> Change[dict[str, Any]] | None:
             found = find_view(diagram, view)
-            if found is None or found.ref != element_id:
-                return None
+            if found is None or found.ref != element_id or previous is None:
+                return None  # nothing to take back (model first: a node *is* its element; no name to go back to)
             return Change(
-                diagram, operations.apply(diagram, "unlink_element", {"id": view}), label="Verknüpfung zurückgenommen"
+                diagram,
+                operations.apply(diagram, "unlink_element", {"id": view, "name": previous}),
+                label="Verknüpfung zurückgenommen",
             )
 
         for _ in range(COMPENSATION_ATTEMPTS):
@@ -722,6 +732,10 @@ class ModelService:
         return False
 
     def unlink(self, diagram_id: str, view: str, expected: Expected | None = None) -> Updated[dict[str, Any]]:
+        self._diagrams.require(diagram_id, "editor")
+        refusal = operations.unlink_refusal(self._diagrams.get(diagram_id), view)
+        if refusal is not None:
+            raise ProjectError(refusal)
         return self._diagrams.apply_operation(
             diagram_id, "unlink_element", {"id": view}, "Verknüpfung gelöst", expected
         )
@@ -871,6 +885,7 @@ class ModelService:
     ) -> tuple[Element, Updated[dict[str, Any]]]:
         """Create an element named like the view element and link the view element to it."""
         project_id = self.project_of(diagram_id)
+        self._diagrams.require(diagram_id, "editor")  # before anything is said about the diagram's content
         diagram = self._diagrams.get(diagram_id)
         found = find_view(diagram, view)
         if found is None:

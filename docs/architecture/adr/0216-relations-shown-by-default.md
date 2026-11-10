@@ -1,6 +1,6 @@
 # ADR-0216: Relations among shown elements are shown unless hidden
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-10
 - Spec: `docs/architecture/specs/model-first.md`
 - Amends: ADR-0137 (completeness per diagram is dropped; hiding per view stays)

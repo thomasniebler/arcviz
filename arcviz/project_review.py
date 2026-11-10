@@ -17,7 +17,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from . import review, rules, sequence
+from . import review, rules, sequence, views
 from .decision_model import adr_label, decision_lines
 from .i18n import N_, _
 from .llm import LLMProvider, ToolSpec
@@ -353,7 +353,11 @@ def incompatible_element_link(snapshot: ProjectSnapshot) -> Iterator[ProjectFind
     for element in snapshot.project.elements:
         for d in _diagrams(snapshot):
             wrong = [
-                v for v in _linked(d) if v.ref == element.id and element.kind not in linkable_kinds(d.type, v.kind)
+                v
+                for v in _linked(d)
+                if v.ref == element.id
+                and element.kind not in linkable_kinds(d.type, v.kind)
+                and element.kind != views.category(d.type, v.kind)  # model first: what such a node stands for
             ]
             if wrong:
                 kinds = ", ".join(sorted({f"«{v.kind}»" for v in wrong}))

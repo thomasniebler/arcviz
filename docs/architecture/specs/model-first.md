@@ -1,6 +1,7 @@
 # Model first: diagrams are views of the project model
 
-- Status: Proposed (milestone M32, not started)
+- Status: First stage implemented (see [As implemented](#as-implemented)); change sets (ADR-0218) and separate model
+  documents (ADR-0214) are follow-ups
 - Issues: to be opened per phase (see [Phases](#phases))
 - ADRs: [0213 The project model is the source of truth; diagrams are views](../adr/0213-model-is-the-source-of-truth.md),
   [0214 One structure document and one document per behaviour, versioned like diagrams](../adr/0214-model-documents.md),
@@ -388,22 +389,66 @@ never leaves a dangling id in a projection.
 - e2e: rename in one diagram shows in a second open diagram (two contexts); the removal dialog; show existing element.
 - Evals: the existing cases rerun; new cases "reuse the existing element", "remove only from this view".
 
-## Open questions
+## As implemented
 
-1. **Does the per-project agent-write switch also govern the chat assistants?** Proposed: no — the chat keeps
-   writing directly (a person is in the loop and has propose mode per turn); the switch governs MCP clients only.
-2. **Undo scope.** Proposed: the newest change set made in this view (by anyone), refused when a later change set
-   touched the same items. Alternatives: per user, or project-wide.
-3. **Migration merging.** Proposed: same name + same metaclass merge into one element. Alternative: never merge
-   without a `ref` (every unlinked node becomes its own element) and let people merge with a new `merge_elements`
-   operation.
-4. **Relations in views.** Proposed: derived (shown when both ends are shown, unless hidden). Alternative: views list
-   their relations explicitly, like elements.
-5. **`connection` vs `communicates`.** Today deployment edges (`connection`) and model relations (`communicates`)
-   coexist and are linked. Proposed: keep both kinds, migrate linked edges to their relation, unlinked
-   `connection` edges to `connection` relations. Alternative: merge `connection` into `communicates`.
-6. **Milestone number and release.** Proposed M32 and a breaking release (`feat!`, 1.0.0 or the next minor while
-   0.x).
+The first stage keeps the model where it is and puts the whole split into one place, the repository:
+
+- **`arcviz/views.py`** (pure): `resolve(stored, project)` and `decompose(edited, previous, project)` as designed for
+  structure views. Elements gained `notation` (diagram type → view kind) and `properties`; view connections are the
+  new `Project.connections` (`project_model.Connection`: kind, ends, label, direction, properties, optional M25
+  `relation`), ids `e<n>` never reused (`connection_seq`). Element descriptions hold the notes (up to 2000 characters);
+  `MAX_ELEMENTS` is 1000; `ELEMENT_KINDS` gained `interface`, `use_case` and `package`.
+- **`arcviz/store/modelbacked.py`**: `ModelBackedStore` wraps every backend (`create_store`, also `create_store(backend=)`
+  for a given one). Reads resolve against the project that holds the diagram (locator entry, else the placement record
+  of a create in flight); writes decompose, commit the project first (conditional) and then the view; version snapshots
+  are replaced by the resolved diagram. The revision is `<backend revision>~<fingerprint of the resolved diagram>`, so
+  a model change another view made changes the revision of every view that shows it (live polling, `If-Match`).
+  Every service, agent, route and the MCP path go through it unchanged; diagrams outside every project pass through.
+- **Behaviour views** keep their content in their diagram document (one view per behaviour): lifelines, partitions
+  and data stores always stand for elements (created on write, by name), and show the element's name and note.
+- **Operations**: `remove_node`, `remove_edge`, `remove_lifeline` take `scope` (`view`, the default, or `model`);
+  `add_node` reuses the element of the same name that the view does not show; `add_edge` shows a hidden connection
+  again instead of duplicating it; new `show_element` (deployment, class, use case, component); renaming a view element
+  renames the element (the ADR-0071 refusal is gone). The adopter (ADR-0164) is switched off: the repository makes every
+  view element an element.
+- **Chat assistants** get `scope` on the removal tools and `show_element`; a removal with scope `model` is refused
+  outside a preview turn (`agent.MODEL_REMOVAL_REFUSAL`).
+- **MCP**: `create_component`, `update_component`, `create_relation`, `show_in_diagram`, `hide_in_diagram`, writing
+  directly when `Project.agent_writes == "direct"` (owner: `PUT /api/projects/{pid}/agent-writes`), else storing
+  proposals; no tool deletes from the model.
+- **UI**: removing a node or edge of a structure diagram, a linked node, or a lifeline opens the dialog **Nur in
+  dieser Ansicht ausblenden** / **Aus dem Modell löschen** (`#removal-dialog`, `inspector.askRemovalScope`).
+- **Migration**: `services/model_first.migrate_to_model` at every start (best effort) writes each member diagram still
+  stored as a full document once through the repository; the first write of any diagram converts it as well.
+
+### Deviations from the design
+
+1. **Storage (ADR-0214).** Elements and connections stay in the project document (guarded by `MAX_PROJECT_BYTES`);
+   behaviours stay in the document of the diagram that shows them, so a behaviour has exactly one view. Separate
+   structure and behaviour documents follow when the byte budget demands them.
+2. **History (ADR-0218).** Change sets are not implemented. A version snapshot is the resolved diagram, so history,
+   comparison and restore show what the view showed then; undo, redo and restore of a view write that older state
+   back through the model, which also reverts later changes other views made to the elements this view shows.
+3. **Removal scope** has the default `view` instead of being required: hiding is the safe default for every existing
+   caller; the UI always asks, the chat may only hide.
+4. **Element kinds.** No new unified kind catalogue yet: an element keeps its abstract kind and records its view kind
+   per diagram type (`notation`); `views.view_kind` maps an abstract kind to a view kind for types it has no notation
+   for yet.
+5. Element names are unique per project, so a new view element merges with the element of the same name whatever
+   its kind; an element is shown once per diagram (a second node of that name is refused). `add_element` with the name
+   of an existing element returns that element (its kind unchanged).
+6. **Linking.** `link_element` makes the view element that element (a structure node takes the element's id).
+   Unlinking is refused for people and assistants in a project (`operations.unlink_refusal`; the inspector offers to
+   point a node at another element instead); moves, imports and take-backs still unlink. A take-back of an invalid
+   link restores the name the view had, so it stands for its previous element again.
+7. **Removing an element** through the model (panel, REST, agents) is refused while a lifeline, partition or data store
+   stands for it; structure views just stop showing it. A rename writes no diagram (nothing is propagated).
+8. **Moving a diagram to another project** writes the view as a full document first (`Diagram._detach`), moves the
+   membership, then takes it into the target's model (`DiagramService._into_model`): nothing it showed is lost, also
+   when the target cannot take every element (it then stays a full document until the migration takes it). A move
+   writes up to two more versions than before.
+9. Deployment grouping containers (`deployment`, `vnet`, `subnet`, `region`, `group`) become `package` elements, never
+   execution `node`s, so they do not count as `deployed_on` hosts.
 
 ## Decisions
 
@@ -414,3 +459,12 @@ Answered by the owner on 2026-11-10:
   and proposes model deletions. → ADR-0217
 - All diagram types become views now, behaviour included. → ADR-0214
 - MCP agents may write the model directly, switchable per project by the owner, default off (proposals). → ADR-0219
+
+The owner asked to implement without answering the open questions; the recommendations were taken:
+
+1. The agent-write switch governs MCP clients only; the chat writes directly and has preview turns.
+2. Undo: deferred with change sets (see deviation 2).
+3. Migration merges by name (element names are unique per project).
+4. Relations (connections) among shown elements are derived and shown unless hidden. → ADR-0216
+5. View connections and model relations stay separate kinds; a connection may name the relation it shows.
+6. A breaking release (`feat!`).

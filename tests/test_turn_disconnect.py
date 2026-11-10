@@ -23,6 +23,7 @@ from arcviz import agent as agent_module
 from arcviz.llm.base import ModelReply
 from arcviz.server import create_app
 from arcviz.store import FileStore
+from arcviz.store.modelbacked import ModelBackedStore
 from tests.conftest import ScriptedProvider, call
 
 
@@ -138,7 +139,8 @@ def test_a_disconnected_turn_is_versioned_and_transcribed_without_gc(tmp_path, n
         assert wait_for(lambda: any(e.get("role") == "assistant" for e in store.load_chat(diagram_id)))
         entry = store.load_chat(diagram_id)[-1]
         assert "interrupted" in entry["error"] and entry["version"] == 2
-        assert "prod-vnet" in store.load(diagram_id).nodes
+        # model first: the backend holds only the view (`shows`); the repository resolves it against the project model
+        assert "prod-vnet" in ModelBackedStore(store).load(diagram_id).nodes
         # finalized once, on a worker thread, never on the event loop's thread
         assert finalizer_threads and "uvicorn-loop" not in finalizer_threads and len(finalizer_threads) == 1
         # the loop stayed responsive meanwhile

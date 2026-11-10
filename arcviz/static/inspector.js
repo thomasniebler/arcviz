@@ -19,6 +19,25 @@ import { fieldSpecs, typeConfig, typedFieldNames, typedSpecs, typedValues } from
 import { setBusy, setStatus } from "./ui.js";
 import { N_, t } from "./i18n.js";
 
+// Model first (spec: model-first.md, ADR-0217): the diagram types whose nodes and edges are project elements and
+// connections; removing one there always asks whether to hide it here or delete it from the model.
+const STRUCTURE_TYPES = new Set(["deployment", "class", "use_case", "component"]);
+
+/** Ask how to remove `what`: "view" (hide in this diagram), "model" (delete everywhere) or null (cancelled). */
+function askRemovalScope(what) {
+  const dialog = $("removal-dialog");
+  $("removal-text").textContent = t("{what} entfernen: nur in dieser Ansicht ausblenden oder aus dem Projektmodell (und damit aus jedem Diagramm) löschen?", { what });
+  return new Promise((resolve) => {
+    const onClose = () => {
+      dialog.removeEventListener("close", onClose);
+      resolve(dialog.returnValue === "view" || dialog.returnValue === "model" ? dialog.returnValue : null);
+    };
+    dialog.addEventListener("close", onClose);
+    dialog.returnValue = "";
+    dialog.showModal();
+  });
+}
+
 let insp = null;
 let base = null; // {id, mode, revision, values}: what the shown element was when the form was opened or rebased
 
@@ -168,7 +187,11 @@ function renderInspectorEdges(id) {
       const changes = propChanges(propsBody, edge.properties, true);
       if (changes) runOps([{ op: "update_edge", args: { id: edge.id, ...changes }, label: t("Kante {id}: Eigenschaften", { id: edge.id }) }], { refresh: "edges" });
     });
-    remove.addEventListener("click", () => runOps([{ op: "remove_edge", args: { id: edge.id }, label: t("Kante {id} entfernt", { id: edge.id }) }], { refresh: "edges" }));
+    remove.addEventListener("click", async () => {
+      const scope = await askRemovalScope(t("Kante {id}", { id: edge.label || edge.id }));
+      if (!scope) return;
+      runOps([{ op: "remove_edge", args: { id: edge.id, scope }, label: t("Kante {id} entfernt", { id: edge.id }) }], { refresh: "edges" });
+    });
     insp.edges.append(tr, propsTr);
   }
 }
@@ -261,7 +284,15 @@ async function renderModelSection(id) {
     hint.className = "muted model-hint";
     hint.textContent = t("Der Name kommt aus dem Projektmodell: eine Umbenennung hier erreicht jedes Diagramm, das das Element zeigt.");
     section.appendChild(hint);
-    actions.appendChild(modelButton(t("Verknüpfung lösen"), () => linkAction("unlink", { view: id }), "small model-unlink"));
+    // Model first (ADR-0213): a view element always stands for an element; it can stand for another one instead.
+    const others = linkChoices(model, kinds).filter((c) => c.value !== shown.ref);
+    if (others.length) {
+      const select = document.createElement("select");
+      select.className = "model-choice";
+      select.setAttribute("aria-label", t("Projektelement"));
+      for (const c of others) select.appendChild(option(c.value, c.label));
+      actions.append(select, modelButton(t("Verknüpfen"), () => linkAction("link", { view: id, element: select.value }), "small model-link"));
+    }
     hiddenMarkers(section, model, shown.ref);
   } else {
     const choices = linkChoices(model, kinds);
@@ -780,7 +811,7 @@ export function initInspector() {
     const change = elementUpdate(found.kind, found.element, elementValues());
     if (change) change.args = touchedArgs(change.args); // never a field the user did not change
     if (!change || Object.keys(change.args).length === 1) { showElementError(""); return; }
-    if (found.element.ref && "name" in change.args) { // a linked lifeline is renamed through the model
+    if (found.element.ref && "name" in change.args && !state.projectId) { // model first: in a project the write renames the element
       if (!(await renameThroughModel(found.element.ref, change.args.name))) return;
       delete change.args.name;
       if (Object.keys(change.args).length === 1) { reopenInspector(); return; }
@@ -792,8 +823,13 @@ export function initInspector() {
   insp.elementDelete.addEventListener("click", async () => {
     const found = findElement(state.interaction, state.inspecting);
     if (!found) return;
-    if (!confirm(t("„{title}“ löschen? Abhängige Elemente (z. B. Nachrichten einer Lebenslinie, Aktivierungen) werden mitgelöscht.", { title: elementTitle(found.kind, found.element) }))) return;
-    const ok = await runOps([{ ...elementRemove(found.kind, found.element), label: t("{id} gelöscht", { id: state.inspecting }) }]);
+    const removal = elementRemove(found.kind, found.element);
+    if (found.kind === "lifeline") {
+      const scope = await askRemovalScope(t("„{title}“", { title: elementTitle(found.kind, found.element) }));
+      if (!scope) return;
+      removal.args.scope = scope;
+    } else if (!confirm(t("„{title}“ löschen? Abhängige Elemente (z. B. Nachrichten einer Lebenslinie, Aktivierungen) werden mitgelöscht.", { title: elementTitle(found.kind, found.element) }))) return;
+    const ok = await runOps([{ ...removal, label: t("{id} gelöscht", { id: state.inspecting }) }]);
     if (ok) closeInspector();
   });
   // A new state may drop the inspected element; another diagram never shows it. Someone else's change keeps what the
@@ -814,7 +850,9 @@ export function initInspector() {
     const name = insp.name.value.trim();
     const kind = insp.kind.value;
     const description = insp.description.value.trim();
-    const throughModel = Boolean(node.ref && name && name !== node.name); // a linked node is renamed through the model
+    // Model first (ADR-0213): renaming the node renames its element, through the diagram's own write (with If-Match);
+    // the element route stays for diagrams outside a project.
+    const throughModel = Boolean(node.ref && name && name !== node.name && !state.projectId);
     if (throughModel && !(await renameThroughModel(node.ref, name))) return;
     const noteChanged = description !== (node.description || "");
     if ((name !== node.name && !throughModel) || kind !== node.kind || changedProps || noteChanged) {
@@ -839,8 +877,12 @@ export function initInspector() {
     const node = state.nodes[state.inspecting];
     if (!node) return;
     const cascade = isContainer(node, typeConfig(state.config, state.type).container_kinds) && insp.cascade.checked;
-    if (!confirm(cascade ? t("„{name}“ löschen – samt Inhalt? Alle Kanten des Elements werden entfernt.", { name: node.name }) : t("„{name}“ löschen? Alle Kanten des Elements werden entfernt.", { name: node.name }))) return;
-    const ok = await runOps([{ op: "remove_node", args: { id: node.id, cascade }, label: t("{id} gelöscht", { id: node.id }) }]);
+    let scope = "view";
+    if (STRUCTURE_TYPES.has(state.type) || node.ref) {
+      scope = await askRemovalScope(cascade ? t("„{name}“ samt Inhalt", { name: node.name }) : t("„{name}“", { name: node.name }));
+      if (!scope) return;
+    } else if (!confirm(cascade ? t("„{name}“ löschen – samt Inhalt? Alle Kanten des Elements werden entfernt.", { name: node.name }) : t("„{name}“ löschen? Alle Kanten des Elements werden entfernt.", { name: node.name }))) return;
+    const ok = await runOps([{ op: "remove_node", args: { id: node.id, cascade, scope }, label: t("{id} gelöscht", { id: node.id }) }]);
     if (ok) closeInspector();
   });
   insp.close.addEventListener("click", closeInspector);

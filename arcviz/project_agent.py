@@ -19,6 +19,7 @@ from typing import Any
 from . import prompts, proposal, render, sequence
 from .agent import (
     DEFAULT_CONTEXT_BUDGET,
+    MODEL_REMOVAL_REFUSAL,
     ROLE_LOST,
     ROLE_LOST_TURN,
     VERSION_FAILED,
@@ -27,6 +28,8 @@ from .agent import (
     apply_tool_call,
     build_tools,
     get_diagram_result,
+    model_removal,
+    present,
     store_span,
     take_back_invalid_link,
     tool_error,
@@ -39,7 +42,6 @@ from .agent_model import (
     architecture_context,
     changed_views,
     model_tools_for,
-    propagated,
 )
 from .llm import LLMProvider, ToolCall, ToolResult, ToolSpec
 from .model import DIAGRAM_TYPES, Diagram, fingerprint, kinds_for, slugify
@@ -365,14 +367,16 @@ class ProjectAgent(DiagramAgent):
             )
             if change is not None and not propose:
                 for turn in turns.values():
-                    if turn.deleted or turn.diagram.id not in propagated(change):
+                    if turn.deleted:  # model first: any model change may change every view of the turn
                         continue
+                    clean = turn.diagram.model_dump(mode="json", exclude={"updated_at"}) == turn.before
                     try:
                         turn.diagram, turn.revision = self.diagrams.read(turn.diagram.id)
                     except StoreError:
                         turn.deleted = True
                         continue
-                    turn.before = turn.diagram.model_dump(mode="json", exclude={"updated_at"})
+                    if clean:  # only the model changed it: no change of this turn
+                        turn.before = turn.diagram.model_dump(mode="json", exclude={"updated_at"})
                     turn.changed.update(changed_views(turn.diagram, change))
             return result
 
@@ -505,6 +509,8 @@ class ProjectAgent(DiagramAgent):
                     return result
                 proposal_of = diagram_id
             else:
+                if model_removal(call):
+                    return tool_error(call, MODEL_REMOVAL_REFUSAL)
                 apply_call = applier(call)
                 if isinstance(apply_call, ToolResult):
                     return apply_call
@@ -561,7 +567,7 @@ class ProjectAgent(DiagramAgent):
             return ToolResult(call.id, json.dumps(result, ensure_ascii=False, default=str))
 
         def record(turn: _DiagramTurn, call: ToolCall, result: dict[str, Any]) -> None:
-            turn.changed.update(result.get("touched", []))
+            turn.changed.update(present(turn.diagram, result))
             op = {"op": call.name, "arguments": call.arguments, "result": result.get("result")}
             turn.applied.append(op)
             applied.append({"diagram": turn.diagram.id, **op})

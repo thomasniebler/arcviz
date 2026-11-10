@@ -218,6 +218,7 @@ def endpoints(f: dict[str, Any]) -> list[tuple[str, str, dict[str, Any] | None, 
         ("POST", "/api/diagrams/orders/hidden-relations", {"relation": "rel", "hidden": True}, "editor"),
         # project owners
         ("PUT", "/api/projects/shop/steward", {"enabled": True}, "owner"),
+        ("PUT", "/api/projects/shop/agent-writes", {"mode": "direct"}, "owner"),
         ("DELETE", "/api/projects/shop", None, "owner"),
         ("POST", "/api/projects/shop/access", {"user": "zed", "role": "viewer"}, "owner"),
         ("DELETE", "/api/projects/shop/access/vic", None, "owner"),

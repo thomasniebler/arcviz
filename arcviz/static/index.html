@@ -724,6 +724,19 @@
     </form>
   </dialog>
 
+  <dialog id="removal-dialog" aria-labelledby="removal-heading">
+    <form method="dialog">
+      <h3 id="removal-heading" data-i18n>Entfernen</h3>
+      <p id="removal-text"></p>
+      <p class="muted" data-i18n>Das Projektmodell ist die Quelle: Ausblenden lässt das Element im Modell und in allen anderen Diagrammen; Löschen entfernt es überall.</p>
+      <menu>
+        <button value="cancel" type="submit" data-i18n>Abbrechen</button>
+        <button value="model" type="submit" class="danger" data-i18n>Aus dem Modell löschen</button>
+        <button value="view" type="submit" data-i18n>Nur in dieser Ansicht ausblenden</button>
+      </menu>
+    </form>
+  </dialog>
+
   <dialog id="model-dialog" class="model-dialog" aria-labelledby="model-heading">
     <h3 id="model-heading" data-i18n>Projektmodell</h3>
     <p class="muted" data-i18n>Elemente, die mehrere Diagramme zeigen. Eine Umbenennung hier erreicht jedes Diagramm, das das Element zeigt.</p>

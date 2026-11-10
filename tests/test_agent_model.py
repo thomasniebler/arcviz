@@ -55,8 +55,8 @@ def test_the_element_tools_come_with_a_project_and_the_elements_with_the_model(s
     provider = ScriptedProvider([done("Hallo"), done("Hallo")])
     list(diagram_agent(provider, services).chat("demo", "Hallo"))
     assert set(provider.requests[0]["tools"]) >= MODEL_TOOL_NAMES
-    # no elements yet: the model block says so (its reuse rule applies from the first node on, ADR-0164)
-    assert "Project elements:\n(none yet" in provider.requests[0]["system"]
+    # model first (ADR-0213): the lifelines of the checkout diagram are elements from its creation on
+    assert "Project elements:\n- [kunde] «actor» Kunde\n" in provider.requests[0]["system"]
     models.add_element("shop", "Order Service", "component", "Nimmt Bestellungen an")
     list(diagram_agent(provider, services).chat("demo", "Hallo"))
     system = provider.requests[1]["system"]
@@ -86,12 +86,16 @@ def test_create_and_link_in_one_turn(services):
     )
     events = list(diagram_agent(provider, services).chat("demo", "Order Service anlegen"))
     assert all(r["ok"] for r in results(events)), results(events)
-    node = diagrams.get("demo").nodes["service-a"]
+    # model first: linking makes the node that element, so its id becomes the element's id
+    assert "service-a" not in diagrams.get("demo").nodes
+    node = diagrams.get("demo").nodes["order-service"]
     assert node.ref == "order-service" and node.name == "Order Service"
-    assert events[-1]["changed"] == ["service-a"]
+    assert events[-1]["changed"] == ["order-service"]
     assert [op["op"] for op in events[-1]["operations"]] == ["create_element", "link_element"]
     assert versions(services, "demo")[-1] == "Order Service anlegen"
-    assert [u.diagram for u in models.model("shop").elements[0].usages] == ["demo"]
+    # model first: the checkout lifelines are elements too, so look the element up by id
+    element = next(e for e in models.model("shop").elements if e.id == "order-service")
+    assert [u.diagram for u in element.usages] == ["demo"]
 
 
 def test_link_errors_reach_the_model(services):
@@ -126,27 +130,31 @@ def test_a_rename_mid_turn_reaches_the_other_diagrams_and_keeps_the_turn_consist
     )
     events = list(diagram_agent(provider, services).chat("demo", "Umbenennen"))
     assert all(r["ok"] for r in results(events)), results(events)
-    assert sorted(results(events)[1]["renamed_in"]) == ["checkout", "demo"]
+    # model first: nothing is propagated (every view resolves the element's name), so no diagram is renamed in
+    assert results(events)[1]["renamed_in"] == []
     demo = diagrams.get("demo")
-    assert demo.nodes["service-a"].name == "Bestellservice"
+    assert demo.nodes["order-service"].name == "Bestellservice"  # the linked node is the element (id order-service)
     assert demo.nodes["service-b"].properties == {"runtime": "go"} and "cache" in demo.nodes
     assert diagrams.get("checkout").interaction.lifelines[1].name == "Bestellservice"
-    # the rename's own version holds the turn's earlier call; the turn's version holds the rest
+    # the rename writes the model only; the turn's one version holds every call
     labels = versions(services, "demo")[before:]
-    assert labels == ["Element „Bestellservice“ umbenannt", "Umbenennen"]
+    assert labels == ["Umbenennen"]
     assert (
-        "service-a" in events[-1]["changed"] and events[-1]["diagram"]["nodes"]["service-a"]["name"] == "Bestellservice"
+        "order-service" in events[-1]["changed"]
+        and events[-1]["diagram"]["nodes"]["order-service"]["name"] == "Bestellservice"
     )
 
 
-def test_a_rename_alone_writes_no_second_version(services):
+def test_a_rename_alone_writes_no_diagram_version(services):
     diagrams, _, models = services
     models.add_element("shop", "Order Service")
     models.link("demo", "service-a", "order-service")
     before = len(diagrams.versions("demo"))
     provider = ScriptedProvider([tool_round(call("update_element", "c1", element="Order Service", name="X")), done()])
     list(diagram_agent(provider, services).chat("demo", "Umbenennen"))
-    assert versions(services, "demo")[before:] == ["Element „X“ umbenannt"]
+    # model first: a rename changes the model only; the view shows the new name without a version of its own
+    assert versions(services, "demo")[before:] == []
+    assert diagrams.get("demo").nodes["order-service"].name == "X"
 
 
 def test_preview_mode_refuses_model_writes_but_previews_an_unlink(services):
@@ -161,19 +169,20 @@ def test_preview_mode_refuses_model_writes_but_previews_an_unlink(services):
                 call("link_element", "c3", id="service-b", element="order-service"),
                 call("list_elements", "c4"),
             ),
-            tool_round(call("unlink_element", "c5", id="service-a")),
+            tool_round(call("unlink_element", "c5", id="order-service")),  # model first: the linked node's id
             done(),
         ]
     )
     events = list(diagram_agent(provider, services).chat("demo", "Vorschau", propose=True))
     outcome = results(events)
-    assert [r["ok"] for r in outcome] == [False, False, False, True, True]
+    # model first: unlink_element is refused too (every node of a deployment diagram is a project element)
+    assert [r["ok"] for r in outcome] == [False, False, False, True, False]
     assert all("preview" in r["error"] for r in outcome[:3])
-    assert [e.name for e in models.model("shop").elements] == ["Order Service"]
-    assert diagrams.get("demo").nodes["service-a"].ref == "order-service"  # nothing applied yet
-    proposal = events[-1]["proposal"]
-    assert proposal["operations"] == [{"op": "unlink_element", "arguments": {"id": "service-a"}}]
-    assert proposal["diff"]["nodes"]["changed"][0]["changes"] == {"ref": ["order-service", None]}
+    names = [e.name for e in models.model("shop").elements]  # model first: every node and lifeline is one too
+    assert "Order Service" in names and not {"X", "Y"} & set(names)
+    assert diagrams.get("demo").nodes["order-service"].ref == "order-service"  # nothing applied yet
+    # model first: nothing can be unlinked, so the preview proposes nothing
+    assert "project element" in outcome[4]["error"] and events[-1]["proposal"] is None
 
 
 # ---- the project chat ----------------------------------------------------------------------------------------
@@ -206,11 +215,13 @@ def test_the_project_chat_lists_creates_and_links_across_diagrams(services):
     assert results(events)[0]["elements"][0]["id"] == "kunde"
     assert next(lf for lf in diagrams.get("checkout").interaction.lifelines if lf.id == actor).ref == "kunde"
     demo = diagrams.get("demo")
-    assert demo.nodes["service-a"].name == "Bestellservice" and "cache" in demo.nodes
+    # model first: the linked node is the element (id order-service); the rename writes no diagram version
+    assert demo.nodes["order-service"].name == "Bestellservice" and "cache" in demo.nodes
     final = events[-1]
     assert {d["id"] for d in final["diagrams"]} == {"checkout", "demo"}
     assert final["diagrams"][-1]["version"] is not None  # demo: cache added after the rename
-    assert versions(services, "demo")[-2:] == ["Element „Bestellservice“ umbenannt", "Modell aufbauen"]
+    assert versions(services, "demo")[-1] == "Modell aufbauen"
+    assert "Element „Bestellservice“ umbenannt" not in versions(services, "demo")
 
 
 def test_a_model_change_that_writes_nothing_here_keeps_the_turns_version(services):
@@ -225,7 +236,8 @@ def test_a_model_change_that_writes_nothing_here_keeps_the_turns_version(service
         [
             tool_round(call("add_node", "c1", name="cache", id="cache", kind="database", parent="prod-deployment")),
             tool_round(call("update_element", "c2", element="order-service", description="Bestellungen")),
-            tool_round(call("update_element", "c3", element="payment", name="Zahlung")),  # not shown in demo
+            # not shown in demo ("Zahlung" is taken: model first makes the template's lifelines elements)
+            tool_round(call("update_element", "c3", element="payment", name="Bezahlung")),
             done(),
         ]
     )

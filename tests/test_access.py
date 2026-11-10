@@ -168,6 +168,7 @@ PROJECT_CALLS = {
         "editor",
     ),
     "share": (("shop", "out", "viewer"), "owner"),
+    "set_agent_writes": (("shop", "direct"), "owner"),
     "revoke": (("shop", "vic"), "owner"),
     "delete": (("shop",), "owner"),
 }
@@ -242,14 +243,16 @@ def test_filtered_project_queries(root):
 
 def test_model_writes_need_editor_and_write_nothing_before(root, store):
     vic = as_(root, "vic").models
-    assert [e.id for e in vic.model("shop").elements] == ["svc"]  # reading is fine
+    assert "svc" in [
+        e.id for e in vic.model("shop").elements
+    ]  # reading is fine (model first: the nodes are elements too)
     node = next(n.id for n in store.load("orders").nodes.values() if n.kind == "service")
     for write in (
         lambda: vic.add_element("shop", "X"),
         lambda: vic.update_element("shop", "svc", name="Y"),
         lambda: vic.remove_element("shop", "svc"),
         lambda: vic.sync("shop"),
-        lambda: vic.link("orders", node, "svc"),
+        lambda: vic.link("orders", node, "events"),
         lambda: vic.promote("orders", node),
         lambda: vic.link_section("shop", "backend", "svc"),
         lambda: vic.add_relation("shop", "communicates", "svc", "svc"),
@@ -259,7 +262,8 @@ def test_model_writes_need_editor_and_write_nothing_before(root, store):
         with pytest.raises(Forbidden):
             write()
     assert vic.model("shop").relations == []
-    assert [e.name for e in store.read_project("shop")[0].elements] == ["Service"]
+    names = [e.name for e in store.read_project("shop")[0].elements]
+    assert "Service" in names and "Y" not in names and "X" not in names  # the refused writes wrote nothing
     out = as_(root, "out").models
     with pytest.raises(ProjectNotFound):
         out.model("shop")

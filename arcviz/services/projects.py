@@ -1094,6 +1094,12 @@ class ProjectService:
             shares = [s for s in shares if s.id == self.guard.actor.id]
         return ProjectAccess(project.id, owner, role, shares)
 
+    def set_agent_writes(self, project_id: str, mode: str) -> str:
+        """Let agents on the MCP path write the model directly ("direct") or only propose ("propose", the default);
+        project owners only (ADR-0219)."""
+        self.require(project_id, "owner")
+        return str(self.apply(project_id, "set_agent_writes", {"mode": mode}, internal=True)["result"]["agent_writes"])
+
     def share(self, project_id: str, user: str, role: str) -> ProjectAccess:
         """Share the project with a known user (exact id, or a trusted and unambiguous e-mail, ADR-0091) as viewer or
         editor, or change their share (project owners only; ProjectError for anything else)."""

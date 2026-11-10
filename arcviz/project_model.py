@@ -28,13 +28,13 @@ from .model import (
 )
 
 # Abstract kinds of project elements, independent of the diagram types' kinds (ADR-0073).
-ELEMENT_KINDS = ("actor", "system", "subsystem", "component", "node", "data")
-MAX_ELEMENTS = 500  # per project: keeps the project document far below Cosmos DB's 2 MB item limit
+ELEMENT_KINDS = ("actor", "system", "subsystem", "component", "node", "data", "interface", "use_case", "package")
+MAX_ELEMENTS = 1000  # per project (model first: every node of a structure view is one); the byte guard still applies
 # Bounds of a new or changed element and of an imported one (#212, ADR-0153; spec model-relations.md, size budget):
 # 500 elements at both bounds take at most ~0.7 MB of the project item. Never an integrity rule: a project stored
 # before them keeps loading and being written.
 MAX_ELEMENT_NAME = 100
-MAX_ELEMENT_DESCRIPTION = 300
+MAX_ELEMENT_DESCRIPTION = 2000  # the note of every view of the element (model first: views keep no notes, ADR-0213)
 LIFELINE = "lifeline"  # the view kind of a sequence lifeline
 
 # Which element kinds a view element may represent; the first is the default of "promote". Behaviour
@@ -146,12 +146,18 @@ class Element(BaseModel):
     code_refs: list[CodeRef] = Field(
         default_factory=list
     )  # omitted from dumps while empty (data before M30 is unchanged)
+    # Model first (spec: model-first.md, ADR-0213): how the element is drawn per diagram type (type -> the view kind,
+    # e.g. {"deployment": "database", "component": "component"}) and its properties (protocol, members, ports, …),
+    # which every view shows. Both omitted from dumps while empty.
+    notation: dict[str, str] = Field(default_factory=dict)
+    properties: dict[str, str] = Field(default_factory=dict)
 
     @model_serializer(mode="wrap")
     def _omit_empty_code_refs(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data = handler(self)
-        if not data.get("code_refs"):
-            data.pop("code_refs", None)
+        for key in ("code_refs", "notation", "properties"):
+            if not data.get(key):
+                data.pop(key, None)
         return data
 
 
@@ -208,6 +214,33 @@ class Relation(BaseModel):
     target: str  # element id
     properties: dict[str, str] = Field(default_factory=dict)  # keys of the kind's allowed RELATION_PROPERTIES
     description: str = ""
+
+
+MAX_CONNECTIONS = 2000  # per project: view connections (deployment, class, use case, component edges)
+
+
+class Connection(BaseModel):
+    """A connection between two elements as structure diagrams draw it (spec: model-first.md, ADR-0213): the model
+    holds it once, every structure view that shows both ends draws it (unless the view hides it, ADR-0216)."""
+
+    id: str  # unique in the project
+    kind: str  # an edge kind of a structure diagram type (connection, association, dependency, …)
+    source: str  # element id
+    target: str  # element id
+    label: str | None = None
+    direction: str | None = None  # forward | both | none; None = the kind's default
+    properties: dict[str, str] = Field(default_factory=dict)
+    relation: str | None = None  # the model relation it shows (an M25 link), omitted while unset
+
+    @model_serializer(mode="wrap")
+    def _omit_unset(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = handler(self)
+        for key in ("label", "direction", "relation"):
+            if data.get(key, "") is None:
+                del data[key]
+        if not data.get("properties"):
+            data.pop("properties", None)
+        return data
 
 
 def relation_number(relation_id: str | None) -> int | None:

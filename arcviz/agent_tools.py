@@ -565,6 +565,97 @@ class AgentTools:
             result = self._svc.projects.apply(project, "update_stakeholder", {"stakeholder": stakeholder, **fields})
         return {"stakeholder": result["result"]}
 
+    # ---- the model (spec: model-first.md, ADR-0219): direct when the owner allows it, else proposals -------------
+
+    def _direct(self, project: str) -> bool:
+        with self._guard():
+            return self._svc.models.project(project).agent_writes == "direct"
+
+    def _propose_model(self, project: str, op: str, arguments: dict[str, Any], rationale: str) -> dict[str, Any]:
+        with self._guard():
+            stored = self._svc.proposals.create_project(
+                project, [{"key": "a", "op": op, "arguments": arguments}], rationale, client=self._client
+            )
+        return {"mode": "propose", "proposal": _proposal(stored, diff=True)}
+
+    def create_component(
+        self,
+        project: str,
+        name: str,
+        kind: str = "component",
+        description: str = "",
+        parent: str | None = None,
+        rationale: str = "",
+    ) -> dict[str, Any]:
+        """Create a model element. Written at once when the project lets agents write, else stored as a proposal."""
+        self._write()
+        arguments = {"name": name, "kind": kind, "description": description, "parent": parent}
+        if not self._direct(project):
+            return self._propose_model(project, "add_element", arguments, rationale)
+        with self._guard():
+            element = self._svc.models.add_element(project, name, kind, description, parent)
+        return {"mode": "direct", "component": element.model_dump(mode="json")}
+
+    def update_component(
+        self, project: str, component: str, fields: dict[str, Any], rationale: str = ""
+    ) -> dict[str, Any]:
+        """Change name, kind, description or parent of a model element; every diagram that shows it follows."""
+        self._write()
+        allowed = {"name", "kind", "description", "parent"}
+        unknown = sorted(set(fields) - allowed)
+        if unknown:
+            raise ToolFailure(f"Unknown field(s) {', '.join(unknown)}. Fields: {', '.join(sorted(allowed))}.")
+        if not self._direct(project):
+            return self._propose_model(project, "update_element", {"element": component, **fields}, rationale)
+        with self._guard():
+            change = self._svc.models.update_element(project, component, **fields)
+        return {"mode": "direct", "component": change.element.model_dump(mode="json")}
+
+    def create_relation(
+        self,
+        project: str,
+        kind: str,
+        source: str,
+        target: str,
+        properties: dict[str, str] | None = None,
+        description: str = "",
+        rationale: str = "",
+    ) -> dict[str, Any]:
+        """Create a model relation (communicates, deployed_on, data_flow) between two elements."""
+        self._write()
+        arguments: dict[str, Any] = {"kind": kind, "source": source, "target": target, "description": description}
+        if properties:
+            arguments["properties"] = properties
+        if not self._direct(project):
+            return self._propose_model(project, "add_relation", arguments, rationale)
+        with self._guard():
+            relation = self._svc.models.add_relation(project, kind, source, target, properties, description)
+        return {"mode": "direct", "relation": relation.model_dump(mode="json")}
+
+    def show_in_diagram(self, project: str, diagram: str, component: str, rationale: str = "") -> dict[str, Any]:
+        """Show a model element in a diagram (with the connections the model has to what the diagram shows)."""
+        return self._diagram_op(project, diagram, "show_element", {"element": component}, rationale)
+
+    def hide_in_diagram(self, project: str, diagram: str, component: str, rationale: str = "") -> dict[str, Any]:
+        """Stop showing a model element in a diagram; the model keeps it (agents never delete from the model)."""
+        return self._diagram_op(project, diagram, "remove_node", {"id": component, "scope": "view"}, rationale)
+
+    def _diagram_op(
+        self, project: str, diagram: str, op: str, arguments: dict[str, Any], rationale: str
+    ) -> dict[str, Any]:
+        self._write()
+        with self._guard():
+            holder = self._svc.projects.locate(diagram)
+        if holder is None or holder[0] != self._svc.models.project(project).id:
+            raise ToolFailure(f"Diagram '{diagram}' is not in project '{project}'.")
+        if not self._direct(project):
+            with self._guard():
+                stored = self._svc.proposals.create(project, diagram, [{"op": op, "arguments": arguments}], rationale)
+            return {"mode": "propose", "proposal": _proposal(stored, diff=True)}
+        with self._guard():
+            updated = self._svc.models.apply_operation(diagram, op, arguments, label=f"{op} (agent)")
+        return {"mode": "direct", "result": updated.result}
+
     def propose_architecture_items(
         self, project: str, items: list[dict[str, Any]], rationale: str = ""
     ) -> dict[str, Any]:

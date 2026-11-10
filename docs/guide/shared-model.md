@@ -6,7 +6,24 @@ holds such things once, as **project elements**, and lets the diagrams show them
 element once and every diagram that shows it follows; describe it once and the description appears
 wherever it is shown.
 
-Using the model is optional. Diagrams without links work exactly as before.
+The model is the source of truth: every node of a deployment, class, use case or component diagram *is* a project
+element, and every edge a connection of the model. A diagram only stores which elements it shows; adding a node
+adds an element (or shows the existing one of the same name), renaming a node renames the element everywhere, and a
+connection appears in every diagram that shows both of its ends. Lifelines, swimlanes and data stores of behaviour
+diagrams stand for elements too.
+
+## Removing: hide here or delete everywhere
+
+Removing a node, an edge or a lifeline asks every time:
+
+- **Nur in dieser Ansicht ausblenden** hides it in this diagram; the model and every other diagram keep it. Draw a
+  hidden edge again, or show the element again (**Vorhandenes Element zeigen** through the chat or an agent:
+  `show_element`), and it is back.
+- **Aus dem Modell löschen** deletes it from the project model and so from every diagram.
+
+The chat assistant only hides; it suggests deleting from the model, which you confirm in a preview. Agents on the MCP
+path never delete; whether they may change the model directly or only propose is the project owner's choice
+(`PUT /api/projects/{pid}/agent-writes`, default: propose).
 
 ## Project elements
 
@@ -15,7 +32,7 @@ Using the model is optional. Diagrams without links work exactly as before.
 - a **name** (unique in the project, at most 100 characters),
 - a **kind**: *Akteur* (actor), *System*, *Teilsystem* (subsystem), *Komponente* (component),
   *Knoten* (node, an execution environment) or *Daten* (data),
-- an optional **description** (at most 300 characters) and an optional **part of** (*Teil von*) another element, for example a
+- an optional **description** (at most 2000 characters; it is the note every diagram shows) and an optional **part of** (*Teil von*) another element, for example a
   component that belongs to a subsystem,
 - the list of diagrams that show it.
 

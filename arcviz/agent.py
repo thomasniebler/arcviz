@@ -19,7 +19,6 @@ from .agent_model import (
     ModelTools,
     changed_views,
     model_tools_for,
-    propagated,
 )
 from .llm import ChatMessage, LLMProvider, ToolCall, ToolResult, ToolSpec
 from .model import (
@@ -296,8 +295,46 @@ TOOLS: list[ToolSpec] = [
     ),
 ]
 
+# Model first (ADR-0217): a removal hides in this diagram by default; scope "model" deletes from the project model and
+# is only allowed in a preview turn (the person confirms it).
+SCOPE_SCHEMA = {
+    "type": "string",
+    "enum": ["view", "model"],
+    "default": "view",
+    "description": "view (default): hide it in this diagram only, the project model keeps it. model: delete it from "
+    "the project model and every diagram (only in preview mode, as a proposal the user confirms).",
+}
+for _tool in TOOLS:
+    if _tool.name in ("remove_node", "remove_edge"):
+        _tool.parameters["properties"]["scope"] = SCOPE_SCHEMA
+SHOW_ELEMENT = ToolSpec(
+    "show_element",
+    "Show an element that the project model has already (created in another diagram, the model panel or by an agent) "
+    "in this diagram, by id or name; the connections the model has between it and what the diagram shows appear "
+    "with it. Prefer it to add_node for anything the project already knows; the model elements this diagram does "
+    "not show are listed in the prompt.",
+    {
+        "type": "object",
+        "properties": {
+            "element": {"type": "string", "description": "Id or name of the project element."},
+            "parent": {"type": "string", "description": "Optional container node to place it in."},
+        },
+        "required": ["element"],
+        "additionalProperties": False,
+    },
+)
+TOOLS.append(SHOW_ELEMENT)
+
 
 def build_tools(catalog: KindCatalog, diagram_type: str = "deployment") -> list[ToolSpec]:
+    """The tools of a diagram type (see `_build_tools`); `show_element` only where the type has the operation."""
+    tools = _build_tools(catalog, diagram_type)
+    if "show_element" in operations.TYPE_OPERATIONS.get(diagram_type, ()):
+        return tools
+    return [t for t in tools if t.name != "show_element"]
+
+
+def _build_tools(catalog: KindCatalog, diagram_type: str = "deployment") -> list[ToolSpec]:
     """The tools of a diagram type, with the kind enums and kind lists taken from `catalog`.
 
     For deployment diagrams that is `TOOLS`, which describes the built-in kinds; configured kinds
@@ -651,13 +688,16 @@ class DiagramAgent:
             if result.is_error or call.name in READ_MODEL_TOOLS:
                 return result
             applied.append({"op": call.name, "arguments": call.arguments, "result": json.loads(result.content)})
-            if change is not None and not deleted and not propose and diagram_id in propagated(change):
+            # model first (ADR-0213): every view shows the model as it is, so any model change may change this one
+            if change is not None and not deleted and not propose:
+                clean = diagram.model_dump(mode="json", exclude={"updated_at"}) == before
                 try:
                     diagram, revision = self.diagrams.read(diagram_id)
                 except StoreError:
                     deleted = True
                     return result
-                before = diagram.model_dump(mode="json", exclude={"updated_at"})
+                if clean:  # nothing of the turn's own yet: what the model change shows is no change of this turn
+                    before = diagram.model_dump(mode="json", exclude={"updated_at"})
                 changed.update(changed_views(diagram, change))
             return result
 
@@ -671,6 +711,8 @@ class DiagramAgent:
                 return failed(call, "The diagram was deleted meanwhile; nothing can be changed any more.")
             if lost:
                 return failed(call, ROLE_LOST)
+            if not propose and model_removal(call):
+                return failed(call, MODEL_REMOVAL_REFUSAL)
             apply_call = applier(call)
             if isinstance(apply_call, ToolResult):
                 return apply_call
@@ -726,7 +768,7 @@ class DiagramAgent:
                                 {"op": call.name, "arguments": call.arguments, "result": result.get("result")}
                             )
                         return failed(call, back.error)
-            changed.update(result.get("touched", []))
+            changed.update(present(diagram, result))
             applied.append({"op": call.name, "arguments": call.arguments, "result": result.get("result")})
             return ToolResult(call.id, json.dumps(result, ensure_ascii=False, default=str))
 
@@ -888,6 +930,34 @@ class DiagramAgent:
         return version, problem
 
 
+# Model first (spec: model-first.md, ADR-0217): the chat assistants only hide in the diagram; deleting from the project
+# model is a person's decision, which the assistant proposes (a preview turn the person confirms).
+MODEL_REMOVAL_REFUSAL = (
+    "Removing with scope 'model' deletes it from the project model and every diagram; the assistant only hides things "
+    "in this diagram (scope 'view', the default). Hide it here, and if it should go from the model, tell the user and "
+    "offer a preview (proposal) they can confirm."
+)
+
+
+def present(diagram: Diagram, result: dict[str, Any]) -> list[str]:
+    """The ids a call touched, as the written diagram has them: a view that became its element (model first: a link
+    gives the node the element's id) is highlighted under the element's id."""
+    inner = result.get("result")
+    element = inner.get("element") if isinstance(inner, dict) else None
+    out = []
+    for view_id in result.get("touched", []):
+        if diagram.has_element(view_id):
+            out.append(view_id)
+        elif isinstance(element, str) and diagram.has_element(element):
+            out.append(element)
+    return out
+
+
+def model_removal(call: ToolCall) -> bool:
+    """Whether a tool call asks to delete from the project model (a removal with scope "model")."""
+    return isinstance(call.arguments, dict) and call.arguments.get("scope") == "model"
+
+
 def tool_error(call: ToolCall, error: str) -> ToolResult:
     """The failed result of a tool call, as the model sees it: nothing was changed."""
     return ToolResult(call.id, json.dumps({"ok": False, "error": error}), is_error=True)
@@ -897,6 +967,10 @@ def apply_tool_call(target: Diagram, call: ToolCall) -> dict[str, Any] | ToolRes
     """Run an editing call through `operations.apply`; a ToolResult when it failed (target unchanged)."""
     if call.name in operations.INTERNAL_OPERATIONS:  # only the model service passes an element's name and kind
         return tool_error(call, f"Unknown tool '{call.name}'; use link_element with the view element and the element.")
+    if call.name == "unlink_element":
+        refusal = operations.unlink_refusal(target, str((call.arguments or {}).get("id", "")))
+        if refusal is not None:
+            return tool_error(call, refusal)
     try:
         return operations.apply(target, call.name, call.arguments)
     except operations.OperationError as exc:

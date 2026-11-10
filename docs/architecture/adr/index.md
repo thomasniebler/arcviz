@@ -71,8 +71,8 @@ Create a new ADR by copying `0000-template.md` to the next free number. Status v
 | [0064](0064-project-llm-review-one-call-budgeted-digest.md) | The project LLM review is one tool call over a budgeted project digest | Proposed |
 | [0065](0065-system-prompts-from-shared-blocks-and-expert-parts.md) | System prompts from shared blocks and per-type expert parts in text files | Proposed |
 | [0066](0066-topic-scope-in-the-prompt-without-classifier-or-switch.md) | Topic scope enforced in the system prompt, without a classifier or a switch | Proposed |
-| [0070](0070-shared-model-elements-in-the-project-document.md) | Model elements in the project document, referenced from views by an optional ref | Proposed |
-| [0071](0071-names-propagated-into-views-drift-repaired.md) | Names live in the model and are propagated into views; drift is repaired by sync | Proposed |
+| [0070](0070-shared-model-elements-in-the-project-document.md) | Model elements in the project document, referenced from views by an optional ref | Superseded by ADR-0213 |
+| [0071](0071-names-propagated-into-views-drift-repaired.md) | Names live in the model and are propagated into views; drift is repaired by sync | Superseded by ADR-0213 |
 | [0072](0072-deletion-from-view-or-model-dangling-refs-tolerated.md) | Deleting from a view keeps the element; deleting from the model unlinks; dangling refs are tolerated | Proposed |
 | [0073](0073-element-kinds-and-view-compatibility.md) | Abstract element kinds and which view elements may represent them | Proposed |
 | [0074](0074-sections-reference-subsystem-elements.md) | Sections reference model elements instead of becoming elements | Proposed |
@@ -136,7 +136,7 @@ Create a new ADR by copying `0000-template.md` to the next free number. Status v
 | [0135](0135-relations-in-the-project-document.md) | Model relations live in the project document, sized by `MAX_RELATIONS` | Accepted |
 | [0136](0136-relation-kinds-and-containment.md) | A closed set of relation kinds; containment stays `Element.parent` | Accepted |
 | [0137](0137-open-world-completeness-and-hidden-relations.md) | Open world; completeness is declared per diagram, hiding is marked per view | Accepted |
-| [0138](0138-views-primary-findings-resolved-by-people.md) | Views stay primary; findings never pick a winner | Accepted |
+| [0138](0138-views-primary-findings-resolved-by-people.md) | Views stay primary; findings never pick a winner | Superseded by ADR-0213 |
 | [0139](0139-view-connections-link-to-relations.md) | Deployment edges and sequence messages link to relations | Accepted |
 | [0140](0140-agent-links-relations-and-proposes-missing-ones.md) | The agent links matching relations and proposes missing ones | Accepted |
 | [0141](0141-correspondence-rules.md) | Correspondence rules across diagrams; `message-without-connection` generalised | Accepted |
@@ -150,7 +150,7 @@ Create a new ADR by copying `0000-template.md` to the next free number. Status v
 | [0161](0161-linked-elements-come-along.md) | Linked elements and relations come along when a diagram moves or is imported | Accepted |
 | [0162](0162-own-markdown-subset-for-replies.md) | Assistant replies are rendered by an own Markdown subset, built with DOM APIs | Accepted |
 | [0163](0163-architecture-drivers-in-the-project-document.md) | Architecture drivers in the project document, prioritised like an ATAM utility tree | Accepted |
-| [0164](0164-structural-views-become-project-elements.md) | Structural views become project elements when they are created | Accepted |
+| [0164](0164-structural-views-become-project-elements.md) | Structural views become project elements when they are created | Superseded by ADR-0213 |
 | [0165](0165-share-dialog-suggests-signed-in-users.md) | The share dialog suggests signed-in users while typing | Accepted |
 | [0166](0166-decision-support-in-the-project-document.md) | Stakeholders, scenarios and decisions live in the project document | Accepted |
 | [0167](0167-analyses-are-kept-only-as-decisions.md) | An analysis is kept only as the decision it led to | Accepted |
@@ -199,11 +199,11 @@ Create a new ADR by copying `0000-template.md` to the next free number. Status v
 | [0210](0210-adr-export-follows-madr.md) | The exported ADR follows MADR 4 | Accepted |
 | [0211](0211-arc42-gap-analysis.md) | The gap analysis is a deterministic check per arc42 section, with an optional model pass that only advises | Accepted |
 | [0212](0212-permalinks-are-hash-deep-links.md) | Permalinks are hash deep links that grant nothing | Accepted |
-| [0213](0213-model-is-the-source-of-truth.md) | The project model is the source of truth; diagrams are views | Proposed |
-| [0214](0214-model-documents.md) | One structure document and one document per behaviour, versioned like diagrams | Proposed |
-| [0215](0215-views-resolve-to-a-projection.md) | A view resolves to today's `Diagram` as a read-only projection | Proposed |
-| [0216](0216-relations-shown-by-default.md) | Relations among shown elements are shown unless hidden | Proposed |
-| [0217](0217-view-operations-and-removal-scope.md) | View operations keep the tool vocabulary; a removal names its scope | Proposed |
-| [0218](0218-change-sets.md) | Change sets make one edit across documents undoable | Proposed |
-| [0219](0219-agent-model-writes-per-project.md) | Agents write the model directly or through proposals, per project | Proposed |
-| [0220](0220-migration-into-the-model.md) | Existing diagrams are migrated into the model at start-up | Proposed |
+| [0213](0213-model-is-the-source-of-truth.md) | The project model is the source of truth; diagrams are views | Accepted |
+| [0214](0214-model-documents.md) | One structure document and one document per behaviour, versioned like diagrams | Accepted in part |
+| [0215](0215-views-resolve-to-a-projection.md) | A view resolves to today's `Diagram` as a read-only projection | Accepted |
+| [0216](0216-relations-shown-by-default.md) | Relations among shown elements are shown unless hidden | Accepted |
+| [0217](0217-view-operations-and-removal-scope.md) | View operations keep the tool vocabulary; a removal names its scope | Accepted |
+| [0218](0218-change-sets.md) | Change sets make one edit across documents undoable | Proposed (deferred) |
+| [0219](0219-agent-model-writes-per-project.md) | Agents write the model directly or through proposals, per project | Accepted |
+| [0220](0220-migration-into-the-model.md) | Existing diagrams are migrated into the model at start-up | Accepted |

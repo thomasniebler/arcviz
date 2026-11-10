@@ -13,6 +13,7 @@ from typing import Any
 from pydantic import (
     BaseModel,
     Field,
+    PrivateAttr,
     SerializerFunctionWrapHandler,
     field_validator,
     model_serializer,
@@ -420,16 +421,40 @@ class Diagram(BaseModel):
     # relations it intentionally leaves out. Both omitted from dumps while empty, so older fingerprints stay.
     complete: list[str] = Field(default_factory=list)
     hidden_relations: list[str] = Field(default_factory=list)
+    # Model first (spec: model-first.md, ADR-0213): a stored structure view keeps only the ids of the project elements it
+    # shows (`shows`, in display order; nodes and edges are then empty) and the connections it hides although both
+    # ends are shown (ADR-0216). `None` = a full document (a behaviour view, a diagram outside a project, a resolved
+    # diagram, or one stored before model first). Both omitted from dumps while unset.
+    shows: list[str] | None = None
+    hidden_connections: list[str] = Field(default_factory=list)
+    # Set while a diagram is resolved against its project's model (`views.resolve`), never stored: ids the model holds
+    # already (new ids avoid them), the model's elements this view does not show (`add_node` reuses one of the same
+    # name), and the ids an operation removed with scope "model" (the store deletes them from the model).
+    _reserved: set[str] = PrivateAttr(default_factory=set)
+    _pool: dict[str, Node] = PrivateAttr(default_factory=dict)
+    _removals: set[str] = PrivateAttr(default_factory=set)
+    # the highest `e<n>` the model issued (connection ids are never reused)
+    _edge_floor: int = PrivateAttr(default=0)
+    # connections this view hides (add_edge shows one again instead of drawing a duplicate)
+    _hidden_edges: dict[str, Edge] = PrivateAttr(default_factory=dict)
+    # held in a project but still stored as a full document (the migration converts it, ADR-0220)
+    _legacy: bool = PrivateAttr(default=False)
+    # store as a full document, not into the model (a move into another project, ADR-0220)
+    _detach: bool = PrivateAttr(default=False)
+    # resolved against a project's model (its view elements *are* elements; nothing can be unlinked)
+    _resolved: bool = PrivateAttr(default=False)
 
     @model_serializer(mode="wrap")
     def _omit_unset_declarations(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data = handler(self)
-        for key in ("complete", "hidden_relations"):
+        for key in ("complete", "hidden_relations", "hidden_connections"):
             if data.get(key, None) == []:
                 del data[key]  # diagrams written before M25 dump, fingerprint and export unchanged
+        if data.get("shows", "") is None:
+            del data["shows"]
         return data
 
-    @field_validator("complete", "hidden_relations")
+    @field_validator("complete", "hidden_relations", "hidden_connections")
     @classmethod
     def _canonical(cls, value: list[str]) -> list[str]:
         """Sorted and unique, as the operations keep them: an imported document cannot store another order."""
@@ -506,16 +531,17 @@ class Diagram(BaseModel):
 
     def unique_id(self, base: str) -> str:
         candidate = slugify(base)
-        if candidate not in self.nodes:
+        taken = self.nodes.keys() | self._reserved
+        if candidate not in taken:
             return candidate
         i = 2
-        while f"{candidate}-{i}" in self.nodes:
+        while f"{candidate}-{i}" in taken:
             i += 1
         return f"{candidate}-{i}"
 
     def next_edge_id(self) -> str:
-        existing = {e.id for e in self.edges}
-        i = len(self.edges) + 1
+        existing = {e.id for e in self.edges} | self._reserved
+        i = max(len(self.edges), self._edge_floor) + 1
         while f"e{i}" in existing:
             i += 1
         return f"e{i}"

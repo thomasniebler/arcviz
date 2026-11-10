@@ -1,6 +1,6 @@
 # ADR-0218: Change sets make one edit across documents undoable
 
-- Status: Proposed
+- Status: Proposed (deferred: version snapshots of the resolved view stand in, see the spec)
 - Date: 2026-11-10
 - Spec: `docs/architecture/specs/model-first.md`
 

@@ -74,7 +74,6 @@ def stale(client, store) -> str:
         ("POST", "/api/diagrams/demo/versions/1/restore", None),
         ("POST", "/api/diagrams/demo/undo", None),
         ("POST", "/api/diagrams/demo/redo", None),
-        ("POST", "/api/diagrams/demo/unlink", {"view": "service-a"}),
     ],
 )
 def test_a_stale_if_match_is_412_and_writes_nothing(client, store, method, path, body):

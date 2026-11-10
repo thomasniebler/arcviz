@@ -18,8 +18,6 @@ from arcviz.project_review import ProjectSnapshot, run_project_checks
 from arcviz.projects import new_project
 from arcviz.server import create_app
 from arcviz.services import DiagramService, ModelService, ProjectService
-from arcviz.services.adoption import Adopter
-from arcviz.templates import create_from_template
 from tests.conftest import ScriptedProvider, call
 from tests.test_concurrency import done, tool_round
 
@@ -85,41 +83,36 @@ def elements(client) -> list[dict[str, Any]]:
 
 def test_a_node_added_through_ops_becomes_a_project_element_in_the_same_version(client):
     answer = add_node(client, "platform", name="Order Service", kind="service")
-    assert answer["adoption"] == {
-        "linked": [],
-        "created": [
-            {"view": "order-service", "element": "order-service", "name": "Order Service", "kind": "component"}
-        ],
-        "skipped": [],
-    }
+    # model first (ADR-0213): the repository makes the node an element; no adoption report any more
+    assert "adoption" not in answer
     assert answer["diagram"]["nodes"]["order-service"]["ref"] == "order-service"
     assert [e["id"] for e in elements(client)] == ["order-service"]
     versions = client.get("/api/diagrams/platform/versions").json()
     assert len(versions) == 2  # the initial state and one version holding node and link
 
 
-def test_another_diagram_reuses_the_element_also_under_a_variant_name(client):
+def test_another_diagram_reuses_the_element_of_the_same_name(client):
     add_node(client, "platform", name="Order Service", kind="service")
-    answer = add_node(client, "ops", name="OrderService", kind="service")
-    assert answer["adoption"]["linked"] == [
-        {"view": "orderservice", "element": "order-service", "name": "Order Service"}
-    ]
-    assert answer["diagram"]["nodes"]["orderservice"]["name"] == "Order Service"  # the view takes the element's name
+    # model first: add_node reuses the element of the same name (case-insensitive), the node is that element
+    answer = add_node(client, "ops", name="order service", kind="service")
+    assert list(answer["diagram"]["nodes"]) == ["order-service"]
+    assert answer["diagram"]["nodes"]["order-service"]["name"] == "Order Service"  # the view takes the element's name
     assert len(elements(client)) == 1
 
 
-def test_grouping_containers_stay_local(client):
+def test_grouping_containers_are_elements_too(client):
+    # model first (ADR-0213): every node of a structure view is an element, grouping containers included
     answer = add_node(client, "platform", name="prod", kind="vnet")
-    assert "adoption" not in answer and answer["diagram"]["nodes"]["prod"].get("ref") is None
-    assert elements(client) == []
+    assert "adoption" not in answer and answer["diagram"]["nodes"]["prod"]["ref"] == "prod"
+    assert [(e["id"], e["notation"]) for e in elements(client)] == [("prod", {"deployment": "vnet"})]
 
 
-def test_a_kind_that_does_not_fit_leaves_the_view_unlinked_with_the_reason(client):
+def test_a_node_merges_with_the_element_of_its_name_whatever_its_kind(client):
+    # model first (spec deviation 5): names are unique per project, so the node is the existing element
     client.post("/api/projects/shop/elements", json={"name": "Ledger", "kind": "actor"})
     answer = add_node(client, "platform", name="Ledger", kind="database")
-    assert answer["adoption"]["skipped"][0]["view"] == "ledger"
-    assert "actor element" in answer["adoption"]["skipped"][0]["reason"]
-    assert answer["diagram"]["nodes"]["ledger"].get("ref") is None
+    assert answer["diagram"]["nodes"]["ledger"]["ref"] == "ledger"
+    assert [e["id"] for e in elements(client)] == ["ledger"]
 
 
 def test_a_failing_operation_creates_no_element(client):
@@ -127,32 +120,30 @@ def test_a_failing_operation_creates_no_element(client):
     assert r.status_code == 400 and elements(client) == []
 
 
-def test_a_batch_with_two_nodes_of_one_name_creates_one_element(client):
+def test_a_batch_with_two_nodes_of_one_name_is_refused(client):
     steps = [
         {"op": "add_node", "args": {"name": "Cache", "kind": "service", "id": "cache-a"}},
         {"op": "add_node", "args": {"name": "Cache", "kind": "service", "id": "cache-b"}},
     ]
+    before = [e["name"] for e in elements(client)]
     r = client.post("/api/diagrams/platform/ops", json={"op": "apply_batch", "args": {"operations": steps}})
-    assert r.status_code == 200, r.text
-    nodes = r.json()["diagram"]["nodes"]
-    assert nodes["cache-a"]["ref"] == nodes["cache-b"]["ref"] == "cache"
-    assert [e["id"] for e in elements(client)] == ["cache"]
+    # model first: every node is an element, element names are unique per project, and an element is shown once per
+    # diagram, so the second node of that name is refused and nothing is written
+    assert r.status_code == 400 and "shown once" in r.json()["detail"]
+    assert [e["name"] for e in elements(client)] == before
 
 
 # ---- existing diagrams -------------------------------------------------------------------------------------------
 
 
-def test_unlinked_views_of_existing_diagrams_are_adopted_on_request(client):
+def test_a_diagram_from_a_template_shows_elements_at_once(client):
+    # model first (ADR-0213): a template's nodes become elements when the diagram is created, nothing is left to adopt
     r = client.post("/api/diagrams", json={"title": "AKS", "id": "aks", "template": "aks-database", "project": "shop"})
     assert r.status_code == 201
-    plan = client.get("/api/projects/shop/adoption").json()
-    assert [d["id"] for d in plan["diagrams"]] == ["aks"] and plan["counts"]["created"] > 0
-    assert elements(client) == []  # the plan writes nothing
-    done_ = client.post("/api/projects/shop/adoption").json()
-    assert done_["counts"] == plan["counts"] and done_["failed"] == []
+    nodes = client.get("/api/diagrams/aks").json()["diagram"]["nodes"]
+    assert nodes and set(nodes) <= {e["id"] for e in elements(client)}
     assert client.get("/api/projects/shop/adoption").json()["diagrams"] == []
-    versions = client.get("/api/diagrams/aks/versions").json()
-    assert versions[-1]["label"] == "Projektelemente übernommen"
+    assert [v["label"] for v in client.get("/api/diagrams/aks/versions").json()] == ["Initial state"]
 
 
 # ---- the assistants -----------------------------------------------------------------------------------------------
@@ -171,7 +162,7 @@ def results(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [json.loads(e["content"]) for e in events if e["type"] == "tool_result"]
 
 
-def test_the_diagram_chat_adopts_and_tells_the_model(services):
+def test_the_diagram_chat_makes_nodes_elements_and_tells_the_model(services):
     diagrams, projects, models = services
     provider = ScriptedProvider(
         [
@@ -181,9 +172,9 @@ def test_the_diagram_chat_adopts_and_tells_the_model(services):
     )
     events = list(DiagramAgent(provider, diagrams, background=False, models=models).chat("demo", "Füge Payment hinzu"))
     (result,) = results(events)
-    assert result["adoption"]["created"][0]["element"] == "payment"
+    assert "adoption" not in result  # model first: the repository makes the node an element, no adoption report
     assert diagrams.get("demo").nodes["payment"].ref == "payment"
-    assert [e.id for e in projects.get("shop").elements] == ["payment"]
+    assert set(diagrams.get("demo").nodes) == {e.id for e in projects.get("shop").elements}  # every node is one
     assert len([v for v in diagrams.versions("demo")]) == 2  # one version for the turn
     assert "Reuse before you create" in provider.requests[1]["system"]
 
@@ -211,7 +202,8 @@ def test_a_confirmed_proposal_adopts(services):
         diagrams, "demo", ops, fingerprint(stored), fingerprint(preview), models=models
     )
     assert diagram.nodes["payment"].ref == "payment"
-    assert [e.id for e in projects.get("shop").elements] == ["payment"]
+    # model first: every node of the demo diagram is an element now, the new one included
+    assert set(diagram.nodes) == {e.id for e in projects.get("shop").elements}
 
 
 def test_the_project_chat_adopts_lifelines_and_reuses_elements(services):
@@ -226,10 +218,11 @@ def test_the_project_chat_adopts_lifelines_and_reuses_elements(services):
     )
     agent = ProjectAgent(provider, diagrams, projects, models, background=False)
     events = list(agent.chat("shop", "Lege einen Bezahlablauf an", active="demo"))
-    adopted = [r["adoption"] for r in results(events) if "adoption" in r]
-    assert adopted[0]["linked"][0]["element"] == "kasse"
-    assert adopted[1]["created"][0]["element"] == "bank"
+    # model first: lifelines always stand for elements (no adoption report); "kasse" reuses Kasse by name
+    assert not [r for r in results(events) if "adoption" in r]
     assert {e.id for e in projects.get("shop").elements} == {"kasse", "bank"}
+    lifelines = diagrams.get("bezahlen").interaction.lifelines
+    assert [(lf.ref, lf.name) for lf in lifelines] == [("kasse", "Kasse"), ("bank", "Bank")]
 
 
 # ---- near-duplicate names ----------------------------------------------------------------------------------------
@@ -255,62 +248,3 @@ def test_similar_element_names(a, b, similar):
     assert bool(findings) is similar
     if similar:
         assert f"„{a}“" in findings[0].message and findings[0].severity == "low"
-
-
-# ---- races (review of #227) ---------------------------------------------------------------------------------------
-
-
-def removing_after_prepare(monkeypatch, projects: ProjectService, element_id: str) -> None:
-    """Another request removes the matched element between `prepare` and the diagram write."""
-    original = Adopter.prepare
-
-    def prepare(self, before, after):
-        plan = original(self, before, after)
-        projects.apply("shop", "remove_element", {"element": element_id}, internal=True)
-        return plan
-
-    monkeypatch.setattr(Adopter, "prepare", prepare)
-
-
-def test_a_link_to_an_element_removed_meanwhile_is_taken_back_on_ops(services, monkeypatch):
-    diagrams, projects, models = services
-    models.add_element("shop", "Payment", "component")
-    removing_after_prepare(monkeypatch, projects, "payment")
-    updated = models.apply_operation(
-        "demo", "add_node", {"name": "Payment", "kind": "service", "parent": "prod-deployment"}, "add"
-    )
-    assert diagrams.get("demo").nodes["payment"].ref is None
-    adoption = updated.result["adoption"]
-    assert adoption["linked"] == [] and adoption["skipped"][0]["view"] == "payment"
-    assert "removed meanwhile" in adoption["skipped"][0]["reason"]
-
-
-def test_a_link_to_an_element_removed_meanwhile_is_taken_back_in_a_turn(services, monkeypatch):
-    diagrams, projects, models = services
-    models.add_element("shop", "Payment", "component")
-    removing_after_prepare(monkeypatch, projects, "payment")
-    provider = ScriptedProvider(
-        [tool_round(call("add_node", "c1", name="Payment", kind="service", parent="prod-deployment")), done()]
-    )
-    events = list(DiagramAgent(provider, diagrams, background=False, models=models).chat("demo", "Payment"))
-    (result,) = results(events)
-    assert result["adoption"]["linked"] == [] and result["adoption"]["skipped"][0]["view"] == "payment"
-    assert diagrams.get("demo").nodes["payment"].ref is None
-    assert events[-1]["diagram"]["nodes"]["payment"].get("ref") is None
-
-
-def test_cleanup_keeps_an_element_another_diagram_reused(services):
-    diagrams, projects, models = services
-    diagrams.create("Zwei", "zwei", create_from_template("aks-database", "zwei", "Zwei"), "shop")
-    adopter = models.project_adopter("shop")
-    probe = diagrams.get("demo")
-    operations.apply(probe, "add_node", {"name": "Ledger", "kind": "service", "parent": "prod-deployment"})
-    plan = adopter.prepare(set(diagrams.get("demo").nodes), probe)
-    assert plan.created == {"ledger"}
-    view = next(iter(diagrams.get("zwei").nodes.values()))
-    models.link("zwei", view.id, "ledger")  # a concurrent request reused it
-    adopter.finish(plan, [])  # this request's own write failed
-    assert projects.get("shop").find_element("ledger") is not None
-    models.unlink("zwei", view.id)
-    adopter.finish(plan, [])
-    assert projects.get("shop").find_element("ledger") is None  # unused now: taken back
