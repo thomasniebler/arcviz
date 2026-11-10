@@ -74,36 +74,36 @@ largely unchanged and confines the rewrite to the model, the operations, persist
 #### Structure (`arcviz/uml/structure.py`, replaces the model part of `project_model.py`)
 
 ```python
-class Feature(BaseModel):          # attribute, operation, port, literal, … per the kind's feature types
-    id: str                        # unique within its element
-    type: str                      # one of the kind's FEATURE_TYPES
+class Feature(BaseModel):  # attribute, operation, port, literal, … per the kind's feature types
+    id: str  # unique within its element
+    type: str  # one of the kind's FEATURE_TYPES
     name: str
-    text: str = ""                 # the typed signature as written today in class/component `fields`
+    text: str = ""  # the typed signature as written today in class/component `fields`
 
 
 class Element(BaseModel):
-    id: str                        # slug, unique in the project (unchanged ids from M18)
+    id: str  # slug, unique in the project (unchanged ids from M18)
     name: str
-    kind: str                      # a model kind of the active catalogue (see below)
-    parent: str | None = None      # ownership / containment
-    description: str = ""          # replaces both Element.description and the per-diagram notes
+    kind: str  # a model kind of the active catalogue (see below)
+    parent: str | None = None  # ownership / containment
+    description: str = ""  # replaces both Element.description and the per-diagram notes
     properties: dict[str, str] = {}
-    features: list[Feature] = []   # omitted while empty
+    features: list[Feature] = []  # omitted while empty
     code_refs: list[CodeRef] = []  # unchanged (ADR-0171)
 
 
 class Relation(BaseModel):
-    id: str                        # r<n>, never reused (Structure.relation_seq)
-    kind: str                      # a relation kind of the catalogue
-    source: str                    # element id (or "<element>.<feature>" for a port end)
+    id: str  # r<n>, never reused (Structure.relation_seq)
+    kind: str  # a relation kind of the catalogue
+    source: str  # element id (or "<element>.<feature>" for a port end)
     target: str
     label: str = ""
-    direction: str | None = None   # forward | both | none (today's Edge.direction)
+    direction: str | None = None  # forward | both | none (today's Edge.direction)
     properties: dict[str, str] = {}
     description: str = ""
 
 
-class Structure(BaseModel):        # the structure document of a project
+class Structure(BaseModel):  # the structure document of a project
     elements: list[Element]
     relations: list[Relation]
     relation_seq: int = 0
@@ -153,12 +153,12 @@ content too, shown identically in every view of the behaviour.
 class View(BaseModel):
     id: str
     title: str
-    type: str                       # DIAGRAM_TYPES, immutable
-    behaviour: str | None = None    # behaviour types: the behaviour shown (required for them, None otherwise)
-    elements: list[str] = []        # structure types: the element ids shown, in display order
-    hidden: list[str] = []          # ids not drawn although they would be: relations among shown elements,
-                                    # behaviour parts, features
-    options: ViewOptions            # direction (today's Diagram.direction), show_features, nest_deployed (bool)
+    type: str  # DIAGRAM_TYPES, immutable
+    behaviour: str | None = None  # behaviour types: the behaviour shown (required for them, None otherwise)
+    elements: list[str] = []  # structure types: the element ids shown, in display order
+    hidden: list[str] = []  # ids not drawn although they would be: relations among shown elements,
+    # behaviour parts, features
+    options: ViewOptions  # direction (today's Diagram.direction), show_features, nest_deployed (bool)
     created_at: str
     updated_at: str
 ```
