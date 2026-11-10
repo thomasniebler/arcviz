@@ -6,6 +6,7 @@ Usage: python tests/e2e/server.py <data-dir> [port]
 from __future__ import annotations
 
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -43,6 +44,8 @@ class SlowScriptedProvider(ScriptedProvider):
 
     def _complete(self, system, messages, tools):
         time.sleep(float(os.environ.get("ARCVIZ_E2E_TURN_DELAY", "0") or 0))
+        if self.replies and callable(self.replies[0]):  # a reply that depends on what the model is shown
+            self.replies[0] = self.replies[0](system, messages)
         if [t.name for t in tools] == ["submit_scenario_analysis"]:  # answered by tool, outside the turn order
             self.requests.append({"system": system, "messages": list(messages), "tools": ["submit_scenario_analysis"]})
             return ANALYSIS_REPLY
@@ -175,6 +178,48 @@ DERIVE_REPLY = ModelReply(
 )
 
 
+def review_reply(system, messages):
+    """The KI-Review names the edge service-a -> orders-db by the id the model was shown (model first: a second demo
+    diagram's connections get their own project-wide ids)."""
+    shown = system + "\n" + "\n".join(str(m) for m in messages)
+    found = re.search(r"\[(e\d+)\] service-a -> orders-db", shown)
+    edge = found.group(1) if found else "e3"
+    return ModelReply(
+        text="",
+        tool_calls=[
+            call(
+                "submit_review",
+                "r1",
+                summary="Klare Struktur hinter einem Gateway; die Datenanbindung ist der Schwachpunkt.",
+                findings=[
+                    {
+                        "category": "risk",
+                        "severity": "medium",
+                        "message": "service-a spricht ohne TLS mit orders-db.",
+                        "elements": ["service-a", "orders-db"],
+                        "edges": [edge],
+                        "suggestion": f"Setze an der Kante {edge} die Eigenschaft protocol=postgres+tls.",
+                    },
+                    {
+                        "category": "strength",
+                        "severity": "info",
+                        "message": "Ein Gateway bündelt den Zugriff.",
+                        "elements": ["api-gateway"],
+                    },
+                    {
+                        "category": "praise",  # not a category: dropped and counted
+                        "severity": "high",
+                        "message": "Ungültige Kategorie.",
+                        "elements": ["ghost"],
+                    },
+                ],
+            )
+        ],
+        stop_reason="tool_use",
+        usage={"input_tokens": 1500, "output_tokens": 200},
+    )
+
+
 provider = SlowScriptedProvider(
     [
         ModelReply(
@@ -217,40 +262,7 @@ provider = SlowScriptedProvider(
             )
         ],
         # architecture review (KI-Review button): one structured answer
-        ModelReply(
-            text="",
-            tool_calls=[
-                call(
-                    "submit_review",
-                    "r1",
-                    summary="Klare Struktur hinter einem Gateway; die Datenanbindung ist der Schwachpunkt.",
-                    findings=[
-                        {
-                            "category": "risk",
-                            "severity": "medium",
-                            "message": "service-a spricht ohne TLS mit orders-db.",
-                            "elements": ["service-a", "orders-db"],
-                            "edges": ["e3"],
-                            "suggestion": "Setze an der Kante e3 die Eigenschaft protocol=postgres+tls.",
-                        },
-                        {
-                            "category": "strength",
-                            "severity": "info",
-                            "message": "Ein Gateway bündelt den Zugriff.",
-                            "elements": ["api-gateway"],
-                        },
-                        {
-                            "category": "praise",  # not a category: dropped and counted
-                            "severity": "high",
-                            "message": "Ungültige Kategorie.",
-                            "elements": ["ghost"],
-                        },
-                    ],
-                )
-            ],
-            stop_reason="tool_use",
-            usage={"input_tokens": 1500, "output_tokens": 200},
-        ),
+        review_reply,
         # "Als Vorschlag umsetzen" on the database finding: a propose-mode turn adding a replica
         ModelReply(
             text="",

@@ -19,7 +19,6 @@ from typing import Any
 
 from .. import views
 from ..model import Diagram, fingerprint
-from ..operations import OperationError
 from ..ports import ConflictError, StoreError, VersionInfo
 from ..projects import Project, check_document_size
 from .base import DiagramRepository
@@ -139,7 +138,7 @@ class ModelBackedStore(DiagramRepository):
             if hit:
                 found.append(f"{other.title} ({other.id}): {', '.join(hit)}")
         if found:
-            raise OperationError(
+            raise views.OperationError(  # bad input (400), like every refused operation
                 f"Represented in behaviour diagrams: {'; '.join(found)}. Remove those lifelines or partitions first, or "
                 "hide the element here (scope view)."
             )
