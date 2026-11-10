@@ -1,6 +1,6 @@
 # ADR-0138: Views stay primary; findings never pick a winner
 
-- Status: Accepted
+- Status: Superseded by ADR-0213
 - Date: 2026-10-11
 - Spec: `docs/architecture/specs/model-relations.md` (M25)
 

@@ -275,5 +275,14 @@
   "KI-Review läuft …": "AI review running …",
   "KI-Review": "AI review",
   "Projekt-Review · {title}": "Project review · {title}",
-  "Architektur-Review": "Architecture review"
+  "Architektur-Review": "Architecture review",
+  "Entfernen": "Remove",
+  "Das Projektmodell ist die Quelle: Ausblenden lässt das Element im Modell und in allen anderen Diagrammen; Löschen entfernt es überall.": "The project model is the source: hiding keeps the element in the model and in every other diagram; deleting removes it everywhere.",
+  "Aus dem Modell löschen": "Delete from the model",
+  "Nur in dieser Ansicht ausblenden": "Hide in this view only",
+  "Kante {id}": "Edge {id}",
+  "„{name}“ samt Inhalt": "“{name}” with its content",
+  "„{name}“": "“{name}”",
+  "„{title}“": "“{title}”",
+  "{what} entfernen: nur in dieser Ansicht ausblenden oder aus dem Projektmodell (und damit aus jedem Diagramm) löschen?": "Remove {what}: hide it in this view only, or delete it from the project model (and so from every diagram)?"
 }

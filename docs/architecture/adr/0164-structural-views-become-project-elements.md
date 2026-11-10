@@ -1,6 +1,6 @@
 # ADR-0164: Structural views become project elements when they are created
 
-- Status: Accepted
+- Status: Superseded by ADR-0213
 - Date: 2026-10-12
 - Spec: `docs/architecture/specs/elements-by-default.md`
 - Amends: [ADR-0070](0070-shared-model-elements-in-the-project-document.md) (elements were created only on request)

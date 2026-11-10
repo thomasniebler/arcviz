@@ -19,6 +19,7 @@ from typing import Any
 from . import prompts, proposal, render, sequence
 from .agent import (
     DEFAULT_CONTEXT_BUDGET,
+    MODEL_REMOVAL_REFUSAL,
     ROLE_LOST,
     ROLE_LOST_TURN,
     VERSION_FAILED,
@@ -27,6 +28,7 @@ from .agent import (
     apply_tool_call,
     build_tools,
     get_diagram_result,
+    model_removal,
     store_span,
     take_back_invalid_link,
     tool_error,
@@ -505,6 +507,8 @@ class ProjectAgent(DiagramAgent):
                     return result
                 proposal_of = diagram_id
             else:
+                if model_removal(call):
+                    return tool_error(call, MODEL_REMOVAL_REFUSAL)
                 apply_call = applier(call)
                 if isinstance(apply_call, ToolResult):
                     return apply_call

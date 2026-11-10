@@ -1,6 +1,6 @@
 # ADR-0217: View operations keep the tool vocabulary; a removal names its scope
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-10
 - Spec: `docs/architecture/specs/model-first.md`
 
@@ -18,7 +18,7 @@ assistant only hides and proposes model deletions.
 
 ## Decision
 
-Option 2: `operations.py` keeps its names and plans each call into model and view steps; `scope` has no default.
+Option 2: `operations.py` keeps its names and plans each call into model and view steps; `scope` defaults to `view` (hiding is the safe default for existing callers; the UI always asks).
 
 ## Consequences
 

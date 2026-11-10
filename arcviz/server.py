@@ -203,6 +203,10 @@ class VisionRequest(BaseModel):
     non_goals: list[str] = Field(default_factory=list)
 
 
+class AgentWritesRequest(BaseModel):
+    mode: str
+
+
 class StewardSwitchRequest(BaseModel):
     enabled: bool
 
@@ -686,7 +690,7 @@ def create_app(
     observability.start_telemetry(log_config)
     hub = live.LiveHub(live_config, limit_config.max_streams, limit_config.max_streams_per_user)
     telemetry.observe_live_streams(hub)  # the `arcviz.live.streams` gauge (#187); nothing while telemetry is off
-    store = store or create_store()
+    store = create_store(backend=store) if store is not None else create_store()
     root = ServiceRoot(store, hub, auth_config.admin, proposal_config, steward_config)
     # Data of v0.1.8 and M20 moves into personal workspaces (ADR-0102); idempotent, every start. Best effort: a
     # failure (a busy Cosmos DB, a replica starting at the same time) is logged and never stops the start; the
@@ -728,6 +732,17 @@ def create_app(
             "ARCVIZ_ADMIN_USER names their owner (spec: personal-workspaces.md).",
             migration.hidden,
         )
+
+    # Model first (ADR-0220): diagrams still stored as full documents become views of their project's model; best
+    # effort like the workspace migration, repeated at every start until each diagram is converted.
+    try:
+        model_migration = root.migrate_model()
+        if model_migration.converted:
+            logger.info("Took %d diagram(s) into the project model.", len(model_migration.converted))
+        if model_migration.failed:
+            logger.warning("%d diagram(s) could not be taken into the project model yet.", len(model_migration.failed))
+    except Exception:
+        logger.exception("Taking the diagrams into the project model failed and is left for the next start.")
 
     agents: AgentGate | None = None
     mcp_endpoint: McpEndpoint | None = None
@@ -2130,6 +2145,14 @@ def create_app(
             if not svc.projects.append_chat(project_id, [note]):
                 raise HTTPException(404, f"Project '{project_id}' not found.")
             return {"chat": svc.projects.chat(project_id)}
+
+    # ---- agent writes (spec: docs/architecture/specs/model-first.md, ADR-0219) --------------------------------------
+
+    @app.put("/api/projects/{project_id}/agent-writes")
+    def set_agent_writes(svc: Svc, project_id: str, req: AgentWritesRequest) -> dict[str, Any]:
+        """Let agents on the MCP path write the model directly ("direct") or only propose ("propose"); owner only."""
+        with project_errors():
+            return {"project": project_id, "agent_writes": svc.projects.set_agent_writes(project_id, req.mode)}
 
     # ---- the steward (spec: docs/architecture/specs/project-steward.md, ADR-0204) -------------------------------------
 

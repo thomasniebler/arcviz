@@ -61,7 +61,8 @@ def test_a_set_ref_is_stored_and_changes_the_fingerprint():
 
 def test_linkable_kinds_follow_the_table():
     assert project_model.linkable_kinds("sequence", "lifeline") == project_model.linkable_kinds("sequence", "lifeline")
-    assert set(project_model.linkable_kinds("sequence", "lifeline")) == set(project_model.ELEMENT_KINDS)
+    # a lifeline stands for any building block; interfaces, use cases and packages (model first) are none
+    assert set(project_model.linkable_kinds("sequence", "lifeline")) == set(project_model.ELEMENT_KINDS[:6])
     assert "data" not in project_model.linkable_kinds("activity", "activity_partition")
     assert project_model.linkable_kinds("activity", "data_store_node") == ("data",)
     assert project_model.linkable_kinds("activity", "opaque_action") == ()
@@ -82,7 +83,7 @@ def test_configured_kinds_are_linkable_with_permissive_defaults():
         KindCatalog(builtin.container_kinds | {"landing-zone"}, builtin.leaf_kinds | {"bucket"}, builtin.edge_kinds)
     )
     assert project_model.linkable_kinds("deployment", "landing-zone") == ("node", "system", "subsystem")
-    assert set(project_model.linkable_kinds("deployment", "bucket")) == set(project_model.ELEMENT_KINDS)
+    assert set(project_model.linkable_kinds("deployment", "bucket")) == set(project_model.ELEMENT_KINDS[:6])
 
 
 def test_default_kind_of_promote():
@@ -153,18 +154,20 @@ def test_unlink_keeps_the_name():
         operations.apply(d, "unlink_element", {"id": node.id})
 
 
-def test_a_linked_view_element_cannot_be_renamed_in_the_view():
+def test_a_linked_view_element_is_renamed_with_its_element():
+    """Model first (ADR-0213) supersedes ADR-0071: the view element is the element, so renaming it is allowed and the
+    repository carries the name into the model."""
     d = deployment()
     node = next(n for n in d.nodes.values() if n.kind == "service")
     link(d, node.id)
-    with pytest.raises(operations.OperationError, match="update_element"):
-        operations.apply(d, "update_node", {"id": node.id, "name": "Other"})
+    operations.apply(d, "update_node", {"id": node.id, "name": "Other"})
+    assert d.nodes[node.id].name == "Other"
     operations.apply(d, "update_node", {"id": node.id, "name": "Order Service", "properties": {"runtime": "go"}})
     operations.apply(d, "update_node", {"id": node.id, "kind": "function"})  # still linkable
     s = sequence()
     link(s, s.interaction.lifelines[0].id, element="shop", name="Kunde")
-    with pytest.raises(operations.OperationError, match="update_element"):
-        operations.apply(s, "update_lifeline", {"id": s.interaction.lifelines[0].id, "name": "Kundin"})
+    operations.apply(s, "update_lifeline", {"id": s.interaction.lifelines[0].id, "name": "Kundin"})
+    assert s.interaction.lifelines[0].name == "Kundin"
     operations.apply(s, "update_lifeline", {"id": s.interaction.lifelines[0].id, "type": "Person"})
 
 
@@ -303,8 +306,10 @@ def test_add_element_derives_unique_ids_and_refuses_duplicate_names():
     }
     projects.apply(project, "add_element", {"name": "Order-Service!", "kind": "system"})
     assert [e.id for e in project.elements] == ["order-service", "order-service-2"]
+    # model first: adding an element that exists under this name is that element (diagrams create elements too)
+    assert projects.apply(project, "add_element", {"name": "order service"})["result"]["id"] == "order-service"
     with pytest.raises(projects.ProjectError, match="already called"):
-        projects.apply(project, "add_element", {"name": "order service"})
+        projects.apply(project, "add_element", {"name": "order service", "id": "another"})
     with pytest.raises(projects.ProjectError, match="Unknown element kind"):
         projects.apply(project, "add_element", {"name": "X", "kind": "robot"})
     with pytest.raises(projects.ProjectError, match="Invalid element id"):

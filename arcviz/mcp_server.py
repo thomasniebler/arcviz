@@ -52,6 +52,11 @@ TOOL_NAMES = frozenset(
         "add_stakeholder",
         "update_stakeholder",
         "propose_architecture_items",
+        "create_component",
+        "update_component",
+        "create_relation",
+        "show_in_diagram",
+        "hide_in_diagram",
     }
 )
 INSTRUCTIONS = (
@@ -59,7 +64,10 @@ INSTRUCTIONS = (
     "list_projects, then list_components or find_component_by_path (which component owns a file), then get_component "
     "(its responsibilities, relations to other components, views, code links, findings). get_architecture_context "
     "gives the drivers and the accepted decisions that bind: respect them. Link a component to its code with "
-    "add_code_ref. You never change diagrams directly: propose_change stores operations (see list_operations, get_diagram) "
+    "add_code_ref. The project model is the source of truth and diagrams are views of it: build the architecture with "
+    "create_component, update_component and create_relation, and show elements in diagrams with show_in_diagram. They "
+    "write at once when the project owner allows agents to write, otherwise they store proposals a person applies; no "
+    "tool deletes from the model. propose_change stores diagram operations (see list_operations, get_diagram) "
     "that a person applies or discards. The same holds for drivers, scenarios and decisions: propose_architecture_items stores "
     "them as a proposal (reuse existing ids, a decision is always a draft). You may add requirements (add_requirements), "
     "suggest how to normalise them (suggest_refinement) and add stakeholders; people accept, apply and delete. Names, "
@@ -321,6 +329,62 @@ def build_mcp(root: ServiceRoot, path: str, version: str = "") -> McpEndpoint:
     ) -> dict[str, Any]:
         """Change name, role, concerns, influence or drivers of a stakeholder (fields: an object). Needs a write token."""
         return await run(ctx, "update_stakeholder", lambda t: t.update_stakeholder(project, stakeholder, fields))
+
+    @server.tool()
+    async def create_component(
+        project: str,
+        name: str,
+        ctx: Context,
+        kind: str = "component",
+        description: str = "",
+        parent: str | None = None,
+        rationale: str = "",
+    ) -> dict[str, Any]:
+        """Create a model element (kind: actor, system, subsystem, component, node, data, interface, use_case, package). The model is the source of truth: every diagram that shows it draws it from the model. Written at once when the project owner allows agents to write (mode "direct"), else stored as a proposal a person applies (mode "propose"). Needs a write token."""
+        return await run(
+            ctx,
+            "create_component",
+            lambda t: t.create_component(project, name, kind, description, parent, rationale),
+        )
+
+    @server.tool()
+    async def update_component(
+        project: str, component: str, fields: dict[str, Any], ctx: Context, rationale: str = ""
+    ) -> dict[str, Any]:
+        """Change name, kind, description or parent of a model element (fields: an object); every diagram showing it follows. Direct or proposed like create_component. Needs a write token."""
+        return await run(ctx, "update_component", lambda t: t.update_component(project, component, fields, rationale))
+
+    @server.tool()
+    async def create_relation(
+        project: str,
+        kind: str,
+        source: str,
+        target: str,
+        ctx: Context,
+        properties: dict[str, str] | None = None,
+        description: str = "",
+        rationale: str = "",
+    ) -> dict[str, Any]:
+        """Create a model relation (kind: communicates, deployed_on, data_flow; properties protocol, port, direction, mode) between two elements. Direct or proposed like create_component. Needs a write token."""
+        return await run(
+            ctx,
+            "create_relation",
+            lambda t: t.create_relation(project, kind, source, target, properties, description, rationale),
+        )
+
+    @server.tool()
+    async def show_in_diagram(
+        project: str, diagram: str, component: str, ctx: Context, rationale: str = ""
+    ) -> dict[str, Any]:
+        """Show an existing model element in a diagram; the connections the model has to what the diagram shows appear with it. Direct or proposed like create_component. Needs a write token."""
+        return await run(ctx, "show_in_diagram", lambda t: t.show_in_diagram(project, diagram, component, rationale))
+
+    @server.tool()
+    async def hide_in_diagram(
+        project: str, diagram: str, component: str, ctx: Context, rationale: str = ""
+    ) -> dict[str, Any]:
+        """Stop showing a model element in a diagram; the model keeps it (no tool deletes from the model). Direct or proposed like create_component. Needs a write token."""
+        return await run(ctx, "hide_in_diagram", lambda t: t.hide_in_diagram(project, diagram, component, rationale))
 
     @server.tool()
     async def propose_architecture_items(

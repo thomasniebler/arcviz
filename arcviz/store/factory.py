@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from ..history import HistoryConfig
 from .base import DiagramRepository, StoreError
+from .modelbacked import ModelBackedStore
 
 if TYPE_CHECKING:
     from ..gitmirror import GitMirror
@@ -16,25 +17,35 @@ BACKENDS = ("file", "sqlite", "cosmos")
 SQLITE_FILENAME = "arcviz.sqlite3"
 
 
-def create_store(env: dict[str, str] | None = None) -> DiagramRepository:
-    """The configured backend, with the optional Git mirror (ARCVIZ_GIT_DIR) attached."""
+def create_store(env: dict[str, str] | None = None, backend: Any = None) -> DiagramRepository:
+    """The configured backend, with the optional Git mirror (ARCVIZ_GIT_DIR) attached, as a `ModelBackedStore`: diagrams
+    are views of their project's model (spec: model-first.md, ADR-0213). With `backend` (tests, tools) that backend is
+    wrapped instead, keeping its mirror and retention."""
+    if backend is not None:
+        if isinstance(backend, ModelBackedStore):
+            return backend
+        wrapped = ModelBackedStore(backend)  # type: ignore[abstract]  # its primitives are delegated (modelbacked.py)
+        wrapped.mirror, wrapped.retention = backend.mirror, backend.retention
+        backend.mirror = None
+        return wrapped
     env = dict(os.environ) if env is None else env
-    backend = env.get("ARCVIZ_STORE", "file").strip().lower()
+    kind = env.get("ARCVIZ_STORE", "file").strip().lower()
     data_dir = Path(env.get("ARCVIZ_DATA_DIR", "data"))
-    if backend == "file":
+    if kind == "file":
         store = _file(data_dir)
-    elif backend == "sqlite":
+    elif kind == "sqlite":
         store = _sqlite(data_dir)
-    elif backend == "cosmos":
+    elif kind == "cosmos":
         url = env.get("ARCVIZ_STORE_URL")
         if not url:
             raise StoreError("ARCVIZ_STORE=cosmos needs ARCVIZ_STORE_URL (the account endpoint).")
         store = _cosmos(url, env)
     else:
-        raise StoreError(f"Unknown ARCVIZ_STORE '{backend}'. Valid values: {', '.join(BACKENDS)}.")
-    store.mirror = _mirror(env)
-    store.retention = HistoryConfig.from_env(env)  # ConfigError for invalid values (ADR-0130)
-    return store
+        raise StoreError(f"Unknown ARCVIZ_STORE '{kind}'. Valid values: {', '.join(BACKENDS)}.")
+    wrapped = ModelBackedStore(store)  # type: ignore[abstract]
+    wrapped.mirror = _mirror(env)
+    wrapped.retention = HistoryConfig.from_env(env)  # ConfigError for invalid values (ADR-0130)
+    return wrapped
 
 
 def _mirror(env: dict[str, str]) -> GitMirror | None:

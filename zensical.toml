@@ -58,6 +58,7 @@ nav = [
     { "Agent" = "spec/agent.md" },
     { "Persistence" = "spec/persistence.md" },
     { "Projects" = "spec/projects.md" },
+    { "Model first" = "spec/model-first.md" },
     { "Agent access" = "spec/agents.md" },
     { "Requirements" = "spec/requirements.md" },
     { "Rendering" = "spec/rendering.md" },

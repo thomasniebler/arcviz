@@ -436,8 +436,15 @@ def _sequence_tools(catalog: KindCatalog, deployment_tools: list[ToolSpec]) -> l
         ToolSpec(
             "remove_lifeline",
             "Remove a Lifeline together with its Messages, ExecutionSpecifications and destruction; it is dropped "
-            "from the covered lifelines of fragments.",
-            _object({"id": _LIFELINE_REF}, ["id"]),
+            "from the covered lifelines of fragments. The element it represents stays in the project model unless "
+            "scope is model (preview mode only).",
+            _object(
+                {
+                    "id": _LIFELINE_REF,
+                    "scope": {"type": "string", "enum": ["view", "model"], "default": "view"},
+                },
+                ["id"],
+            ),
         ),
         ToolSpec(
             "add_message",

@@ -22,6 +22,7 @@ from .bundles import ProjectExchangeService
 from .diagrams import DiagramService
 from .live import LiveService
 from .model import ModelService
+from .model_first import ModelMigration, migrate_to_model
 from .projects import ProjectService
 from .proposals import ProposalService
 from .requirement_chat import RequirementChatService
@@ -164,6 +165,10 @@ class ServiceRoot:
     def migrate(self, admin: Identity | None) -> PersonalMigration:
         """The migration to personal workspaces (ADR-0102), in the system context."""
         return migrate_to_personal_workspaces(self._repo, admin)
+
+    def migrate_model(self) -> ModelMigration:
+        """Existing diagrams into the project model (model first, ADR-0220), in the system context."""
+        return migrate_to_model(self._repo)
 
     # ---- facts about the store, no data -----------------------------------------------------------
 

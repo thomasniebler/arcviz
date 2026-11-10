@@ -665,7 +665,10 @@ class ModelService:
         updated = self._diagrams.apply_operation(
             diagram_id, "link_element", args, f"Mit Element „{args['name']}“ verknüpft", expected
         )
-        linked = find_view(updated.diagram, args["id"])
+        # model first: the view becomes the element, so it may carry the element's id now
+        linked = find_view(updated.diagram, args["id"]) or find_view(updated.diagram, args["element"])
+        if linked is not None:
+            args["id"] = linked.id
         try:
             problem = self.link_problem(
                 project_id, args["element"], updated.diagram.type, linked.kind if linked else ""
@@ -871,6 +874,7 @@ class ModelService:
     ) -> tuple[Element, Updated[dict[str, Any]]]:
         """Create an element named like the view element and link the view element to it."""
         project_id = self.project_of(diagram_id)
+        self._diagrams.require(diagram_id, "editor")  # before anything is said about the diagram's content
         diagram = self._diagrams.get(diagram_id)
         found = find_view(diagram, view)
         if found is None:

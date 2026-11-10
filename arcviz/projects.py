@@ -48,6 +48,7 @@ from .project_model import (
     RELATION_KINDS,
     SYMMETRIC_RELATIONS,
     CodeRef,
+    Connection,
     Driver,
     Element,
     Relation,
@@ -110,6 +111,10 @@ class Project(BaseModel):
     # The highest generated relation number: `r<n>` ids are never reused, so a stale link or hidden marker (an undo,
     # a restore) never attaches to another relation. Omitted from dumps while 0.
     relation_seq: int = 0
+    # View connections (spec: model-first.md, ADR-0213): every edge of a structure diagram lives here once; omitted
+    # from dumps while empty / 0. `connection_seq` is the highest generated `e<n>`, so an id is never reused.
+    connections: list[Connection] = Field(default_factory=list)
+    connection_seq: int = 0
     # Architecture drivers (spec: architecture-drivers.md, ADR-0163), omitted from dumps while empty; `driver_seq` is the
     # highest generated `d<n>`, so an id is never reused (omitted while 0).
     drivers: list[Driver] = Field(default_factory=list)
@@ -138,10 +143,15 @@ class Project(BaseModel):
     # id is another incarnation. None for projects written before M23 (their `created_at` stands in, see
     # `incarnation_of`); omitted from dumps while unset.
     incarnation: str | None = None
+    # Whether agents on the MCP path write the model directly or store proposals (spec: model-first.md, ADR-0219):
+    # "propose" (default, omitted from dumps) or "direct"; set by the owner only.
+    agent_writes: str = "propose"
 
     @model_serializer(mode="wrap")
     def _omit_unset_access(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data = handler(self)
+        if data.get("agent_writes", None) == "propose":
+            del data["agent_writes"]
         if data.get("workspace", "") is None:
             del data["workspace"]  # projects written before M20 dump unchanged
         if data.get("roles", None) == {}:
@@ -156,6 +166,10 @@ class Project(BaseModel):
             del data["relations"]  # projects written before M25 dump (and export) unchanged
         if data.get("relation_seq", None) == 0:
             del data["relation_seq"]
+        if data.get("connections", None) == []:
+            del data["connections"]  # projects written before model first dump unchanged
+        if data.get("connection_seq", None) == 0:
+            del data["connection_seq"]
         if data.get("drivers", None) == []:
             del data["drivers"]  # projects written before drivers dump (and export) unchanged
         if data.get("driver_seq", None) == 0:
@@ -280,7 +294,25 @@ class Project(BaseModel):
         for section in self.sections:
             if section.element is not None and section.element not in ids:
                 errors.append(f"section '{section.id}' stands for unknown element '{section.element}'")
-        return errors + self._relation_errors() + self._driver_errors(ids) + self._decision_support_errors(ids)
+        return (
+            errors
+            + self._relation_errors()
+            + self._connection_errors(ids)
+            + self._driver_errors(ids)
+            + self._decision_support_errors(ids)
+        )
+
+    def _connection_errors(self, element_ids: set[str]) -> list[str]:
+        errors: list[str] = []
+        seen: set[str] = set()
+        for connection in self.connections:
+            if connection.id in seen:
+                errors.append(f"duplicate connection id '{connection.id}'")
+            seen.add(connection.id)
+            for end in (connection.source, connection.target):
+                if end not in element_ids:
+                    errors.append(f"connection '{connection.id}' has unknown end '{end}'")
+        return errors
 
     def _driver_errors(self, element_ids: set[str]) -> list[str]:
         errors: list[str] = []
@@ -718,6 +750,16 @@ def add_element(
     kind = _element_kind(kind)
     parent_id = _element_parent(project, parent)
     taken = {e.id for e in project.elements}
+    same = next((e for e in project.elements if name_key(e.name) == name_key(name)), None)
+    if same is not None and id in (None, same.id):
+        # Model first (ADR-0213): diagrams create elements as they are drawn, so adding one that exists under this
+        # name (and id) is the same element: it takes the kind, description and parent given, nothing is duplicated.
+        same.kind = kind
+        if description.strip():
+            same.description = description.strip()
+        if parent_id is not None and parent_id != same.id:
+            same.parent = parent_id
+        return same
     if id is not None:
         if not id or slugify(id) != id:
             raise ProjectError(f"Invalid element id '{id}' (use lowercase letters, digits and '-').")
@@ -870,6 +912,7 @@ def remove_element(project: Project, element: str) -> dict[str, Any]:
     project.elements.remove(target)
     removed = [r for r in project.relations if target.id in (r.source, r.target)]  # an end is gone (ADR-0135)
     project.relations = [r for r in project.relations if r not in removed]
+    project.connections = [c for c in project.connections if target.id not in (c.source, c.target)]
     concerned = [d for d in project.drivers if target.id in d.elements]  # the driver stays, without the element
     for driver in concerned:
         driver.elements = [e for e in driver.elements if e != target.id]
@@ -1692,7 +1735,19 @@ def remove_decision(project: Project, decision: str) -> dict[str, Any]:
     return {"decision": target.model_dump()}
 
 
+AGENT_WRITE_MODES = ("propose", "direct")
+
+
+def set_agent_writes(project: Project, mode: str) -> dict[str, Any]:
+    """Whether agents write the model directly or propose (ADR-0219); the service lets only the owner call it."""
+    if mode not in AGENT_WRITE_MODES:
+        raise ProjectError(f"Unknown mode '{mode}'. Modes: {', '.join(AGENT_WRITE_MODES)}.")
+    project.agent_writes = mode
+    return {"agent_writes": mode}
+
+
 OPERATIONS: dict[str, Callable[..., Any]] = {
+    "set_agent_writes": set_agent_writes,
     "add_code_ref": add_code_ref,
     "remove_code_ref": remove_code_ref,
     "rename_project": rename_project,
@@ -1746,7 +1801,7 @@ ELEMENT_OPERATIONS = (
     "link_section",
 )
 RELATION_OPERATIONS = ("add_relation", "update_relation", "remove_relation")
-INTERNAL_OPERATIONS = ("add_diagram", "remove_diagram", *ELEMENT_OPERATIONS, *RELATION_OPERATIONS)
+INTERNAL_OPERATIONS = ("add_diagram", "remove_diagram", "set_agent_writes", *ELEMENT_OPERATIONS, *RELATION_OPERATIONS)
 PUBLIC_OPERATIONS = tuple(op for op in OPERATIONS if op not in INTERNAL_OPERATIONS)
 
 

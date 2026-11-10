@@ -1,6 +1,6 @@
 # ADR-0220: Existing diagrams are migrated into the model at start-up
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-10
 - Spec: `docs/architecture/specs/model-first.md`
 

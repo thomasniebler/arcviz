@@ -10,7 +10,7 @@ def test_default_is_file_store_in_data_dir(tmp_path, monkeypatch):
     monkeypatch.delenv("ARCVIZ_STORE", raising=False)
     monkeypatch.setenv("ARCVIZ_DATA_DIR", str(tmp_path / "d"))
     store = create_store()
-    assert isinstance(store, FileStore) and store.name == "file"
+    assert isinstance(store.backend, FileStore) and store.name == "file"
     assert store.root == tmp_path / "d"
 
 
@@ -18,7 +18,7 @@ def test_sqlite_store_lives_in_data_dir(tmp_path, monkeypatch):
     monkeypatch.setenv("ARCVIZ_STORE", "sqlite")
     monkeypatch.setenv("ARCVIZ_DATA_DIR", str(tmp_path / "d"))
     store = create_store()
-    assert isinstance(store, SqliteStore) and store.name == "sqlite"
+    assert isinstance(store.backend, SqliteStore) and store.name == "sqlite"
     assert store.path == tmp_path / "d" / "arcviz.sqlite3"
 
 

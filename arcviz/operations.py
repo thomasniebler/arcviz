@@ -246,6 +246,12 @@ def _touch(diagram: Diagram) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _pooled(diagram: Diagram, name: str) -> Node | None:
+    """The model element of this name that the diagram does not show yet (None outside a project)."""
+    wanted = name.strip().lower()
+    return next((n for n in diagram._pool.values() if n.name.strip().lower() == wanted), None)
+
+
 def add_node(
     diagram: Diagram,
     name: str,
@@ -262,6 +268,12 @@ def add_node(
     kind = _check_kind(diagram, kind if kind is not None else _default_node_kind(diagram))
     parent_id = _require_container(diagram, parent).id if parent else None
     node_id = id.strip() if id and id.strip() else diagram.unique_id(name)  # a blank id counts as none
+    reused = _pooled(diagram, name) if not (id and id.strip()) else None
+    if reused is not None:  # model first (ADR-0217): the element of that name exists already; this view shows it
+        node_id, name = reused.id, reused.name
+        properties = {**reused.properties, **(properties or {})}
+        if note is None:
+            note = reused.description
     if node_id in diagram.nodes:
         raise OperationError(f"A node with id '{node_id}' already exists ({diagram.path(node_id)}).")
     _check_reserved(diagram, [str(k) for k in properties or {}], edge=False)
@@ -277,6 +289,7 @@ def add_node(
     _store_fields(node.properties, values)
     _check_node(diagram, node)
     diagram.nodes[node.id] = node
+    diagram._pool.pop(node.id, None)
     _touch(diagram)
     return node
 
@@ -346,7 +359,19 @@ def move_node(diagram: Diagram, id: str, parent: str | None) -> Node:
     return node
 
 
-def remove_node(diagram: Diagram, id: str, cascade: bool = False) -> dict[str, Any]:
+REMOVAL_SCOPES = ("view", "model")  # model first (ADR-0217): hide in this view, or delete from the project model
+
+
+def check_scope(scope: str) -> str:
+    if scope not in REMOVAL_SCOPES:
+        raise OperationError(
+            f"scope must be 'view' (hide it in this diagram) or 'model' (delete it everywhere), not '{scope}'."
+        )
+    return scope
+
+
+def remove_node(diagram: Diagram, id: str, cascade: bool = False, scope: str = "view") -> dict[str, Any]:
+    check_scope(scope)
     node = _require_node(diagram, id)
     removed = [node.id]
     children = diagram.children(node.id)
@@ -369,11 +394,14 @@ def remove_node(diagram: Diagram, id: str, cascade: bool = False) -> dict[str, A
                 raise OperationError(
                     f"Cannot remove '{node.id}' and keep its content: {exc} Move the content out first, or use cascade."
                 ) from exc
+    if scope == "model":
+        diagram._removals.update(removed)
     _touch(diagram)
     return {
         "removed_nodes": removed,
         "removed_edges": removed_edges,
         "reparented": [c.id for c in children] if not cascade else [],
+        "scope": scope,
     }
 
 
@@ -423,8 +451,16 @@ def add_edge(
                 existing.properties.update(props)
                 _touch(diagram)
             return existing  # idempotent
+    hidden = next(  # model first (ADR-0216): the model has this connection, hidden in this view: show it again
+        (
+            e
+            for e in diagram._hidden_edges.values()
+            if (e.source, e.target, e.kind) == (src.id, tgt.id, kind) and (label is None or e.label == label)
+        ),
+        None,
+    )
     edge = Edge(
-        id=diagram.next_edge_id(),
+        id=hidden.id if hidden is not None else diagram.next_edge_id(),
         source=src.id,
         target=tgt.id,
         label=label,
@@ -508,7 +544,9 @@ def remove_edge(
     id: str | None = None,
     source: str | None = None,
     target: str | None = None,
+    scope: str = "view",
 ) -> list[str]:
+    check_scope(scope)
     if id:
         matches = [e for e in diagram.edges if e.id == id]
         if not matches:
@@ -523,6 +561,8 @@ def remove_edge(
         raise OperationError("remove_edge needs either an edge id or both source and target.")
     ids = {e.id for e in matches}
     diagram.edges = [e for e in diagram.edges if e.id not in ids]
+    if scope == "model":
+        diagram._removals.update(ids)
     _touch(diagram)
     return sorted(ids)
 
@@ -628,8 +668,15 @@ def _batchable(diagram: Diagram) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
+MODEL_FIRST_RENAMES = True
+
+
 def _check_linked_rename(view_id: str, ref: str | None, current: str, new_name: str) -> None:
-    """A linked view element carries its element's name: renaming it in a view is refused (ADR-0071)."""
+    """Model first (ADR-0213): a view element *is* its element, so renaming it renames the element and every view shows
+    the new name (the repository writes it into the model). Only a diagram without a model (outside a project, never
+    resolved) still refuses, as ADR-0071 did, since nothing would carry the name to the element."""
+    if MODEL_FIRST_RENAMES:
+        return
     if ref is not None and new_name.strip() != single_line(current).strip():  # stored names may predate #103
         raise OperationError(
             f"'{view_id}' represents the project element '{ref}', so its name comes from the project model. "
@@ -876,7 +923,34 @@ def set_relation_hidden(diagram: Diagram, relation: str, hidden: bool) -> dict[s
 # ---------------------------------------------------------------------------
 
 
+def show_element(diagram: Diagram, element: str, parent: str | None = None) -> Node:
+    """Model first (ADR-0213): show an element of the project model that this diagram does not show yet, by id or name.
+    The connections the model has between it and what the diagram shows appear with it (ADR-0216)."""
+    pool = diagram._pool
+    wanted = element.strip().lower()
+    found = pool.get(element) or next(
+        (n for n in pool.values() if n.name.strip().lower() == wanted or n.id == slugify(element)), None
+    )
+    if found is None:
+        if diagram.find_node(element) is not None:
+            raise OperationError(f"'{element}' is shown in this diagram already.")
+        known = ", ".join(f"{n.id} ({n.name})" for n in list(pool.values())[:40]) or "none"
+        raise OperationError(
+            f"The project model has no element '{element}' that a {diagram.type} diagram can show. Elements not "
+            f"shown here: {known}. Use add_node to create a new one."
+        )
+    node = found.model_copy(deep=True)
+    if parent:
+        node.parent = _require_container(diagram, parent).id
+    _check_node(diagram, node)
+    diagram.nodes[node.id] = node
+    pool.pop(node.id, None)
+    _touch(diagram)
+    return node
+
+
 OPERATIONS: dict[str, Callable[..., Any]] = {
+    "show_element": show_element,
     "add_node": add_node,
     "update_node": update_node,
     "move_node": move_node,
@@ -933,13 +1007,16 @@ _GRAPH_OPERATIONS = (
     *MODEL_OPERATIONS,
 )
 TYPE_OPERATIONS: dict[str, tuple[str, ...]] = {
-    "deployment": (*_GRAPH_OPERATIONS, *RELATION_OPERATIONS, "set_completeness"),
+    "deployment": (*_GRAPH_OPERATIONS, "show_element", *RELATION_OPERATIONS, "set_completeness"),
     "activity": _GRAPH_OPERATIONS,  # ActivityNodes/ActivityPartitions and ActivityEdges (ADR-0034)
     "state_machine": _GRAPH_OPERATIONS,  # states, pseudostates, regions and transitions (ADR-0178)
-    "class": _GRAPH_OPERATIONS,  # classifiers with members, packages and relationships (ADR-0179)
-    "use_case": _GRAPH_OPERATIONS,  # actors, use cases, the subject and their relationships (ADR-0180)
+    "class": (*_GRAPH_OPERATIONS, "show_element"),  # classifiers with members, packages and relationships (ADR-0179)
+    "use_case": (
+        *_GRAPH_OPERATIONS,
+        "show_element",
+    ),  # actors, use cases, the subject and their relationships (ADR-0180)
     # components, subsystems, interfaces and their connections (ADR-0181); connectors show relations like edges do
-    "component": (*_GRAPH_OPERATIONS, *RELATION_OPERATIONS, "set_completeness"),
+    "component": (*_GRAPH_OPERATIONS, "show_element", *RELATION_OPERATIONS, "set_completeness"),
     "sequence": (  # UML 2.5.1 Interactions; the functions live in sequence_ops.py (registered below)
         "add_lifeline",
         "update_lifeline",

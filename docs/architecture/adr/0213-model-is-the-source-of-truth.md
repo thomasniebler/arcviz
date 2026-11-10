@@ -1,6 +1,6 @@
 # ADR-0213: The project model is the source of truth; diagrams are views
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-10
 - Spec: `docs/architecture/specs/model-first.md`
 - Supersedes: ADR-0070, ADR-0071, ADR-0138, ADR-0164; amends ADR-0137

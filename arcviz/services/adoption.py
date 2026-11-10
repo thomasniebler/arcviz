@@ -207,6 +207,11 @@ def unlink_change(problems: dict[str, str], elements: dict[str, str]) -> Callabl
     return change
 
 
+# Model first (spec: model-first.md, ADR-0213): the repository makes every view element a project element when it is
+# written, so there is nothing left to adopt in advance; `adopting` hands the change on unchanged.
+MODEL_FIRST = True
+
+
 def adopting(
     adopter: Adopter | None,
     diagram: Diagram,
@@ -219,7 +224,7 @@ def adopting(
     (project write) and the returned change applies the operation and then the links. The second function, called once
     after the write (also when it failed), takes back unused elements and returns what was adopted (None: nothing).
     Without an adopter, for a failing change, or when the project cannot be written, the change is returned as it is."""
-    if adopter is None:
+    if adopter is None or MODEL_FIRST:
         return apply, lambda: None
     probe = diagram.model_copy(deep=True)
     try:

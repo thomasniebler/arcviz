@@ -1,6 +1,6 @@
 # ADR-0215: A view resolves to today's `Diagram` as a read-only projection
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-11-10
 - Spec: `docs/architecture/specs/model-first.md`
 

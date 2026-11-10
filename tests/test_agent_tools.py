@@ -23,7 +23,6 @@ def root(store):
     ada = root.for_actor(PEOPLE["ada"])
     ada.projects.create("Shop", "shop")
     ada.projects.share("shop", "vic", "viewer")
-    ada.diagrams.create("Orders", "orders", demo_diagram("orders", "Orders"), "shop")
     models = ada.models
     models.add_element("shop", "API", "component", "Takes orders from clients and validates them", element_id="api")
     models.add_element("shop", "Orders", "component", "Owns the order lifecycle", element_id="orders")
@@ -31,6 +30,8 @@ def root(store):
     models.add_element("shop", "Payments", "system", "External payment provider", element_id="payments")
     models.add_relation("shop", "communicates", "api", "orders", {"protocol": "https", "port": "443"}, "REST calls")
     models.add_relation("shop", "data_flow", "orders", "orders-db", {"protocol": "postgres"}, "reads and writes")
+    # model first: the diagram's nodes become elements too, so the named elements exist before it (their ids stay)
+    ada.diagrams.create("Orders", "orders", demo_diagram("orders", "Orders"), "shop")
     ada.projects.apply("shop", "add_driver", {"title": "Availability", "importance": "high", "risk": "high"})
     ada.projects.apply(
         "shop", "add_decision", {"title": "Second region", "status": "accepted", "decision": "Run in two regions"}
@@ -59,7 +60,8 @@ def test_list_projects_shows_role_and_size(root):
 
 def test_list_components_filters_and_bounds(root):
     everything = tools(root).list_components("shop")
-    assert everything["total"] == 4 and everything["truncated"] is False
+    # model first: the four named elements and the eight nodes of the demo diagram (orders-db-2 is its database)
+    assert everything["total"] == 12 and everything["truncated"] is False
     by_id = {c["id"]: c for c in everything["components"]}
     assert by_id["orders"] == {
         "id": "orders",
@@ -69,10 +71,10 @@ def test_list_components_filters_and_bounds(root):
         "parent": None,
         "code_links": 1,
     }
-    assert [c["id"] for c in tools(root).list_components("shop", kind="data")["components"]] == ["orders-db"]
+    assert [c["id"] for c in tools(root).list_components("shop", kind="data")["components"]] == ["orders-db", "orders-db-2"]
     assert [c["id"] for c in tools(root).list_components("shop", query="LIFECYCLE")["components"]] == ["orders"]
     limited = tools(root).list_components("shop", limit=2)
-    assert len(limited["components"]) == 2 and limited["truncated"] is True and limited["total"] == 4
+    assert len(limited["components"]) == 2 and limited["truncated"] is True and limited["total"] == 12
     with pytest.raises(ToolFailure, match="kind"):
         tools(root).list_components("shop", kind="bogus")
 
@@ -96,7 +98,8 @@ def test_get_component_names_the_views_and_findings(root):
     node = next(n for n in ada.diagrams.get("orders").nodes.values() if n.kind == "database")
     ada.models.link("orders", node.id, "orders-db")
     c = tools(root).get_component("shop", "orders-db")
-    assert c["views"] == [{"diagram": "orders", "title": "Orders", "view": node.id, "name": "Orders DB"}]
+    # model first: the linked node *is* the element, so the view carries the element's id
+    assert c["views"] == [{"diagram": "orders", "title": "Orders", "view": "orders-db", "name": "Orders DB"}]
     assert any(f["rule"] == "database-without-replication" for f in c["findings"])
 
 

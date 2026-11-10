@@ -1,6 +1,6 @@
 # ADR-0214: One structure document and one document per behaviour, versioned like diagrams
 
-- Status: Proposed
+- Status: Accepted in part (first stage: elements and connections stay in the project document, behaviours in their diagram document; see the spec, "As implemented")
 - Date: 2026-11-10
 - Spec: `docs/architecture/specs/model-first.md`
 
