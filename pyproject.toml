@@ -46,7 +46,7 @@ arcviz-migrate = "arcviz.cli:migrate_main"
 docs = ["zensical>=0.0.60"]
 
 [build-system]
-requires = ["hatchling==1.32.4"]  # exact, so every build backend run is the same (ADR-0109)
+requires = ["hatchling==1.33.0"]  # exact, so every build backend run is the same (ADR-0109)
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
